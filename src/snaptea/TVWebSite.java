@@ -49,16 +49,16 @@ protected FileHeader getFileHeader(String aPath) throws Exception
 /**
  * Gets file bytes.
  */
-public synchronized byte[] getFileBytes(WebFile aFile)
+public synchronized byte[] getFileBytes(String aPath)
 {
-    String path = aFile.getPath(), urls = getURLString() + path;
+    String urls = getURLString() + aPath;
     XMLHttpRequest req = XMLHttpRequest.create();
-    req.open("GET", path.substring(1));
+    req.open("GET", aPath.substring(1));
     sendSync(req);
     
     // Get bytes
     String text = req.getResponseText();
-    byte bytes[] = text.getBytes(); if(bytes==null) System.out.println("No file bytes: " + path);
+    byte bytes[] = text.getBytes(); if(bytes==null) System.out.println("No file bytes: " + aPath);
     return bytes;
 }
 
