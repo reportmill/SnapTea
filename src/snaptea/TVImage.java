@@ -42,9 +42,9 @@ public TVImage(double aWidth, double aHeight, boolean hasAlpha)
  */
 private synchronized void loadImage(WebURL aURL)
 {
-    //_img = HTMLDocument.current().createElement("img").withAttr("src", "images" + aURL.getPath()).cast();
-    //_img.listenLoad(e -> { synchronized(TVImage.this) { TVImage.this.notify(); }});
-    //try { wait(); } catch(Exception e) { throw new RuntimeException(e); }
+    _img = HTMLDocument.current().createElement("img").withAttr("src", aURL.getPath().substring(1)).cast();
+    _img.listenLoad(e -> { synchronized(TVImage.this) { TVImage.this.notify(); }});
+    try { wait(); } catch(Exception e) { throw new RuntimeException(e); }
 }
 
 /**
