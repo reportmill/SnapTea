@@ -72,14 +72,10 @@ public WebURL getURL(Object aSource)
  */
 public WebURL getURL(Class aClass, String aName)
 {
-    String urls = aName;
-    if(!urls.startsWith("/")) { urls = '/' + urls;
-    //    String cpath = aClass.getName(), cname = aClass.getSimpleName();
-    //    System.out.println("ClassPath: " + cpath);
-    //    cpath = cpath.substring(0, cpath.length() - cname.length()).replace('.', '/');
-    //    urls = cpath + '/' + urls;
-    }
-    return new WebURL(urls, "http://abc.com" + urls);
+    String cname = aClass.getName(); int cind = cname.lastIndexOf('.');
+    String cpath = ""; if(cind>0) cpath = '/' + cname.substring(0, cind).replace('.', '/');
+    String upath = aName.startsWith("/")? aName : cpath + '/' + aName;
+    return new WebURL(upath, "http://abc.com" + upath);
 }
 
 /**
