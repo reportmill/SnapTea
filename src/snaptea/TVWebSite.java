@@ -53,7 +53,7 @@ public synchronized byte[] getFileBytes(String aPath)
 {
     String urls = getURLString() + aPath;
     XMLHttpRequest req = XMLHttpRequest.create();
-    req.open("GET", aPath.substring(1));
+    req.open("GET", aPath.substring(1) + "?v=" + System.currentTimeMillis());
     sendSync(req);
     
     // Get bytes
@@ -61,6 +61,8 @@ public synchronized byte[] getFileBytes(String aPath)
     byte bytes[] = text.getBytes(); if(bytes==null) System.out.println("No file bytes: " + aPath);
     return bytes;
 }
+
+int _xxx;
 
 /**
  * Sends an XMLHttpRequest synchronously.
