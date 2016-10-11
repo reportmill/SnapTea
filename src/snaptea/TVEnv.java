@@ -147,6 +147,16 @@ public Object getKeyChainValue(Object anObj, String aKeyChain)  { return null; }
 public void setKeyChainValue(Object anObj, String aKC, Object aValue)  { }
 
 /**
+ * Returns a key list value.
+ */
+public Object getKeyListValue(Object anObj, String aKey, int anIndex)  { return null; }
+
+/**
+ * Adds a key list value.
+ */
+public void setKeyListValue(Object anObj, String aKey, Object aValue, int anIndex)  { }
+
+/**
  * Returns a shared instance.
  */
 public static TVEnv get()  { return _shared; }
