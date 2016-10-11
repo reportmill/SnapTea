@@ -42,6 +42,15 @@ public void setStroke(Stroke aStroke)
 }
 
 /**
+ * Sets the opacity.
+ */
+public void setOpacity(double aValue)
+{
+    super.setOpacity(aValue);
+    _cntx.setGlobalAlpha(aValue);
+}
+
+/**
  * Sets the font in painter.
  */
 public void setFont(Font aFont)
