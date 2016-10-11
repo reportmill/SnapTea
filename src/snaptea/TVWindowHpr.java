@@ -26,6 +26,7 @@ public void show(View aView, double aX, double aY)
     win.show();
     
     ViewUtils.setShowing(wview, true);
+    //wview.setShowing(true);
 }
 
 /** Window/Popup method: Hides the window. */
