@@ -20,6 +20,11 @@ public void setView(View aView)  { super.setView(aView); get().setView((WindowVi
 public void show(View aView, double aX, double aY)
 {
     WindowView wview = getView();
+    
+    View c = wview.getRootView().getContent();
+    if(c instanceof Label || c instanceof ButtonBase) { c.setPadding(4,6,4,6); c.setFont(c.getFont().deriveFont(14));
+        Box box = new Box(c); box.setPadding(4,4,4,4); wview.getRootView().setContent(box); }
+
     setPrefSize();
     
     TVWindow win = (TVWindow)wview.getNative();

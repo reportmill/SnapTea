@@ -66,10 +66,6 @@ public void setView(WindowView aWin)
 
 public void show()
 {
-    View c = _rview.getContent();
-    if(c instanceof Label || c instanceof Button) {
-        Box box = new Box(c); box.setPadding(4,4,4,4); _rview.setContent(box); }
-
     // Center window
     //_wview.setX((int)(_doc.getDocumentElement().getClientWidth() - _wview.getWidth())/2);
     _wview.setXY(10,10);
