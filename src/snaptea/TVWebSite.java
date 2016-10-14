@@ -24,19 +24,25 @@ public void setURL(WebURL aURL)  { super.setURL(aURL); }
 /**
  * Returns a data source file for given path (if file exists).
  */
-protected FileHeader getFileHeader(String aPath) throws Exception
+public synchronized FileHeader getFileHeader(String aPath)
 {
     // Fetch URL
     //String urls = getURLString() + aPath;
     //XMLHttpRequest req = XMLHttpRequest.create();
-    //req.onComplete(() -> handleHeadResponse(req, aPath));
-    //req.open("HEAD", aPath, false);
-    //req.send();
+    //req.open("HEAD", aPath.substring(1));
+    //sendSync(req);
+    
+    // Bogus
+    //String text = req.getResponseText();
+    //System.out.println("Got Text: " + (text!=null? text.length() : -1));
+    //if(text==null || text.length()==0)
+    //    return null;
+
     // Handle non-success response codes
-    //int code = aReq.getStatus();
+    //int code = req.getStatus();
     //if(code==HTTPResponse.NOT_FOUND) throw new FileNotFoundException(aPath);
     //if(code==HTTPResponse.UNAUTHORIZED) throw new AccessException();
-    //if(code!=HTTPResponse.OK) throw new IOException(resp.getMessage());
+    //if(code!=XMLHttpRequest.DONE) return null; //throw new IOException(resp.getMessage());
     
     // Create file, set bytes and return
     //boolean isDir = StringUtils.getPathExtension(aPath).length()==0;

@@ -19,7 +19,7 @@ public class TVSoundClip extends SoundClip {
 public TVSoundClip(Object aSource)
 {
     WebURL url = WebURL.getURL(aSource);
-    _snd = HTMLDocument.current().createElement("audio").withAttr("src", "sounds" + url.getPath())
+    _snd = HTMLDocument.current().createElement("audio").withAttr("src", url.getPath().substring(1))
     .withAttr("preload", "auto").cast();
     _snd.load();
 }
@@ -29,7 +29,7 @@ public TVSoundClip(Object aSource)
  */
 private synchronized void loadSound(WebURL aURL)
 {
-    _snd = HTMLDocument.current().createElement("audio").withAttr("src", "sounds" + aURL.getPath())
+    _snd = HTMLDocument.current().createElement("audio").withAttr("src", aURL.getPath().substring(1))
     .withAttr("preload", "auto").cast();
     _snd.load();
 }
