@@ -39,7 +39,20 @@ public FontFile getFontFile(String aName)  { return new TVFontFile(aName); }
 /**
  * Creates a new image from source.
  */
-public Image getImage(Object aSource)  { return new TVImage(aSource); }
+public Image getImage(Object aSource)
+{
+    WebURL url = getURL(aSource);
+    if(url==null)
+        return null;
+        
+    // Bogus
+    if(url.getPath().startsWith("/snap/view")) {
+        System.out.println("TVEnv.getImage: Failed to load " + url);
+        return getImage(5, 5, false);
+    }
+    
+    return new TVImage(url);
+}
 
 /**
  * Creates a new image for width, height and alpha.

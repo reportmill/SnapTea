@@ -17,6 +17,9 @@ public class TVImage extends Image {
     
     // The size
     int                      _pw = -1, _ph = -1;
+    
+    // Whether image is loaded
+    boolean                  _loaded, _waiting;
 
 /**
  * Creates a new TVImage from source.
@@ -40,11 +43,16 @@ public TVImage(double aWidth, double aHeight, boolean hasAlpha)
 /**
  * Loads image synchronously with wait/notify.
  */
-private synchronized void loadImage(WebURL aURL)
+private void loadImage(WebURL aURL)
 {
-    _img = HTMLDocument.current().createElement("img").withAttr("src", aURL.getPath().substring(1)).cast();
-    _img.listenLoad(e -> { synchronized(TVImage.this) { TVImage.this.notify(); }});
-    try { wait(); } catch(Exception e) { throw new RuntimeException(e); }
+    String src = aURL.getPath().substring(1);
+    _img = HTMLDocument.current().createElement("img").cast(); //.withAttr("src", src)
+    
+    Object lock = new Object();
+    _img.listenLoad(e -> { synchronized(lock) { _loaded = true; if(_waiting) lock.notify(); } });
+    _img.setSrc(src);
+    try { synchronized(lock) { if(!_loaded) { _waiting = true; lock.wait(); } } }
+    catch(Exception e) { throw new RuntimeException(e); }
 }
 
 /**
