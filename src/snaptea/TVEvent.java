@@ -46,6 +46,7 @@ public char getKeyChar()  { return (char)getKeyCode(); }
 public boolean isShiftDown()
 {
     if(isKeyEvent()) return ((KeyboardEvent)getEvent()).isShiftKey();
+    if(isMouseEvent()) return ((MouseEvent)getEvent()).getShiftKey();
     return false;
 }
 
@@ -53,6 +54,7 @@ public boolean isShiftDown()
 public boolean isControlDown()
 {
     if(isKeyEvent()) return ((KeyboardEvent)getEvent()).isCtrlKey();
+    if(isMouseEvent()) return ((MouseEvent)getEvent()).getCtrlKey();
     return false;
 }
 
@@ -60,6 +62,7 @@ public boolean isControlDown()
 public boolean isAltDown()
 {
     if(isKeyEvent()) return ((KeyboardEvent)getEvent()).isAltKey();
+    if(isMouseEvent()) return ((MouseEvent)getEvent()).getAltKey();
     return false;
 }
 
@@ -67,6 +70,7 @@ public boolean isAltDown()
 public boolean isMetaDown()
 {
     if(isKeyEvent()) return ((KeyboardEvent)getEvent()).isMetaKey();
+    if(isMouseEvent()) return ((MouseEvent)getEvent()).getMetaKey();
     return false;
 }
 
@@ -74,6 +78,7 @@ public boolean isMetaDown()
 public boolean isShortcutDown()
 {
     if(isKeyEvent()) return ((KeyboardEvent)getEvent()).isMetaKey();
+    if(isMouseEvent()) return isMetaDown() || isControlDown();
     return false;
 }
 
