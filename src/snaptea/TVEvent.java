@@ -36,7 +36,8 @@ public double getY()
 public int getKeyCode()
 {
     KeyboardEvent kev = (KeyboardEvent)getEvent();
-    return kev.getKeyCode();
+    int kcode = kev.getKeyCode(); if(kcode==13) kcode = 10;
+    return kcode;
 }
 
 /** Returns the event key char. */
