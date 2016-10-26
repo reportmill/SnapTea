@@ -22,9 +22,52 @@ public class TScanner {
 /**
  * Create new Scanner for InputStream.
  */
-public TScanner(InputStream aIS)
+public TScanner(InputStream aIS)  { _is = aIS; }
+
+/**
+ * Returns the next token.
+ */
+public String next()
 {
-    _is = aIS;
+    String str = peekNext(); _index++;
+    return str;
+}
+
+/**
+ * Returns whether next input is boolean.
+ */
+public boolean hasNextBoolean()
+{
+    String str = peekNext().toLowerCase();
+    return str.equals("true") || str.equals("false");
+}
+
+/**
+ * Returns the next input as boolean.
+ */
+public boolean nextBoolean()
+{
+    String str = next();
+    return Boolean.valueOf(str);
+}
+
+/**
+ * Returns whether next input is float.
+ */
+public boolean hasNextFloat()
+{
+    String str = peekNext();
+    try { Float.valueOf(str); return true; }
+    catch(Exception e) { return false; }
+}
+
+/**
+ * Returns the next input as float.
+ */
+public float nextFloat()
+{
+    String str = next();
+    return Float.valueOf(str);
 }
 
 /**
@@ -37,6 +80,9 @@ public boolean hasNextInt()
     catch(Exception e) { return false; }
 }
 
+/**
+ * Returns the next input as int.
+ */
 public int nextInt()
 {
     String str = next();
@@ -44,17 +90,42 @@ public int nextInt()
 }
 
 /**
- * Returns the next token.
+ * Returns whether next input is double.
  */
-public String next()
+public boolean hasNextDouble()
 {
     String str = peekNext();
-    _index++;
+    try { Double.valueOf(str); return true; }
+    catch(Exception e) { return false; }
+}
+
+/**
+ * Returns the next input as double.
+ */
+public double nextDouble()
+{
+    String str = next();
+    return Double.valueOf(str);
+}
+
+/**
+ * Returns whether there is an input line.
+ */
+public boolean hasNextLine()  { return _index < _tokens.length && !_done; }
+
+/**
+ * Returns the next line of input.
+ */
+public String nextLine()
+{
+    String str = next();
+    while(_index<_tokens.length)
+        str += next() + " ";
     return str;
 }
 
 /**
- * Returns the next token.
+ * Returns the next token without removing it.
  */
 public String peekNext()
 {
@@ -86,7 +157,7 @@ private void readNext()
  */
 private void addChars(String aStr)
 {
-    String toks[] = aStr.split("\\s");
+    String toks[] = aStr.split("\\s"); if(toks.length==0) toks = new String[] { "" };
     int len = _tokens.length;
     _tokens = Arrays.copyOf(_tokens, len + toks.length);
     System.arraycopy(toks, 0, _tokens, len, toks.length);

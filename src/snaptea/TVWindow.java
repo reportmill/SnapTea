@@ -29,6 +29,15 @@ public class TVWindow implements PropChangeListener {
     // Painter
     Painter               _pntr;
     
+    // The last mouse down x/y
+    double                _mdx, _mdy;
+    
+    // Time of last mouse release
+    long                  _lastReleaseTime;
+    
+    // Last number of clicks
+    int                   _clicks;
+    
 /**
  * Creates a new TVWindow.
  */
@@ -76,41 +85,55 @@ public void show()
 
 public void mouseDown(MouseEvent anEvent)
 {
-    ViewEvent nevent = TVViewEnv.get().createEvent(_rview, anEvent, View.MousePressed, null);
-    _rview.dispatchEvent(nevent);
+    long time = System.currentTimeMillis();
+    _clicks = time - _lastReleaseTime<400? (_clicks+1) : 1; _lastReleaseTime = time;
+    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.MousePressed, null);
+    ((TVEvent)event)._ccount = _clicks;
+    _mdx = event.getX(); _mdy = event.getY();
+    _rview.dispatchEvent(event);
 }
 
 public void mouseMove(MouseEvent anEvent)
 {
     ViewEvent.Type type = ViewUtils.isMouseDown()? View.MouseDragged : View.MouseMoved;
-    ViewEvent nevent = TVViewEnv.get().createEvent(_rview, anEvent, type, null);
-    _rview.dispatchEvent(nevent);
+    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, type, null);
+    ((TVEvent)event)._ccount = _clicks;
+    if(Math.abs(_mdx-event.getX())>4 || Math.abs(_mdx-event.getY())>4) _mdx = _mdy = -9999;
+    _rview.dispatchEvent(event);
 }
 
 public void mouseUp(MouseEvent anEvent)
 {
-    ViewEvent nevent = TVViewEnv.get().createEvent(_rview, anEvent, View.MouseReleased, null);
-    _rview.dispatchEvent(nevent);
+    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.MouseReleased, null);
+    ((TVEvent)event)._ccount = _clicks;
+    _rview.dispatchEvent(event);
+    
+    // If mouse up not far from mouse down, post click event
+    if(Math.abs(_mdx-event.getX())<=4 && Math.abs(_mdy-event.getY())<=4) {
+        ViewEvent ev2 = TVViewEnv.get().createEvent(_rview, anEvent, View.MouseClicked, null);
+        ((TVEvent)ev2)._ccount = _clicks;
+        _rview.dispatchEvent(ev2);
+    }
 }
 
 public void keyDown(KeyboardEvent anEvent)
 {
-    ViewEvent nevent = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyPressed, null);
-    _rview.dispatchEvent(nevent);
+    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyPressed, null);
+    _rview.dispatchEvent(event);
     anEvent.stopPropagation();
 }
 
 public void keyPress(KeyboardEvent anEvent)
 {
-    ViewEvent nevent = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyTyped, null);
-    _rview.dispatchEvent(nevent);
+    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyTyped, null);
+    _rview.dispatchEvent(event);
     anEvent.stopPropagation();
 }
 
 public void keyUp(KeyboardEvent anEvent)
 {
-    ViewEvent nevent = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyReleased, null);
-    _rview.dispatchEvent(nevent);
+    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyReleased, null);
+    _rview.dispatchEvent(event);
     anEvent.stopPropagation();
 }
 

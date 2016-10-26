@@ -32,6 +32,9 @@ public double getY()
     return _my;
 }
 
+/** Returns the click count for a mouse event. */
+public int getClickCount()  { return _ccount; }
+
 /** Returns the event keycode. */
 public int getKeyCode()
 {
@@ -90,7 +93,7 @@ public ViewEvent copyForViewPoint(View aView, double aX, double aY, int aClickCo
 {
     String name = getName(); if(name!=null && (name.length()==0 || name.equals(getView().getName()))) name = null;
     TVEvent copy = (TVEvent)TVViewEnv.get().createEvent(aView, getEvent(), getType(), name);
-    copy._mx = aX; copy._my = aY; if(aClickCount>0) copy._ccount = aClickCount;
+    copy._mx = aX; copy._my = aY; copy._ccount = aClickCount>0? aClickCount : _ccount;
     return copy;
 }
 
