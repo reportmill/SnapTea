@@ -1,6 +1,8 @@
 # SnapTea
-A [SnapKit](https://github.com/reportmill/SnapKit) adapter to support SnapKit apps in the browser
-using [TeaVM](http://teavm.org)
+A [SnapKit](https://github.com/reportmill/SnapKit) adapter to support running apps in the browser
+using [TeaVM](http://teavm.org).
+
+Check out this video demo of the [Quickest way to Java in the Browser](https://reportmill.wordpress.com/2016/10/13/java-ui-builder-for-the-browser-and-desktop).
 
 This project is a SnapKit adapter to use TeaVM to build SnapKit apps in JavaScript. To build SnapKit apps in SnapCode:
 
