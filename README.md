@@ -1,5 +1,6 @@
 # SnapTea
-A [SnapKit](https://github.com/reportmill/SnapKit) adapter for TeaVM
+A [SnapKit](https://github.com/reportmill/SnapKit) adapter to support SnapKit apps in the browser
+using [TeaVM](http://teavm.org)
 
 This project is a SnapKit adapter to use TeaVM to build SnapKit apps in JavaScript. To build SnapKit apps in SnapCode:
 
