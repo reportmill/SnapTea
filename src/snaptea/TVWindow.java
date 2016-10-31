@@ -87,7 +87,7 @@ public void mouseDown(MouseEvent anEvent)
 {
     long time = System.currentTimeMillis();
     _clicks = time - _lastReleaseTime<400? (_clicks+1) : 1; _lastReleaseTime = time;
-    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.MousePressed, null);
+    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.MousePress, null);
     ((TVEvent)event)._ccount = _clicks;
     _mdx = event.getX(); _mdy = event.getY();
     _rview.dispatchEvent(event);
@@ -95,7 +95,7 @@ public void mouseDown(MouseEvent anEvent)
 
 public void mouseMove(MouseEvent anEvent)
 {
-    ViewEvent.Type type = ViewUtils.isMouseDown()? View.MouseDragged : View.MouseMoved;
+    ViewEvent.Type type = ViewUtils.isMouseDown()? View.MouseDrag : View.MouseMove;
     ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, type, null);
     ((TVEvent)event)._ccount = _clicks;
     if(Math.abs(_mdx-event.getX())>4 || Math.abs(_mdx-event.getY())>4) _mdx = _mdy = -9999;
@@ -104,28 +104,28 @@ public void mouseMove(MouseEvent anEvent)
 
 public void mouseUp(MouseEvent anEvent)
 {
-    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.MouseReleased, null);
+    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.MouseRelease, null);
     ((TVEvent)event)._ccount = _clicks;
     _rview.dispatchEvent(event);
 }
 
 public void keyDown(KeyboardEvent anEvent)
 {
-    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyPressed, null);
+    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyPress, null);
     _rview.dispatchEvent(event);
     anEvent.stopPropagation();
 }
 
 public void keyPress(KeyboardEvent anEvent)
 {
-    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyTyped, null);
+    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyType, null);
     _rview.dispatchEvent(event);
     anEvent.stopPropagation();
 }
 
 public void keyUp(KeyboardEvent anEvent)
 {
-    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyReleased, null);
+    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyRelease, null);
     _rview.dispatchEvent(event);
     anEvent.stopPropagation();
 }
