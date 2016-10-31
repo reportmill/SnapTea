@@ -107,13 +107,6 @@ public void mouseUp(MouseEvent anEvent)
     ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.MouseReleased, null);
     ((TVEvent)event)._ccount = _clicks;
     _rview.dispatchEvent(event);
-    
-    // If mouse up not far from mouse down, post click event
-    if(Math.abs(_mdx-event.getX())<=4 && Math.abs(_mdy-event.getY())<=4) {
-        ViewEvent ev2 = TVViewEnv.get().createEvent(_rview, anEvent, View.MouseClicked, null);
-        ((TVEvent)ev2)._ccount = _clicks;
-        _rview.dispatchEvent(ev2);
-    }
 }
 
 public void keyDown(KeyboardEvent anEvent)
