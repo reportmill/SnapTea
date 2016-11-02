@@ -11,7 +11,7 @@ import snap.web.WebURL;
 public class TVSoundClip extends SoundClip {
     
     // The Audio Element
-    HTMLAudioElement   _snd;
+    HTMLAudioElement   _snd, _snd2;
     
 /**
  * Creates a new TVSoundClip.
@@ -37,14 +37,15 @@ private synchronized void loadSound(WebURL aURL)
 /**
  * Returns whether sound is playing.
  */
-public boolean isPlaying()  { return false; }
+public boolean isPlaying()  { return _snd2!=null && !_snd2.isEnded(); }
 
 /**
  * Plays the sound.
  */
 public void play()
 {
-    ((HTMLAudioElement)_snd.cloneNode(false)).play();
+    _snd2 = (HTMLAudioElement)_snd.cloneNode(false);
+    _snd2.play();
 }
 
 /**
