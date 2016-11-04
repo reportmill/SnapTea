@@ -9,7 +9,15 @@ import snap.gfx.*;
 public class TV {
 
 /** Returns TVM color for snap color. */
-public static String get(Color aColor)  { return aColor!=null? '#' + aColor.toHexString() : null; }
+public static String get(Color aColor)
+{
+    if(aColor==null) return null;
+    int r = aColor.getRedInt(), g = aColor.getGreenInt(), b = aColor.getBlueInt(), a = aColor.getAlphaInt();
+    StringBuffer sb = new StringBuffer(a==255? "rgb(" : "rgba(");
+    sb.append(r).append(',').append(g).append(',').append(b);
+    if(a==255) sb.append(')'); else sb.append(',').append(a/255d).append(')');
+    return sb.toString();
+}
 
 /** Returns TVM color for snap color. */
 public static CanvasGradient get(GradientPaint aGP, CanvasRenderingContext2D aRC)
