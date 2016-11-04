@@ -1,6 +1,9 @@
 package snaptea;
 import org.teavm.jso.canvas.CanvasImageSource;
+import org.teavm.jso.canvas.CanvasRenderingContext2D;
+import org.teavm.jso.canvas.ImageData;
 import org.teavm.jso.dom.html.*;
+import org.teavm.jso.typedarrays.Uint8ClampedArray;
 import snap.gfx.*;
 import snap.web.WebURL;
 
@@ -91,7 +94,15 @@ public boolean isIndexedColor()  { return false; }
 /**
  * Returns an RGB integer for given x, y.
  */
-public int getRGB(int aX, int aY)  { return 0; }
+public int getRGB(int aX, int aY)
+{
+    getPainter();
+    CanvasRenderingContext2D cntx = (CanvasRenderingContext2D)_canvas.getContext("2d");
+    ImageData idata = cntx.getImageData(aX, aY, 1, 1);
+    Uint8ClampedArray data = idata.getData();
+    int d1 = data.get(0), d2 = data.get(1), d3 = data.get(2), d4 = data.get(3);
+    return d4<<24 | d1<<16 | d2<<8 | d3;
+}
 
 /**
  * Returns the ARGB array of this image.
