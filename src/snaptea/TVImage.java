@@ -29,8 +29,18 @@ public class TVImage extends Image {
  */
 public TVImage(Object aSource)
 {
+    // Get URL and image src from source
     WebURL url = TVEnv.get().getURL(aSource);
-    loadImage(url);
+    String src = url.getString(); if(src.startsWith("http://abc")) src = url.getPath().substring(1);
+    
+    // Create image    
+    _img = HTMLDocument.current().createElement("img").cast(); //.withAttr("src", src)
+    
+    // Set src and wait till loaded
+    TVLock lock = new TVLock("LoadImg: " + src);
+    _img.listenLoad(e -> lock.unlock());
+    _img.setSrc(src);
+    lock.lock();
 }
 
 /**
@@ -41,24 +51,6 @@ public TVImage(double aWidth, double aHeight, boolean hasAlpha)
     _pw = (int)aWidth; _ph = (int)aHeight;
     _canvas = HTMLDocument.current().createElement("canvas").withAttr("width", String.valueOf(_pw))
         .withAttr("height", String.valueOf(_ph)).cast();
-}
-
-/**
- * Loads image synchronously with wait/notify.
- */
-private void loadImage(WebURL aURL)
-{
-    // Create image    
-    _img = HTMLDocument.current().createElement("img").cast(); //.withAttr("src", src)
-    
-    // Get src URL string
-    String src = aURL.getString(); if(src.startsWith("http://abc")) src = aURL.getPath().substring(1);
-    
-    // Set src and wait till loaded
-    TVLock lock = new TVLock("LoadImg: " + src);
-    _img.listenLoad(e -> lock.unlock());
-    _img.setSrc(src);
-    lock.lock();
 }
 
 /**
