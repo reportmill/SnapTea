@@ -1,5 +1,4 @@
 package snaptea;
-import java.util.*;
 import org.teavm.jso.ajax.XMLHttpRequest;
 import snap.web.*;
 
@@ -24,43 +23,29 @@ public void setURL(WebURL aURL)  { super.setURL(aURL); }
 /**
  * Returns a data source file for given path (if file exists).
  */
-public synchronized FileHeader getFileHeader(String aPath)
+public FileHeader getFileHeader(String aPath)
 {
-    // Fetch URL
-    //String urls = getURLString() + aPath;
-    //XMLHttpRequest req = XMLHttpRequest.create();
-    //req.open("HEAD", aPath.substring(1));
-    //sendSync(req);
+    String urls = getURLString() + aPath;
+    if(urls.startsWith("http://abc")) urls = aPath.substring(1) + "?v=" + System.currentTimeMillis();
+    System.out.println("Head: " + urls);
     
-    // Bogus
-    //String text = req.getResponseText();
-    //System.out.println("Got Text: " + (text!=null? text.length() : -1));
-    //if(text==null || text.length()==0)
-    //    return null;
-
-    // Handle non-success response codes
-    //int code = req.getStatus();
-    //if(code==HTTPResponse.NOT_FOUND) throw new FileNotFoundException(aPath);
-    //if(code==HTTPResponse.UNAUTHORIZED) throw new AccessException();
-    //if(code!=XMLHttpRequest.DONE) return null; //throw new IOException(resp.getMessage());
-    
-    // Create file, set bytes and return
-    //boolean isDir = StringUtils.getPathExtension(aPath).length()==0;
     FileHeader finfo = new FileHeader(aPath, false); //isDir
-    //finfo.setLastModifiedTime(resp.getLastModified());
-    //finfo.setSize(resp.getContentLength());
     return finfo;
 }
 
 /**
- * Gets file bytes.
+ * Returns file content (bytes for file, FileHeaders for dir).
  */
-public synchronized byte[] getFileBytes(String aPath)
+protected Object getFileContent(String aPath) throws Exception
 {
     String urls = getURLString() + aPath;
+    if(urls.startsWith("http://abc")) urls = aPath.substring(1) + "?v=" + System.currentTimeMillis();
+        
     XMLHttpRequest req = XMLHttpRequest.create();
-    req.open("GET", aPath.substring(1) + "?v=" + System.currentTimeMillis());
-    sendSync(req);
+    req.open("GET", urls, false);
+    System.out.println("Get: " + urls);
+    sendSync(req, null); //req.send(); - if not open Async
+    System.out.println("GetDone: " + urls);
     
     // Get bytes
     String text = req.getResponseText();
@@ -68,25 +53,44 @@ public synchronized byte[] getFileBytes(String aPath)
     return bytes;
 }
 
-int _xxx;
+/**
+ * Handle a get request.
+ */
+protected WebResponse doPost(WebRequest aReq)
+{
+    WebURL url = aReq.getURL();
+    String urls = url.getString(); if(urls.startsWith("http://abc")) urls = url.getPath().substring(1);
+    
+    XMLHttpRequest req = XMLHttpRequest.create();
+    req.open("POST", urls, false);
+    
+    String str = new String(aReq.getPostBytes());
+    System.out.println("Post: " + urls);
+    sendSync(req, str); //req.send(str); - if not open Async
+    System.out.println("PostDone: " + urls);
+    
+    // Get bytes
+    String text = req.getResponseText();
+    WebResponse resp = new WebResponse(); resp.setRequest(aReq);
+    resp.setCode(WebResponse.OK);
+    resp.setBytes(text.getBytes());
+    return resp;
+}
 
 /**
  * Sends an XMLHttpRequest synchronously.
  */
-public void sendSync(XMLHttpRequest aReq)
+protected void sendSync(XMLHttpRequest aReq, String aStr)
 {
-    Object lock = new Object();
-    aReq.onComplete(() -> { synchronized(lock) { lock.notify(); }});
-    aReq.send();
-    try { synchronized(lock) { lock.wait(); } }
-    catch(Exception e) { throw new RuntimeException(e); }
+    TVLock lock = new TVLock();
+    aReq.onComplete(() -> lock.unlock());
+    if(aStr==null) aReq.send(); else aReq.send(aStr);
+    lock.lock();
 }
 
 /**
- * Returns files at path.
+ * Standard toString implementation.
  */
-public List <FileHeader> getFileHeaders(WebFile aFile) { return Collections.EMPTY_LIST; }
-
 public String toString()  { return "TVWebSite " + getURLString(); }
 
 }

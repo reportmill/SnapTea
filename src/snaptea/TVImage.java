@@ -48,14 +48,17 @@ public TVImage(double aWidth, double aHeight, boolean hasAlpha)
  */
 private void loadImage(WebURL aURL)
 {
-    String src = aURL.getPath().substring(1);
+    // Create image    
     _img = HTMLDocument.current().createElement("img").cast(); //.withAttr("src", src)
     
-    Object lock = new Object();
-    _img.listenLoad(e -> { synchronized(lock) { _loaded = true; if(_waiting) lock.notify(); } });
+    // Get src URL string
+    String src = aURL.getString(); if(src.startsWith("http://abc")) src = aURL.getPath().substring(1);
+    
+    // Set src and wait till loaded
+    TVLock lock = new TVLock("LoadImg: " + src);
+    _img.listenLoad(e -> lock.unlock());
     _img.setSrc(src);
-    try { synchronized(lock) { if(!_loaded) { _waiting = true; lock.wait(); } } }
-    catch(Exception e) { throw new RuntimeException(e); }
+    lock.lock();
 }
 
 /**
