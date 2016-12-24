@@ -99,19 +99,28 @@ public int getRGB(int aX, int aY)
     return d4<<24 | d1<<16 | d2<<8 | d3;
 }
 
-/**
- * Returns the ARGB array of this image.
- */
+/** Returns the ARGB array of this image. */
 public int[] getArrayARGB()  { System.err.println("Image.getArrayARGB: Not implemented"); return null; }
 
-/**
- * Returns the JPEG bytes for image.
- */
+/** Returns the ARGB array of this image. */
+public byte[] getBytesRGBA()  { System.err.println("Image.getBytesRGBA: Not implemented"); return null; }
+
+/** Returns the ARGB array of this image. */
+public int getAlphaColorIndex()  { System.err.println("Image.getAlphaColorIndex: Not implemented"); return 0; }
+
+/** Returns the ARGB array of this image. */
+public byte[] getColorMap()  { System.err.println("Image.getColorMap: Not implemented"); return null; }
+
+/** Returns the ARGB array of this image. */
+public int getBitsPerSample()  { System.err.println("Image.getBitsPerSample: Not implemented"); return 0; }
+
+/** Returns the ARGB array of this image. */
+public int getSamplesPerPixel()  { System.err.println("Image.getSamplesPerPixel: Not implemented"); return 0; }
+
+/** Returns the JPEG bytes for image. */
 public byte[] getBytesJPEG()  { return null; }
 
-/**
- * Returns the PNG bytes for image.
- */
+/** Returns the PNG bytes for image. */
 public byte[] getBytesPNG()  { return null; }
 
 /**
