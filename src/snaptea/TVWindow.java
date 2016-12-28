@@ -1,4 +1,5 @@
 package snaptea;
+import org.teavm.jso.browser.Window;
 import org.teavm.jso.dom.events.KeyboardEvent;
 import org.teavm.jso.dom.events.MouseEvent;
 import org.teavm.jso.dom.html.*;
@@ -81,6 +82,12 @@ public void show()
     
     // Add canvas
     _body.appendChild(_canvas);
+    
+    _wview.setGrowWidth(_wview.getRootView().getContent().isGrowWidth());
+    if(_wview.isGrowWidth()) {
+        Window.current().addEventListener("resize", e -> boundsChanged());
+        boundsChanged();
+    }
 }
 
 public void mouseDown(MouseEvent anEvent)
@@ -140,11 +147,14 @@ public void propertyChange(PropChange aPC)
 
 public void boundsChanged()
 {
-    _canvas.setWidth((int)Math.round(_wview.getWidth()));
-    _canvas.setHeight((int)Math.round(_wview.getHeight()));
-    _rview.setWidth(_wview.getWidth());
-    _rview.setHeight(_wview.getHeight());
-    int x = (int)_wview.getX(), y = (int)_wview.getY();
+    boolean grow = _wview.isGrowWidth();
+    int width = grow? Window.current().getInnerWidth() : (int)Math.round(_wview.getWidth());
+    int height = grow? Window.current().getInnerHeight() : (int)Math.round(_wview.getHeight());
+    _canvas.setWidth(width);
+    _canvas.setHeight(height);
+    _rview.setWidth(width);
+    _rview.setHeight(height);
+    int x = (int)_wview.getX(), y = (int)_wview.getY(); if(grow) x = y = 0;
     _canvas.getStyle().setCssText("position:absolute;left:" + x + "px;top:" + y + "px;");
 }
 
