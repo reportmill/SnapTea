@@ -8,6 +8,7 @@ public class TVLock {
     Object _lock = this; //new Object();
     boolean _waiting, _finished;
     String _name;
+    boolean _debug;
 
 /**
  * Creates a new lock.
@@ -26,10 +27,10 @@ public void lock()
 {
     synchronized(_lock) {
         if(_finished) return;
-        if(_name!=null) System.out.println("Wait: " + _name);
+        if(_debug && _name!=null) System.out.println("Wait: " + _name);
         try { _waiting = true; _lock.wait(); _waiting = false; }
         catch(Exception e) { throw new RuntimeException(e); }
-        if(_name!=null) System.out.println("WaitDone: " + _name);
+        if(_debug && _name!=null) System.out.println("WaitDone: " + _name);
     }
 }
 
@@ -41,10 +42,10 @@ public void unlock()
     synchronized(_lock) {
         _finished = true;
         if(!_waiting) return;
-        if(_name!=null) System.out.println("Notify: " + _name);
+        if(_debug && _name!=null) System.out.println("Notify: " + _name);
         try { _lock.notify(); }
         catch(Exception e) { throw new RuntimeException(e); }
-        if(_name!=null) System.out.println("NotifyDone: " + _name);
+        if(_debug && _name!=null) System.out.println("NotifyDone: " + _name);
     }
 }
 
