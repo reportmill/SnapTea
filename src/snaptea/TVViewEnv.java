@@ -2,7 +2,7 @@ package snaptea;
 import java.util.*;
 import org.teavm.jso.browser.Window;
 import org.teavm.jso.dom.events.Event;
-import snap.gfx.Rect;
+import snap.gfx.*;
 import snap.view.*;
 
 /**
@@ -38,7 +38,6 @@ public void runLater(Runnable aRunnable)
     _runLaters.add(aRunnable);
     if(_runLaters.size()==1)
         Window.setTimeout(()->sendEvents(), 10);
-    //SwingUtilities.invokeLater(aRunnable);
 }
 
 private void sendEvents()
@@ -144,7 +143,7 @@ public static TVViewEnv get()  { return _shared; }
 public static void set()  { snap.gfx.GFXEnv.setEnv(TVEnv.get()); ViewEnv.setEnv(get()); }
 
 /**
- * A custom class.
+ * A ViewHelper for RootView + TVRootView.
  */
 public static class TVRootViewHpr <T extends TVRootView> extends ViewHelper <T> {
 
@@ -159,6 +158,27 @@ public static class TVRootViewHpr <T extends TVRootView> extends ViewHelper <T> 
     
     /** Registers a view for repaint. */
     public void requestPaint(Rect aRect)  { get().repaint(aRect); }
+}
+
+/**
+ * A ViewHelper for WindowView + TVWindow.
+ */
+public static class TVWindowHpr <T extends TVWindow> extends ViewHelper <T> {
+
+    /** Creates the native. */
+    protected T createNative()  { return (T)new TVWindow(); }
+    
+    /** Override to get view as WindowView. */
+    public WindowView getView()  { return (WindowView)super.getView(); }
+        
+    /** Override to set view in RootView. */
+    public void setView(View aView)  { super.setView(aView); get().setView((WindowView)aView); }
+        
+    /** Window/Popup method: Shows the window at given point relative to given view. */
+    public void show(View aView, double aX, double aY)  { get().show(); }
+    
+    /** Window/Popup method: Hides the window. */
+    public void hide()  { get().hide(); }
 }
 
 }

@@ -1,5 +1,6 @@
 package snaptea;
 import org.teavm.jso.dom.html.*;
+import snap.gfx.Size;
 import snap.util.*;
 import snap.view.*;
 
@@ -21,25 +22,38 @@ public void setView(WindowView aWin)  { _win = aWin; _win.addPropChangeListener(
  */
 public void show()
 {
-    // Position window
-    _win.setXY(10,10);
-    
     // Get root view and canvas
     RootView rview = _win.getRootView();
     TVRootView rviewNtv = (TVRootView)rview.getNative();
     HTMLCanvasElement canvas = rviewNtv._canvas;
+    
+    // Silly stuff
+    View c = rview.getContent();
+    if(c instanceof Label || c instanceof ButtonBase) { c.setPadding(4,6,4,6); c.setFont(c.getFont().deriveFont(14));
+        Box box = new Box(c); box.setPadding(4,4,4,4); rview.setContent(box); }
+
+    // Set PrefSize
+    Size size = rview.getPrefSize();
+    _win.setSize(size);
+    
+    // Position window
+    _win.setXY(10,10);
     
     // Add canvas
     HTMLDocument doc = HTMLDocument.current();
     HTMLBodyElement body = doc.getBody();
     body.appendChild(canvas);
     
-    // Set Win.GrowWidth from RootView.Content
+    // Set FullScreen from RootView.Content
     _win.setGrowWidth(rview.getContent().isGrowWidth());
+    boundsChanged();
     
     // Add to screen
     TVScreen screen = TVScreen.get();
     screen.showWindow(_win);
+
+    // Set Window showing    
+    _win.setShowing(true);
 }
 
 /**
@@ -78,9 +92,8 @@ public void propertyChange(PropChange aPC)
 public void boundsChanged()
 {
     // Set RootView size
-    double w = _win.getWidth(), h = _win.getHeight();
     RootView rview = _win.getRootView();
-    rview.setSize(w, h);
+    rview.setSize(_win.getWidth() - 8, _win.getHeight() - 8);
     
     // Get Canvas
     TVRootView rviewNtv = (TVRootView)rview.getNative();
@@ -88,7 +101,7 @@ public void boundsChanged()
     
     // Set RootView position full-screen
     if(_win.isGrowWidth())
-        canvas.getStyle().setCssText("position:absolute;left:0px;top:0px;");
+        canvas.getStyle().setCssText("position:absolute;left:4px;top:4px;");
 
     // Set RootView position normal
     else {
