@@ -55,10 +55,9 @@ public Image getImage(Object aSource)
         return null;
         
     // Bogus
-    if(url.getPath().startsWith("/snap/view")) {
-        System.out.println("TVEnv.getImage: Failed to load " + url);
-        return getImage(5, 5, false);
-    }
+    //if(url.getPath().startsWith("/snap/view")) {
+    //    System.out.println("TVEnv.getImage: Failed to load " + url);
+    //    return getImage(5, 5, false); }
     
     return new TVImage(url);
 }

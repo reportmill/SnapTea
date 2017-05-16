@@ -12,6 +12,9 @@ import snap.web.WebURL;
  */
 public class TVImage extends Image {
     
+    // The source
+    String                   _src;
+    
     // The native object
     HTMLImageElement         _img;
     
@@ -22,7 +25,7 @@ public class TVImage extends Image {
     int                      _pw = -1, _ph = -1;
     
     // Whether image is loaded
-    boolean                  _loaded, _waiting;
+    boolean                  _loaded, _debug;
 
 /**
  * Creates a new TVImage from source.
@@ -31,16 +34,33 @@ public TVImage(Object aSource)
 {
     // Get URL and image src from source
     WebURL url = TVEnv.get().getURL(aSource);
-    String src = url.getString(); if(src.startsWith("http://abc")) src = url.getPath().substring(1);
+    _src = url.getString(); if(_src.startsWith("http://abc")) _src = url.getPath().substring(1);
     
     // Create image    
-    _img = HTMLDocument.current().createElement("img").cast(); //.withAttr("src", src)
+    _img = _img = HTMLDocument.current().createElement("img").cast(); //.withAttr("src", src)
+    _pw = _ph = 20;
     
     // Set src and wait till loaded
-    TVLock lock = new TVLock("LoadImg: " + src);
-    _img.listenLoad(e -> lock.unlock());
-    _img.setSrc(src);
-    lock.lock();
+    _img.listenLoad(e -> didFinishLoad());
+    _img.setSrc(_src); //doWait();
+}
+
+/** Called to wait for image load. */
+private synchronized void doWait()
+{
+    if(_debug) System.out.println("Waiting for " + _src);
+    while(!_loaded) {
+        try { wait(); }
+        catch(InterruptedException e) { }
+    }
+}
+
+/** Called when image has finished load. */
+private synchronized void didFinishLoad()
+{
+    _loaded = true; notifyAll();
+    _pw = _img.getWidth(); _ph = _img.getHeight();
+    if(_debug) System.out.println("Waiting done " + _src);
 }
 
 /**
