@@ -1,9 +1,5 @@
 package snaptea;
-import org.teavm.jso.browser.Window;
-import org.teavm.jso.dom.events.KeyboardEvent;
-import org.teavm.jso.dom.events.MouseEvent;
 import org.teavm.jso.dom.html.*;
-import snap.gfx.*;
 import snap.util.*;
 import snap.view.*;
 
@@ -12,161 +8,93 @@ import snap.view.*;
  */
 public class TVWindow implements PropChangeListener {
 
-    // The HTMLDocument
-    HTMLDocument          _doc = HTMLDocument.current();
-    
-    // The HTMLDocument
-    HTMLBodyElement       _body = _doc.getBody();
-    
-    // The HTMLCanvas
-    HTMLCanvasElement     _canvas;
-    
     // The Window View
-    WindowView            _wview;
+    WindowView            _win;
     
-    // The root view
-    RootView              _rview;
-    
-    // Painter
-    Painter               _pntr;
-    
-    // The last mouse down x/y
-    double                _mdx, _mdy;
-    
-    // Time of last mouse release
-    long                  _lastReleaseTime;
-    
-    // Last number of clicks
-    int                   _clicks;
-    
-/**
- * Creates a new TVWindow.
- */
-public TVWindow()
-{
-    _canvas = HTMLDocument.current().createElement("canvas").withAttr("width", "20").withAttr("height", "20")
-        .withAttr("style", "border:1px solid #EEEEEE;").cast();
-
-    // Add Mouse listeners
-    _body.addEventListener("mousedown", e -> mouseDown((MouseEvent)e));
-    _body.addEventListener("mousemove", e -> mouseMove((MouseEvent)e));
-    _body.addEventListener("mouseup", e -> mouseUp((MouseEvent)e));
-    
-    // Add Key Listeners
-    _body.addEventListener("keydown", e -> keyDown((KeyboardEvent)e));
-    _body.addEventListener("keypress", e -> keyPress((KeyboardEvent)e));
-    _body.addEventListener("keyup", e -> keyUp((KeyboardEvent)e));
-    _pntr = new TVPainter(_canvas);
-}
-
 /**
  * Sets the window.
  */
-public void setView(WindowView aWin)
-{
-    _wview = aWin;
-    _wview.addPropChangeListener(this);
-    
-    // Set RootView native stuff
-    _rview = aWin.getRootView();
-    TVRootView rview = (TVRootView)_rview.getNative();
-    rview._canvas = _canvas;
-    rview._pntr = _pntr;
-}
+public void setView(WindowView aWin)  { _win = aWin; _win.addPropChangeListener(this); }
 
+/**
+ * Shows window.
+ */
 public void show()
 {
-    // Center window
-    //_wview.setX((int)(_doc.getDocumentElement().getClientWidth() - _wview.getWidth())/2);
-    _wview.setXY(10,10);
+    // Position window
+    _win.setXY(10,10);
+    
+    // Get root view and canvas
+    RootView rview = _win.getRootView();
+    TVRootView rviewNtv = (TVRootView)rview.getNative();
+    HTMLCanvasElement canvas = rviewNtv._canvas;
     
     // Add canvas
-    _body.appendChild(_canvas);
+    HTMLDocument doc = HTMLDocument.current();
+    HTMLBodyElement body = doc.getBody();
+    body.appendChild(canvas);
     
-    _wview.setGrowWidth(_wview.getRootView().getContent().isGrowWidth());
-    if(_wview.isGrowWidth()) {
-        Window.current().addEventListener("resize", e -> boundsChanged());
-        boundsChanged();
-    }
+    // Set Win.GrowWidth from RootView.Content
+    _win.setGrowWidth(rview.getContent().isGrowWidth());
+    
+    // Add to screen
+    TVScreen screen = TVScreen.get();
+    screen.showWindow(_win);
 }
 
-public void mouseDown(MouseEvent anEvent)
+/**
+ * Hides window.
+ */
+public void hide()
 {
-    long time = System.currentTimeMillis();
-    _clicks = time - _lastReleaseTime<400? (_clicks+1) : 1; _lastReleaseTime = time;
-    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.MousePress, null);
-    ((TVEvent)event)._ccount = _clicks;
-    _mdx = event.getX(); _mdy = event.getY();
-    _rview.dispatchEvent(event);
+    // Get root view and canvas
+    RootView rview = _win.getRootView();
+    TVRootView rviewNtv = (TVRootView)rview.getNative();
+    HTMLCanvasElement canvas = rviewNtv._canvas;
+    
+    // Add canvas
+    HTMLDocument doc = HTMLDocument.current();
+    HTMLBodyElement body = doc.getBody();
+    body.removeChild(canvas);
+    
+    // Add to screen
+    TVScreen screen = TVScreen.get();
+    screen.hideWindow(_win);
 }
 
-public void mouseMove(MouseEvent anEvent)
-{
-    ViewEvent.Type type = ViewUtils.isMouseDown()? View.MouseDrag : View.MouseMove;
-    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, type, null);
-    ((TVEvent)event)._ccount = _clicks;
-    if(Math.abs(_mdx-event.getX())>4 || Math.abs(_mdx-event.getY())>4) _mdx = _mdy = -9999;
-    _rview.dispatchEvent(event);
-}
-
-public void mouseUp(MouseEvent anEvent)
-{
-    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.MouseRelease, null);
-    ((TVEvent)event)._ccount = _clicks;
-    _rview.dispatchEvent(event);
-}
-
-public void keyDown(KeyboardEvent anEvent)
-{
-    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyPress, null);
-    _rview.dispatchEvent(event);
-    anEvent.stopPropagation();
-}
-
-public void keyPress(KeyboardEvent anEvent)
-{
-    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyType, null);
-    _rview.dispatchEvent(event);
-    anEvent.stopPropagation();
-}
-
-public void keyUp(KeyboardEvent anEvent)
-{
-    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyRelease, null);
-    _rview.dispatchEvent(event);
-    anEvent.stopPropagation();
-}
-
+/**
+ * Called when WindowView properties change.
+ */
 public void propertyChange(PropChange aPC)
 {
     String pname = aPC.getPropertyName();
     switch(pname) {
-        case View.X_Prop: case View.Y_Prop: case View.Width_Prop: case View.Height_Prop: boundsChanged(); break;
-    }
-}
-
-public void boundsChanged()
-{
-    boolean grow = _wview.isGrowWidth();
-    int width = grow? Window.current().getInnerWidth() : (int)Math.round(_wview.getWidth());
-    int height = grow? Window.current().getInnerHeight() : (int)Math.round(_wview.getHeight());
-    _canvas.setWidth(width);
-    _canvas.setHeight(height);
-    _rview.setWidth(width);
-    _rview.setHeight(height);
-    int x = (int)_wview.getX(), y = (int)_wview.getY(); if(grow) x = y = 0;
-    _canvas.getStyle().setCssText("position:absolute;left:" + x + "px;top:" + y + "px;");
+        case View.X_Prop: case View.Y_Prop: case View.Width_Prop: case View.Height_Prop: boundsChanged(); }
 }
 
 /**
- * Console support.
- * <textarea id="console" name="console" type="text" style="width:800px;height:120px;">
+ * Called when WindowView bounds changes to sync win size to RootView and win location to RootView.Canvas.
  */
-public void println(String aStr)
+public void boundsChanged()
 {
-    HTMLInputElement console = _doc.getElementById("console").cast();
-    String str = console.getValue(); str += aStr + '\n';
-    console.setValue(str);
+    // Set RootView size
+    double w = _win.getWidth(), h = _win.getHeight();
+    RootView rview = _win.getRootView();
+    rview.setSize(w, h);
+    
+    // Get Canvas
+    TVRootView rviewNtv = (TVRootView)rview.getNative();
+    HTMLCanvasElement canvas = rviewNtv._canvas;
+    
+    // Set RootView position full-screen
+    if(_win.isGrowWidth())
+        canvas.getStyle().setCssText("position:absolute;left:0px;top:0px;");
+
+    // Set RootView position normal
+    else {
+        int x = (int)_win.getX(), y = (int)_win.getY();
+        canvas.getStyle().setCssText("position:absolute;left:" + x + "px;top:" + y + "px;");
+    }
 }
 
 }

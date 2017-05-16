@@ -36,7 +36,9 @@ public void show(View aView, double aX, double aY)
 /** Window/Popup method: Hides the window. */
 public void hide()
 {
-    complain("hide");
+    WindowView wview = getView();
+    TVWindow win = (TVWindow)wview.getNative();
+    win.hide();
 }
 
 /** Window/Popup method: Sets the window size to preferred size. */
