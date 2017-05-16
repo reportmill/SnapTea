@@ -4,7 +4,6 @@ import org.teavm.jso.browser.Window;
 import org.teavm.jso.dom.events.Event;
 import snap.gfx.Rect;
 import snap.view.*;
-import snap.web.*;
 
 /**
  * A ViewEnv implementation for TeaVM.
@@ -77,16 +76,6 @@ public void stopIntervals(Runnable aRun)
 {
     TimerTask task = _timerTasks.get(aRun);
     if(task!=null) task.cancel();
-}
-
-/**
- * Returns a UI file for given class.
- */
-public Object getUISource(Class aClass)
-{
-    String name = aClass.getSimpleName() + ".snp";
-    WebURL url = snap.gfx.GFXEnv.getEnv().getURL(aClass, name);
-    return url;
 }
 
 /**
