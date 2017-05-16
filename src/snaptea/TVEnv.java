@@ -92,8 +92,10 @@ public WebURL getURL(Object aSource)
         String urls = str; if(!urls.startsWith("http")) urls = "http://abc.com" + urls;
         WebURL url = new WebURL(aSource, urls);
         String upath = url.getPath();
-        if(upath!=null && !_site.isPath(upath)) {
-            return null; } //System.out.println("TVEnv.getURL: Path doesn't exist: " + upath);
+        if(upath!=null && upath.length()>0 && url.getSite() instanceof TVWebSite) {
+            TVWebSite tsite = (TVWebSite)url.getSite();
+            if(!tsite.isPath(upath))
+                return null; } //System.out.println("TVEnv.getURL: Path doesn't exist: " + upath);
         return url;
     }
     
@@ -137,10 +139,8 @@ protected WebSite createSite(WebURL aSiteURL)
     String scheme = aSiteURL.getScheme(), path = aSiteURL.getPath(); if(path==null) path = "";
     WebSite site = null;
     
-    System.out.println("createSite: " + aSiteURL + ", parsite: " + parentSiteURL + ", path=" + path);
-    
     // If url has path, see if it's jar or zip
-    if(parentSiteURL!=null && path.length()>0) site = new TVWebSite();//new DirSite();
+    if(parentSiteURL!=null && path.length()>0) site = new DirSite();
     else if(scheme.equals("file")) site = _site;
     else if(scheme.equals("http") || scheme.equals("https")) site = _site;
     if(site!=null) WebUtils.setSiteURL(site, aSiteURL);
