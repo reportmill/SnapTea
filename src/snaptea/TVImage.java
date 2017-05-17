@@ -58,8 +58,8 @@ private synchronized void doWait()
 /** Called when image has finished load. */
 private synchronized void didFinishLoad()
 {
-    _loaded = true; notifyAll();
-    _pw = _img.getWidth(); _ph = _img.getHeight();
+    _pw = _img.getWidth(); _ph = _img.getHeight();  //_loaded = true; notifyAll();
+    setLoaded(true);
     if(_debug) System.out.println("Waiting done " + _src);
 }
 
