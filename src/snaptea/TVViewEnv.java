@@ -108,7 +108,7 @@ protected Map createPropsMap()  { return new HashMap(); }
 public ViewHelper createHelper(View aView)
 {
     if(aView instanceof RootView) return new TVRootViewHpr();
-    //if(aView instanceof PopupWindow) return new SWPopupWindowHpr();
+    if(aView instanceof PopupWindow) return new TVPopupWindowHpr();
     if(aView instanceof WindowView) return new TVWindowHpr();
     return null;
 }
@@ -154,7 +154,7 @@ public static class TVRootViewHpr <T extends TVRootView> extends ViewHelper <T> 
     public void setView(View aView)  { super.setView(aView); get().setView(aView); }
     
     /** Sets the cursor. */
-    public void setCursor(Cursor aCursor)  { } //get().setCursor(AWT.get(aCursor)); }
+    public void setCursor(Cursor aCursor)  { }
     
     /** Registers a view for repaint. */
     public void requestPaint(Rect aRect)  { get().repaint(aRect); }
@@ -176,6 +176,27 @@ public static class TVWindowHpr <T extends TVWindow> extends ViewHelper <T> {
         
     /** Window/Popup method: Shows the window at given point relative to given view. */
     public void show(View aView, double aX, double aY)  { get().show(); }
+    
+    /** Window/Popup method: Hides the window. */
+    public void hide()  { get().hide(); }
+}
+
+/**
+ * A ViewHelper for PopupWindow + TVPopupWindow.
+ */
+public static class TVPopupWindowHpr <T extends TVPopupWindow> extends ViewHelper <T> {
+
+    /** Creates the native. */
+    protected T createNative()  { return (T)new TVPopupWindow(); }
+    
+    /** Override to get view as WindowView. */
+    public PopupWindow getView()  { return (PopupWindow)super.getView(); }
+        
+    /** Override to set view in RootView. */
+    public void setView(View aView)  { super.setView(aView); get().setView((PopupWindow)aView); }
+        
+    /** Window/Popup method: Shows the window at given point relative to given view. */
+    public void show(View aView, double aX, double aY)  { get().show(aView, aX, aY); }
     
     /** Window/Popup method: Hides the window. */
     public void hide()  { get().hide(); }

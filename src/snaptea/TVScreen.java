@@ -63,8 +63,7 @@ private TVScreen()
 public void showWindow(WindowView aWin)
 {
     _windows.add(aWin);
-    _win = aWin;
-    _rview = aWin.getRootView();
+    _win = aWin; _rview = aWin.getRootView();
 }
 
 /**
@@ -73,6 +72,23 @@ public void showWindow(WindowView aWin)
 public void hideWindow(WindowView aWin)
 {
     _windows.remove(aWin);
+    _win = _windows.size()>0? _windows.get(_windows.size()-1) : null;
+    _rview = _win!=null? _win.getRootView() : null;
+}
+
+/**
+ * Called when a window is ordered onscreen.
+ */
+public void showWindow(PopupWindow aWin)
+{
+    _rview = aWin.getRootView();
+}
+
+/**
+ * Called when a window is hidden.
+ */
+public void hideWindow(PopupWindow aWin)
+{
     _win = _windows.size()>0? _windows.get(_windows.size()-1) : null;
     _rview = _win!=null? _win.getRootView() : null;
 }
