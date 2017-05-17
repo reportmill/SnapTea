@@ -1,6 +1,6 @@
 package snaptea;
 import org.teavm.jso.dom.html.*;
-import snap.gfx.Size;
+import snap.gfx.Insets;
 import snap.util.*;
 import snap.view.*;
 
@@ -20,7 +20,7 @@ public void setView(WindowView aWin)  { _win = aWin; _win.addPropChangeListener(
 /**
  * Shows window.
  */
-public void show()
+public void show(View aView, double aX, double aY)
 {
     // Get root view and canvas
     RootView rview = _win.getRootView();
@@ -33,11 +33,10 @@ public void show()
         Box box = new Box(c); box.setPadding(4,4,4,4); rview.setContent(box); }
 
     // Set PrefSize
-    Size size = rview.getPrefSize();
-    _win.setSize(size);
+    _win.pack();
     
     // Position window
-    _win.setXY(10,10);
+    _win.setXY(aX,aY);
     
     // Add canvas
     HTMLDocument doc = HTMLDocument.current();
@@ -46,6 +45,8 @@ public void show()
     
     // Set FullScreen from RootView.Content
     _win.setGrowWidth(rview.getContent().isGrowWidth());
+    if(_win.isGrowWidth()) {
+        _win.setPadding(5,5,5,5); _win.setXY(0,0); }
     boundsChanged();
     
     // Add to screen
@@ -99,15 +100,13 @@ public void boundsChanged()
     TVRootView rviewNtv = (TVRootView)rview.getNative();
     HTMLCanvasElement canvas = rviewNtv._canvas;
     
+    // Get canvas x/y
+    Insets ins = _win.getInsetsAll();
+    int x = (int)Math.round(ins.left + _win.getX());
+    int y = (int)Math.round(ins.top + _win.getY());
+    
     // Set RootView position full-screen
-    if(_win.isGrowWidth())
-        canvas.getStyle().setCssText("position:absolute;left:4px;top:4px;");
-
-    // Set RootView position normal
-    else {
-        int x = (int)_win.getX(), y = (int)_win.getY();
-        canvas.getStyle().setCssText("position:absolute;left:" + x + "px;top:" + y + "px;");
-    }
+    canvas.getStyle().setCssText("position:absolute;left:" + x + "px;top:" + y + "px;");
 }
 
 }

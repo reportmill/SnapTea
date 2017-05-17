@@ -108,7 +108,6 @@ protected Map createPropsMap()  { return new HashMap(); }
 public ViewHelper createHelper(View aView)
 {
     if(aView instanceof RootView) return new TVRootViewHpr();
-    if(aView instanceof PopupWindow) return new TVPopupWindowHpr();
     if(aView instanceof WindowView) return new TVWindowHpr();
     return null;
 }
@@ -173,27 +172,6 @@ public static class TVWindowHpr <T extends TVWindow> extends ViewHelper <T> {
         
     /** Override to set view in RootView. */
     public void setView(View aView)  { super.setView(aView); get().setView((WindowView)aView); }
-        
-    /** Window/Popup method: Shows the window at given point relative to given view. */
-    public void show(View aView, double aX, double aY)  { get().show(); }
-    
-    /** Window/Popup method: Hides the window. */
-    public void hide()  { get().hide(); }
-}
-
-/**
- * A ViewHelper for PopupWindow + TVPopupWindow.
- */
-public static class TVPopupWindowHpr <T extends TVPopupWindow> extends ViewHelper <T> {
-
-    /** Creates the native. */
-    protected T createNative()  { return (T)new TVPopupWindow(); }
-    
-    /** Override to get view as WindowView. */
-    public PopupWindow getView()  { return (PopupWindow)super.getView(); }
-        
-    /** Override to set view in RootView. */
-    public void setView(View aView)  { super.setView(aView); get().setView((PopupWindow)aView); }
         
     /** Window/Popup method: Shows the window at given point relative to given view. */
     public void show(View aView, double aX, double aY)  { get().show(aView, aX, aY); }
