@@ -153,7 +153,7 @@ public static class TVRootViewHpr <T extends TVRootView> extends ViewHelper <T> 
     public void setView(View aView)  { super.setView(aView); get().setView(aView); }
     
     /** Sets the cursor. */
-    public void setCursor(Cursor aCursor)  { }
+    public void setCursor(Cursor aCursor)  { get().setCursor(aCursor); }
     
     /** Registers a view for repaint. */
     public void requestPaint(Rect aRect)  { get().repaint(aRect); }

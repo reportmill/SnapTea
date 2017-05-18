@@ -39,6 +39,30 @@ public void setView(View aView)
 }
 
 /**
+ * Sets the cursor.
+ */
+public void setCursor(Cursor aCursor)
+{
+    String cstr = "default";
+    if(aCursor==Cursor.DEFAULT) cstr = "default";
+    if(aCursor==Cursor.CROSSHAIR) cstr = "crosshair";
+    if(aCursor==Cursor.HAND) cstr = "pointer";
+    if(aCursor==Cursor.MOVE) cstr = "move";
+    if(aCursor==Cursor.TEXT) cstr = "text";
+    if(aCursor==Cursor.NONE) cstr = "none";
+    if(aCursor==Cursor.N_RESIZE) cstr = "n-resize";
+    if(aCursor==Cursor.S_RESIZE) cstr = "s-resize";
+    if(aCursor==Cursor.E_RESIZE) cstr = "e-resize";
+    if(aCursor==Cursor.W_RESIZE) cstr = "w-resize";
+    if(aCursor==Cursor.NE_RESIZE) cstr = "ne-resize";
+    if(aCursor==Cursor.NW_RESIZE) cstr = "nw-resize";
+    if(aCursor==Cursor.SE_RESIZE) cstr = "se-resize";
+    if(aCursor==Cursor.SW_RESIZE) cstr = "sw-resize";
+    _canvas.getStyle().setProperty("cursor",cstr);
+    System.out.println("SetCursor to " + cstr);
+}
+
+/**
  * Called to register for repaint.
  */
 public void repaint(Rect aRect)
