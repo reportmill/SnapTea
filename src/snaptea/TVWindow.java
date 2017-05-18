@@ -5,7 +5,7 @@ import snap.util.*;
 import snap.view.*;
 
 /**
- * A custom class.
+ * A class to represent the WindowView in the browser page.
  */
 public class TVWindow implements PropChangeListener {
 
@@ -84,7 +84,7 @@ public void propertyChange(PropChange aPC)
 {
     String pname = aPC.getPropertyName();
     switch(pname) {
-        case View.X_Prop: case View.Y_Prop: case View.Width_Prop: case View.Height_Prop: boundsChanged(); }
+        case View.X_Prop: case View.Y_Prop: boundsChanged(); }
 }
 
 /**
@@ -92,11 +92,8 @@ public void propertyChange(PropChange aPC)
  */
 public void boundsChanged()
 {
-    // Set RootView size
-    RootView rview = _win.getRootView();
-    rview.setSize(_win.getWidth() - 8, _win.getHeight() - 8);
-    
     // Get Canvas
+    RootView rview = _win.getRootView();
     TVRootView rviewNtv = (TVRootView)rview.getNative();
     HTMLCanvasElement canvas = rviewNtv._canvas;
     
@@ -104,7 +101,7 @@ public void boundsChanged()
     Insets ins = _win.getInsetsAll();
     int x = (int)Math.round(ins.left + _win.getX());
     int y = (int)Math.round(ins.top + _win.getY());
-    
+
     // Set RootView position full-screen
     canvas.getStyle().setCssText("position:absolute;left:" + x + "px;top:" + y + "px;");
 }

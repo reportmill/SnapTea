@@ -17,8 +17,8 @@ public class TVScreen {
     // The HTMLDocument
     HTMLBodyElement       _body = _doc.getBody();
     
-    // The last mouse down x/y
-    double                _mdx, _mdy;
+    // The RootView hit by last MouseDown (if mouse still down)
+    RootView              _mouseDownView;
     
     // Time of last mouse release
     long                  _lastReleaseTime;
@@ -75,7 +75,10 @@ public void showWindow(WindowView aWin)
 public void hideWindow(WindowView aWin)
 {
     _windows.remove(aWin);
-    _win = _windows.size()>0? _windows.get(_windows.size()-1) : null;
+    _win = null;
+    for(int i=_windows.size()-1;i>=0;i--) { WindowView win = _windows.get(i);
+        if(!(win instanceof PopupWindow)) {
+            _win = win; break; }}
     _rview = _win!=null? _win.getRootView() : null;
 }
 
@@ -90,28 +93,48 @@ public Rect getBounds()
 }
 
 /**
- * Called when body gets MouseDown.
- */
-public void mouseDown(MouseEvent anEvent)
-{
-    long time = System.currentTimeMillis();
-    _clicks = time - _lastReleaseTime<400? (_clicks+1) : 1; _lastReleaseTime = time;
-    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.MousePress, null);
-    ((TVEvent)event)._ccount = _clicks;
-    _mdx = event.getX(); _mdy = event.getY();
-    _rview.dispatchEvent(event);
-}
-
-/**
  * Called when body gets mouseMove.
  */
 public void mouseMove(MouseEvent anEvent)
 {
-    ViewEvent.Type type = ViewUtils.isMouseDown()? View.MouseDrag : View.MouseMove;
-    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, type, null);
+    // If MouseDown, forward to mouseDrag()
+    if(_mouseDownView!=null) { mouseDrag(anEvent); return; }
+    
+    // Get RootView for MouseEvent
+    RootView rview = getRootView(anEvent);
+
+    // Dispatch MouseMove event
+    ViewEvent event = TVViewEnv.get().createEvent(rview, anEvent, View.MouseMove, null);
     ((TVEvent)event)._ccount = _clicks;
-    if(Math.abs(_mdx-event.getX())>4 || Math.abs(_mdx-event.getY())>4) _mdx = _mdy = -9999;
-    _rview.dispatchEvent(event);
+    rview.dispatchEvent(event);
+}
+
+/**
+ * Called when body gets MouseDown.
+ */
+public void mouseDown(MouseEvent anEvent)
+{
+    // Get Click count and set MouseDown
+    long time = System.currentTimeMillis();
+    _clicks = time - _lastReleaseTime<400? (_clicks+1) : 1; _lastReleaseTime = time;
+    
+    // Get MouseDownView for event
+    _mouseDownView = getRootView(anEvent);
+    
+    // Dispatch MousePress event
+    ViewEvent event = TVViewEnv.get().createEvent(_mouseDownView, anEvent, View.MousePress, null);
+    ((TVEvent)event)._ccount = _clicks;
+    _mouseDownView.dispatchEvent(event);
+}
+
+/**
+ * Called when body gets mouseMove with MouseDown.
+ */
+public void mouseDrag(MouseEvent anEvent)
+{
+    ViewEvent event = TVViewEnv.get().createEvent(_mouseDownView, anEvent, View.MouseDrag, null);
+    ((TVEvent)event)._ccount = _clicks;
+    _mouseDownView.dispatchEvent(event);
 }
 
 /**
@@ -119,9 +142,10 @@ public void mouseMove(MouseEvent anEvent)
  */
 public void mouseUp(MouseEvent anEvent)
 {
-    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.MouseRelease, null);
+    RootView mouseDownView = _mouseDownView; _mouseDownView = null;
+    ViewEvent event = TVViewEnv.get().createEvent(mouseDownView, anEvent, View.MouseRelease, null);
     ((TVEvent)event)._ccount = _clicks;
-    _rview.dispatchEvent(event);
+    mouseDownView.dispatchEvent(event);
 }
 
 /**
@@ -152,6 +176,22 @@ public void keyUp(KeyboardEvent anEvent)
     ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyRelease, null);
     _rview.dispatchEvent(event);
     anEvent.stopPropagation();
+}
+
+/**
+ * Returns the RootView for an event.
+ */
+public RootView getRootView(MouseEvent anEvent)  { return getRootView(anEvent.getClientX(), anEvent.getClientY()); }
+
+/**
+ * Returns the RootView for an event.
+ */
+public RootView getRootView(int aX, int aY)
+{
+    for(int i=_windows.size()-1;i>=0;i--) { WindowView wview = _windows.get(i);
+        if(wview.contains(aX - wview.getX(), aY - wview.getY()))
+            return wview.getRootView(); }
+    return _rview;
 }
 
 /**
