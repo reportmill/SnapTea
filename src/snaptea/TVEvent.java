@@ -1,6 +1,5 @@
 package snaptea;
-import org.teavm.jso.dom.events.KeyboardEvent;
-import org.teavm.jso.dom.events.MouseEvent;
+import org.teavm.jso.dom.events.*;
 import snap.gfx.Point;
 import snap.view.*;
 
@@ -33,6 +32,22 @@ void setXY()
 
 /** Returns the click count for a mouse event. */
 public int getClickCount()  { return _ccount; }
+
+/** Returns the scroll amount for a wheel event. */
+public double getScrollX()
+{
+    WheelEvent event = (WheelEvent)getEvent();
+    _mx = event.getDeltaX();
+    return _mx;
+}
+
+/** Returns the scroll amount for a wheel event. */
+public double getScrollY()
+{
+    WheelEvent event = (WheelEvent)getEvent();
+    _my = event.getDeltaY();
+    return _my;
+}
 
 /** Returns the event keycode. */
 public int getKeyCode()

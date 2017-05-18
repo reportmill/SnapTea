@@ -47,6 +47,7 @@ private TVScreen()
     _body.addEventListener("mousedown", e -> mouseDown((MouseEvent)e));
     _body.addEventListener("mousemove", e -> mouseMove((MouseEvent)e));
     _body.addEventListener("mouseup", e -> mouseUp((MouseEvent)e));
+    _body.addEventListener("wheel", e -> mouseWheel((WheelEvent)e));
     
     // Add Key Listeners
     _body.addEventListener("keydown", e -> keyDown((KeyboardEvent)e));
@@ -146,6 +147,19 @@ public void mouseUp(MouseEvent anEvent)
     ViewEvent event = TVViewEnv.get().createEvent(mouseDownView, anEvent, View.MouseRelease, null);
     ((TVEvent)event)._ccount = _clicks;
     mouseDownView.dispatchEvent(event);
+}
+
+/* Only Y Axis Scrolling has been implemented */
+public void mouseWheel(WheelEvent anEvent)
+{
+    // Get RootView for WheelEvent
+    RootView rview = getRootView(anEvent);
+
+    // Dispatch WheelEvent event
+    ViewEvent event = TVViewEnv.get().createEvent(rview, anEvent, View.Scroll, null);
+    rview.dispatchEvent(event);
+    anEvent.stopPropagation();
+    anEvent.preventDefault();
 }
 
 /**
