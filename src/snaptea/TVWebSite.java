@@ -107,6 +107,7 @@ protected void sendSync(XMLHttpRequest aReq, String aStr)
 public List <String> getPaths()
 {
     if(_paths!=null) return _paths;
+    if(!getURLString().startsWith("http://abc")) return _paths = Collections.EMPTY_LIST;
     
     String urls = "index.txt";
     XMLHttpRequest req = XMLHttpRequest.create();
@@ -121,7 +122,11 @@ public List <String> getPaths()
 /**
  * Returns whether a given path exists.
  */
-public boolean isPath(String aPath)  { return getPaths().contains(aPath) || isDirPath(aPath); }
+public boolean isPath(String aPath)
+{
+    List <String> paths = getPaths(); if(paths==Collections.EMPTY_LIST) return true;
+    return paths.contains(aPath) || isDirPath(aPath);
+}
 
 /**
  * Returns whether a given path exists.

@@ -21,6 +21,7 @@ public TVPainter(HTMLCanvasElement aCnvs)
     _canvas = aCnvs;
     _cntx = (CanvasRenderingContext2D)_canvas.getContext("2d");
     _cntx.setTransform(1,0,0,1,0,0);
+    clip(new Rect(0,0,_canvas.getWidth(),_canvas.getHeight()));
 }
 
 /**

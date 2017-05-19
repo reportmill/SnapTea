@@ -1,11 +1,12 @@
 package snaptea;
 import java.util.*;
+import org.teavm.jso.browser.Window;
 import snap.gfx.*;
 import snap.util.*;
 import snap.web.*;
 
 /**
- * A custom class.
+ * A GFXEnv implementation for TeaVM.
  */
 public class TVEnv extends GFXEnv {
 
@@ -15,9 +16,6 @@ public class TVEnv extends GFXEnv {
     // Map of sites
     Map <WebURL,WebSite> _sites = new HashMap();
 
-    // The shared website
-    static TVWebSite  _site = new TVWebSite();
-    
 /**
  * Returns a list of all system fontnames (excludes any that don't start with capital A-Z).
  */
@@ -54,11 +52,6 @@ public Image getImage(Object aSource)
     if(url==null)
         return null;
         
-    // Bogus
-    //if(url.getPath().startsWith("/snap/view")) {
-    //    System.out.println("TVEnv.getImage: Failed to load " + url);
-    //    return getImage(5, 5, false); }
-    
     return new TVImage(url);
 }
 
@@ -140,8 +133,8 @@ protected WebSite createSite(WebURL aSiteURL)
     
     // If url has path, see if it's jar or zip
     if(parentSiteURL!=null && path.length()>0) site = new DirSite();
-    else if(scheme.equals("file")) site = _site;
-    else if(scheme.equals("http") || scheme.equals("https")) site = _site;
+    else if(scheme.equals("file")) site = new TVWebSite();
+    else if(scheme.equals("http") || scheme.equals("https")) site = new TVWebSite();
     if(site!=null) WebUtils.setSiteURL(site, aSiteURL);
     return site;
 }
@@ -159,7 +152,13 @@ public void openFile(Object aSource)  { }
 /**
  * Tries to open the given URL with the platform reader.
  */
-public void openURL(Object aSource)  { }
+public void openURL(Object aSource)
+{
+    WebURL url = WebURL.getURL(aSource);
+    String urls = url!=null? url.getString() : null; if(urls!=null) urls = urls.replace("!", "");
+    System.out.println("Open URL: " + urls);
+    Window.current().open(urls, "_blank", "");
+}
 
 /**
  * Plays a beep.
