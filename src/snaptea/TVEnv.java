@@ -77,6 +77,7 @@ public WebURL getURL(Object aSource)
 {
     // Handle URL
     if(aSource instanceof WebURL) return (WebURL)aSource;
+    if(aSource instanceof WebFile) return ((WebFile)aSource).getURL();
     
     // Handle String
     if(aSource instanceof String) {
