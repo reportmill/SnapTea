@@ -59,7 +59,6 @@ public void setCursor(Cursor aCursor)
     if(aCursor==Cursor.SE_RESIZE) cstr = "se-resize";
     if(aCursor==Cursor.SW_RESIZE) cstr = "sw-resize";
     _canvas.getStyle().setProperty("cursor",cstr);
-    System.out.println("SetCursor to " + cstr);
 }
 
 /**

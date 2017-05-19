@@ -157,7 +157,7 @@ public void openURL(Object aSource)
     WebURL url = WebURL.getURL(aSource);
     String urls = url!=null? url.getString() : null; if(urls!=null) urls = urls.replace("!", "");
     System.out.println("Open URL: " + urls);
-    Window.current().open(urls, "_blank", "");
+    Window.current().open(urls, "_blank", "menubar=no");
 }
 
 /**

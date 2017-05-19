@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-  <classpathentry kind="lib" path="lib/teavm-jso-0.4.3.jar" />
-  <classpathentry kind="lib" path="lib/teavm-jso-apis-0.4.3.jar" />
+  <classpathentry kind="lib" path="lib/teavm-jso.jar" />
+  <classpathentry kind="lib" path="lib/teavm-jso-apis.jar" />
   <classpathentry kind="src" path="/SnapKit" />
 </classpath>
