@@ -36,7 +36,7 @@ public void show(View aView, double aX, double aY)
     _win.pack();
     
     // Position window
-    _win.setXY(aX,aY);
+    _win.setXY(10,10);
     
     // Add canvas
     HTMLDocument doc = HTMLDocument.current();
