@@ -54,6 +54,11 @@ private TVScreen()
     _body.addEventListener("keypress", e -> keyPress((KeyboardEvent)e));
     _body.addEventListener("keyup", e -> keyUp((KeyboardEvent)e));
     
+    // Add Touch Listeners
+    _body.addEventListener("touchstart", e -> touchStart((TouchEvent)e));
+    _body.addEventListener("touchmove", e -> touchMove((TouchEvent)e));
+    _body.addEventListener("touchend", e -> touchEnd((TouchEvent)e));
+    
     // Add bounds listener
     Window.current().addEventListener("resize", e -> boundsChanged());
 }
@@ -193,9 +198,68 @@ public void keyUp(KeyboardEvent anEvent)
 }
 
 /**
+ * Called when body gets TouchStart.
+ */
+public void touchStart(TouchEvent anEvent)
+{
+    anEvent.preventDefault();
+    
+    Touch touches[] = anEvent.getTouches(); if(touches==null || touches.length==0) return;
+    Touch touch = touches[0];
+    
+    // Get Click count and set MouseDown
+    long time = System.currentTimeMillis();
+    _clicks = time - _lastReleaseTime<400? (_clicks+1) : 1; _lastReleaseTime = time;
+    
+    // Get MouseDownView for event
+    _mouseDownView = getRootView(touch);
+    
+    // Dispatch MousePress event
+    ViewEvent event = TVViewEnv.get().createEvent(_mouseDownView, touch, View.MousePress, null);
+    ((TVEvent)event)._ccount = _clicks;
+    _mouseDownView.dispatchEvent(event);
+}
+
+/**
+ * Called when body gets touchMove.
+ */
+public void touchMove(TouchEvent anEvent)
+{
+    anEvent.preventDefault();
+    
+    Touch touches[] = anEvent.getTouches(); if(touches==null || touches.length==0) return;
+    Touch touch = touches[0];
+    
+    ViewEvent event = TVViewEnv.get().createEvent(_mouseDownView, touch, View.MouseDrag, null);
+    ((TVEvent)event)._ccount = _clicks;
+    _mouseDownView.dispatchEvent(event);
+}
+
+/**
+ * Called when body gets touchEnd.
+ */
+public void touchEnd(TouchEvent anEvent)
+{
+    anEvent.preventDefault();
+
+    Touch touches[] = anEvent.getChangedTouches(); if(touches==null || touches.length==0) return;
+    Touch touch = touches[0];
+    
+    RootView mouseDownView = _mouseDownView; _mouseDownView = null;
+    ViewEvent event = TVViewEnv.get().createEvent(mouseDownView, touch, View.MouseRelease, null);
+    ((TVEvent)event)._ccount = _clicks;
+    mouseDownView.dispatchEvent(event);
+}
+
+/**
  * Returns the RootView for an event.
  */
 public RootView getRootView(MouseEvent anEvent)  { return getRootView(anEvent.getClientX(), anEvent.getClientY()); }
+
+/**
+ * Returns the RootView for an event.
+ */
+public RootView getRootView(Touch anEvent)  { return getRootView(anEvent.getClientX(), anEvent.getClientY()); }
 
 /**
  * Returns the RootView for an event.
