@@ -41,6 +41,7 @@ public TVImage(Object aSource)
     _pw = _ph = 20;
     
     // Set src and wait till loaded
+    setLoaded(false);
     _img.listenLoad(e -> didFinishLoad());
     _img.setSrc(_src); //doWait();
 }
