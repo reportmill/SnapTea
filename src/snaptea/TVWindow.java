@@ -44,7 +44,7 @@ public void show(View aView, double aX, double aY)
     body.appendChild(canvas);
     
     // Set FullScreen from RootView.Content
-    _win.setGrowWidth(rview.getContent().isGrowWidth());
+    if(rview.getContent().isGrowWidth()) _win.setGrowWidth(true);
     if(_win.isGrowWidth()) {
         _win.setPadding(5,5,5,5); _win.setXY(0,0); }
     boundsChanged();
