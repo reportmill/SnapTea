@@ -1,5 +1,7 @@
 package snaptea;
 import org.teavm.jso.dom.html.*;
+import org.teavm.jso.dom.xml.Element;
+import org.teavm.jso.dom.xml.NodeList;
 import snap.gfx.Insets;
 import snap.util.*;
 import snap.view.*;
@@ -70,8 +72,11 @@ public void hide()
     // Add canvas
     HTMLDocument doc = HTMLDocument.current();
     HTMLBodyElement body = doc.getBody();
-    body.removeChild(canvas);
-    
+
+    if(doc.getElementsByTagName("canvas").getLength() > 1){
+        body.removeChild(canvas);
+    }
+
     // Add to screen
     TVScreen screen = TVScreen.get();
     screen.hideWindow(_win);

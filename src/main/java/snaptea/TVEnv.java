@@ -236,7 +236,17 @@ public static class TVPrefs extends Prefs {
 
     /** Returns an int value for given key. */
     public int getInt(String aKey, int aDefault)  { return aDefault; }
-    
+
+    @Override
+    public float getFloat(String aKey, float aDefault) {
+        return 0;
+    }
+
+    @Override
+    public boolean getBoolean(String aKey, boolean aDefault) {
+        return false;
+    }
+
     /** Returns the currently set prefs keys. */
     public String[] getKeys()  { return new String[0]; }
 
