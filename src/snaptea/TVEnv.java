@@ -167,11 +167,6 @@ public void openURL(Object aSource)
 public void beep()  { }
 
 /**
- * Returns the platform preferences object.
- */
-public Prefs getPrefs()  { return _prefs; }
-
-/**
  * Sets this JVM to be headless.
  */
 public void setHeadless()  { }
@@ -215,33 +210,5 @@ public void setKeyListValue(Object anObj, String aKey, Object aValue, int anInde
  * Returns a shared instance.
  */
 public static TVEnv get()  { return _shared; }
-
-/**
- * Platform Prefs.
- */
-static TVPrefs _prefs = new TVPrefs();
-public static class TVPrefs extends Prefs {
-    
-    /** Returns a value for given string. */
-    public String get(String aKey)  { return null; }
-
-    /** Returns a value for given string and default. */
-    public String get(String aKey, String aDefault)  { return aDefault; }
-
-    /** Sets a value for given string. */
-    public void set(String aKey, Object aValue)  { }
-    
-    /** Removes a value for given key. */
-    public void remove(String aKey)  { }
-
-    /** Returns an int value for given key. */
-    public int getInt(String aKey, int aDefault)  { return aDefault; }
-    
-    /** Returns the currently set prefs keys. */
-    public String[] getKeys()  { return new String[0]; }
-
-    /** Returns a child prefs for given name. */
-    public Prefs getChild(String aName)  { return this; }
-}
 
 }
