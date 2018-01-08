@@ -40,6 +40,8 @@ public TVImage(Object aSource)
     // Set src and wait till loaded
     setLoaded(false);
     _img.listenLoad(e -> didFinishLoad());
+    
+    //
     _img.setSrc(_src);
 }
 
@@ -48,7 +50,7 @@ private synchronized void didFinishLoad()
 {
     _pw = _img.getWidth(); _ph = _img.getHeight();  //_loaded = true; notifyAll();
     setLoaded(true);
-    System.out.println("Waiting done " + _src);
+    //System.out.println("Waiting done " + _src);
 }
 
 /**
@@ -74,7 +76,9 @@ String getSourceURL(Object aSource)
         return getSourceURL(url.getBytes());
         
     // Return URL string
-    return url.getString();
+    //return url.getString();
+    setSource(url);
+    return url.getPath().substring(1);
 }
 
 /**

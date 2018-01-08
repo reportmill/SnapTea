@@ -30,6 +30,13 @@ public FileHeader getFileHeader(String aPath)
     String urls = getURLString() + aPath; //urls = aPath.substring(1) + "?v=" + System.currentTimeMillis();
     if(_debug) System.out.println("Head: " + urls);
     
+    if(!isPath(aPath)) {
+        System.out.println("File Not found: " + aPath);
+        return null;
+    }
+    
+    System.out.println("File found: " + aPath);
+        
     boolean isDir = isDirPath(aPath);
     FileHeader finfo = new FileHeader(aPath, isDir); //isDir
     return finfo;
@@ -109,7 +116,6 @@ protected void sendSync(XMLHttpRequest aReq, String aStr)
 public List <String> getPaths()
 {
     if(_paths!=null) return _paths;
-    if(!getURLString().startsWith("http://localhost")) return _paths = Collections.EMPTY_LIST;
     
     String urls = "index.txt";
     XMLHttpRequest req = XMLHttpRequest.create();
