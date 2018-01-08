@@ -11,16 +11,10 @@ import snap.view.*;
 public class TVViewEnv extends ViewEnv {
     
     // The clipboard
-    //SwingClipboard       _clipboard;
+    //TVClipboard               _clipboard;
     
-    // The timer for runIntervals and runDelayed
-    java.util.Timer           _timer = new java.util.Timer();
-    
-    // A map of timer tasks
-    Map <Runnable,TimerTask>  _timerTasks = new HashMap();
-
-    // List of run later runnables
-    static List <Runnable>    _runLaters = new ArrayList();
+    // A map of window.setIntervals() return ids
+    Map <Runnable,Integer>    _intervalIds = new HashMap();
     
     // A shared instance.
     static TVViewEnv          _shared = new TVViewEnv();
@@ -35,17 +29,7 @@ public boolean isEventThread()  { return true; }
  */
 public void runLater(Runnable aRunnable)
 {
-    _runLaters.add(aRunnable);
-    if(_runLaters.size()==1)
-        Window.setTimeout(()->sendEvents(), 10);
-}
-
-private void sendEvents()
-{
-    while(_runLaters.size()>0) {
-        Runnable run = _runLaters.remove(0);
-        run.run();
-    }
+    Window.setTimeout(() -> aRunnable.run(), 10);
 }
 
 /**
@@ -53,8 +37,7 @@ private void sendEvents()
  */
 public void runDelayed(Runnable aRun, int aDelay, boolean inAppThread)
 {
-    TimerTask task = new TimerTask() { public void run() { if(inAppThread) runLater(aRun); else aRun.run(); }};
-    _timer.schedule(task, aDelay);
+    Window.setTimeout(() -> aRun.run(), aDelay);
 }
 
 /**
@@ -62,10 +45,8 @@ public void runDelayed(Runnable aRun, int aDelay, boolean inAppThread)
  */
 public void runIntervals(Runnable aRun, int aPeriod, int aDelay, boolean doAll, boolean inAppThread)
 {
-    TimerTask task = new TimerTask() { public void run()  { aRun.run(); }}; //if(inAppThread) runLaterAndWait(aRun);else 
-    _timerTasks.put(aRun, task);
-    //if(doAll) _timer.scheduleAtFixedRate(task, aDelay, aPeriod); else
-    _timer.schedule(task, aDelay, aPeriod); // Why is this running fast?
+    int id = Window.setInterval(() -> aRun.run(), aPeriod);
+    _intervalIds.put(aRun, id);
 }
 
 /**
@@ -73,34 +54,15 @@ public void runIntervals(Runnable aRun, int aPeriod, int aDelay, boolean doAll, 
  */
 public void stopIntervals(Runnable aRun)
 {
-    TimerTask task = _timerTasks.get(aRun);
-    if(task!=null) task.cancel();
+    Integer id = _intervalIds.get(aRun);
+    if(id!=null)
+        Window.clearInterval(id);
 }
 
 /**
  * Returns the system clipboard.
  */
 public Clipboard getClipboard()  { return null; } //_clipboard!=null? _clipboard : (_clipboard=SwingClipboard.get()); }
-
-/**
- * Returns a FileChooser.
- */
-public FileChooser getFileChooser()  { return null; }//new SwingFileChooser(); }
-
-/**
- * Returns a property for given view.
- */
-public Object getProp(Object anObj, String aKey)  { return super.getProp(anObj, aKey); }
-
-/**
- * Sets a property for a given native.
- */
-public void setProp(Object anObj, String aKey, Object aValue)  { super.setProp(anObj, aKey, aValue); }
-
-/**
- * Creates the top level properties map.
- */
-protected Map createPropsMap()  { return new HashMap(); }
 
 /**
  * Returns a new ViewHelper for given native component.
@@ -173,11 +135,17 @@ public static class TVWindowHpr <T extends TVWindow> extends ViewHelper <T> {
     /** Override to set view in RootView. */
     public void setView(View aView)  { super.setView(aView); get().setView((WindowView)aView); }
         
-    /** Window/Popup method: Shows the window at given point relative to given view. */
-    public void show(View aView, double aX, double aY)  { get().show(aView, aX, aY); }
+    /** Window method: initializes native window. */
+    public void initWindow()  { get().initWindow(); }
+
+    /** Window/Popup method: Shows the window. */
+    public void show()  { get().show(); }
     
     /** Window/Popup method: Hides the window. */
     public void hide()  { get().hide(); }
+    
+    /** Window/Popup method: Order window to front. */
+    public void toFront()  { get().toFront(); }
 }
 
 }

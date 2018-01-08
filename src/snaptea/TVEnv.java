@@ -1,8 +1,6 @@
 package snaptea;
-import java.util.*;
 import org.teavm.jso.browser.Window;
 import snap.gfx.*;
-import snap.util.*;
 import snap.web.*;
 
 /**
@@ -12,9 +10,14 @@ public class TVEnv extends GFXEnv {
 
     // The shared AWTEnv
     static TVEnv     _shared = new TVEnv();
-    
-    // Map of sites
-    Map <WebURL,WebSite> _sites = new HashMap();
+
+/**
+ * Creates new TVEnv.
+ */
+public TVEnv()
+{
+    new TVWebSite();
+}
 
 /**
  * Returns a list of all system fontnames (excludes any that don't start with capital A-Z).
@@ -41,19 +44,7 @@ public FontFile getFontFile(String aName)  { return new TVFontFile(aName); }
 /**
  * Creates a new image from source.
  */
-public Image getImage(Object aSource)
-{
-    if(aSource instanceof byte[]) {
-        System.err.println("TVEnv.getImage: Trying to load from bytes");
-        return null;
-    }
-    
-    WebURL url = getURL(aSource);
-    if(url==null)
-        return null;
-        
-    return new TVImage(url);
-}
+public Image getImage(Object aSource)  { return new TVImage(aSource); }
 
 /**
  * Creates a new image for width, height and alpha.
@@ -69,76 +60,6 @@ public SoundClip getSound(Object aSource)  { return new TVSoundClip(aSource); }
  * Creates a sound for given source.
  */
 public SoundClip createSound()  { return null; }
-
-/**
- * Returns a URL for given source.
- */
-public WebURL getURL(Object aSource)
-{
-    // Handle URL
-    if(aSource instanceof WebURL) return (WebURL)aSource;
-    if(aSource instanceof WebFile) return ((WebFile)aSource).getURL();
-    
-    // Handle String
-    if(aSource instanceof String) {
-        String str = (String)aSource;
-        String urls = str; if(!urls.startsWith("http")) urls = "http://abc.com" + urls;
-        WebURL url = new WebURL(aSource, urls);
-        String upath = url.getPath();
-        if(upath!=null && upath.length()>0 && url.getSite() instanceof TVWebSite) {
-            TVWebSite tsite = (TVWebSite)url.getSite();
-            if(!tsite.isPath(upath))
-                return null; } //System.out.println("TVEnv.getURL: Path doesn't exist: " + upath);
-        return url;
-    }
-    
-    // Complain and return
-    System.out.println("No URL for Source: " + aSource);
-    return null;
-}
-
-/**
- * Returns a URL for given class and name/path string.
- */
-public WebURL getURL(Class aClass, String aName)
-{
-    // If name is absolute path, just forward on
-    if(aName.startsWith("/"))
-        return getURL(aName);
-        
-    // Otherwise get path for class name, add name and get URL
-    String cname = aClass.getName(); int cind = cname.lastIndexOf('.');
-    String cpath = ""; if(cind>0) cpath = '/' + cname.substring(0, cind).replace('.', '/');
-    String upath = cpath + '/' + aName;
-    return getURL(upath);
-}
-
-/**
- * Returns a site for given source URL.
- */
-public synchronized WebSite getSite(WebURL aSiteURL)
-{
-    WebSite site = _sites.get(aSiteURL);
-    if(site==null) _sites.put(aSiteURL, site = createSite(aSiteURL));
-    return site;
-}
-
-/**
- * Creates a site for given URL.
- */
-protected WebSite createSite(WebURL aSiteURL)
-{
-    WebURL parentSiteURL = aSiteURL.getSiteURL();
-    String scheme = aSiteURL.getScheme(), path = aSiteURL.getPath(); if(path==null) path = "";
-    WebSite site = null;
-    
-    // If url has path, see if it's jar or zip
-    if(parentSiteURL!=null && path.length()>0) site = new DirSite();
-    else if(scheme.equals("file")) site = new TVWebSite();
-    else if(scheme.equals("http") || scheme.equals("https")) site = new TVWebSite();
-    if(site!=null) WebUtils.setSiteURL(site, aSiteURL);
-    return site;
-}
 
 /**
  * Returns the screen resolution.
@@ -167,48 +88,13 @@ public void openURL(Object aSource)
 public void beep()  { }
 
 /**
- * Sets this JVM to be headless.
- */
-public void setHeadless()  { }
-
-/**
- * Returns the platform.
- */
-public SnapUtils.Platform getPlatform()  { return SnapUtils.Platform.UNKNOWN; }
-
-/**
- * Returns a key value.
- */
-public Object getKeyValue(Object anObj, String aKey)  { return null; }
-
-/**
- * Sets a key value.
- */
-public void setKeyValue(Object anObj, String aKey, Object aValue)  { }
-
-/**
- * Returns a key chain value.
- */
-public Object getKeyChainValue(Object anObj, String aKeyChain)  { return null; }
-
-/**
- * Sets a key chain value.
- */
-public void setKeyChainValue(Object anObj, String aKC, Object aValue)  { }
-
-/**
- * Returns a key list value.
- */
-public Object getKeyListValue(Object anObj, String aKey, int anIndex)  { return null; }
-
-/**
- * Adds a key list value.
- */
-public void setKeyListValue(Object anObj, String aKey, Object aValue, int anIndex)  { }
-
-/**
  * Returns a shared instance.
  */
 public static TVEnv get()  { return _shared; }
+
+/**
+ * Sets TVViewEnv as the ViewEnv.
+ */
+public static void set()  { GFXEnv.setEnv(get()); }
 
 }

@@ -252,6 +252,34 @@ public void touchEnd(TouchEvent anEvent)
 }
 
 /**
+ * Called when body gets cut/copy/paste.
+ */
+/*public void cutCopyPaste(ClipboardEvent anEvent)
+{
+    String type = anEvent.getType();
+    CJClipboard cb = (CJClipboard)Clipboard.get();
+    DataTransfer dtrans = anEvent.getClipboardData();
+    
+    // Handle cut/copy: Load DataTransfer from Clipboard.ClipboardDatas
+    if(type.equals("cut") || type.equals("copy")) {
+        dtrans.clearData(null);
+        for(ClipboardData cdata : cb.getClipboardDatas().values())
+            if(cdata.isString())
+                dtrans.setData(cdata.getMIMEType(), cdata.getString());
+    }
+    
+    // Handle paste: Update Clipboard.ClipboardDatas from DataTransfer
+    else if(type.equals("paste")) {
+        cb.clearData();
+        for(String typ : dtrans.getTypes())
+            cb.addData(typ,dtrans.getData(typ));
+    }
+    
+    // Needed to push changes to system clipboard
+    anEvent.preventDefault();
+}*/
+
+/**
  * Returns the RootView for an event.
  */
 public RootView getRootView(MouseEvent anEvent)  { return getRootView(anEvent.getClientX(), anEvent.getClientY()); }

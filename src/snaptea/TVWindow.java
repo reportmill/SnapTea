@@ -1,5 +1,6 @@
 package snaptea;
 import org.teavm.jso.dom.html.*;
+import snap.gfx.Color;
 import snap.gfx.Insets;
 import snap.util.*;
 import snap.view.*;
@@ -12,15 +13,63 @@ public class TVWindow implements PropChangeListener {
     // The Window View
     WindowView            _win;
     
+    // The last top window
+    static int            _topWin;
+    
+    // The paint scale
+    public static int     scale = 1; //Window.current().getDevicePixelRatio()==2? 2 : 1;
+    
 /**
  * Sets the window.
  */
 public void setView(WindowView aWin)  { _win = aWin; _win.addPropChangeListener(this); }
 
 /**
+ * Initializes window.
+ */
+public void initWindow()
+{
+    RootView rview = _win.getRootView();
+    if(rview.getFill()==null) rview.setFill(ViewUtils.getBackFill());
+    if(rview.getBorder()==null) rview.setBorder(Color.GRAY, 1);
+}
+
+/**
  * Shows window.
  */
-public void show(View aView, double aX, double aY)
+public void show()
+{
+    //if(_win.isModal()) showModal(); else
+    showImpl();
+}
+
+/**
+ * Shows window.
+ */
+synchronized void showModal()
+{
+    // Do normal show
+    showImpl();
+    
+    // Register listener to activate current thread on window not showing
+    PropChangeListener hideLsnr = pce -> {
+        if(_win.isShowing()) return;
+        _win.removePropChangeListener(this, View.Showing_Prop);
+        notify();
+    };
+    _win.addPropChangeListener(hideLsnr);
+    
+    // Wait until window is hidden
+    System.out.println("WillWait");
+    try { wait(); }
+    catch(Exception e) { throw new RuntimeException(e); }
+    System.out.println("DidWait");
+}
+
+/**
+ * Shows window.
+ */
+public void showImpl()
 {
     // Get root view and canvas
     RootView rview = _win.getRootView();
@@ -30,7 +79,7 @@ public void show(View aView, double aX, double aY)
     // Silly stuff
     View c = rview.getContent();
     if(c instanceof Label || c instanceof ButtonBase) { c.setPadding(4,6,4,6); c.setFont(c.getFont().deriveFont(14));
-        Box box = new Box(c); box.setPadding(4,4,4,4); rview.setContent(box); }
+        BoxView box = new BoxView(c); box.setPadding(4,4,4,4); rview.setContent(box); }
 
     // Set PrefSize
     _win.pack();
@@ -42,6 +91,7 @@ public void show(View aView, double aX, double aY)
     HTMLDocument doc = HTMLDocument.current();
     HTMLBodyElement body = doc.getBody();
     body.appendChild(canvas);
+    canvas.getStyle().setProperty("z-index", String.valueOf(_topWin++));
     
     // Set FullScreen from RootView.Content
     if(rview.getContent().isGrowWidth()) _win.setGrowWidth(true);
@@ -75,6 +125,20 @@ public void hide()
     // Add to screen
     TVScreen screen = TVScreen.get();
     screen.hideWindow(_win);
+    
+    // Set Window not showing
+    _win.setShowing(false);
+}
+
+/**
+ * Window/Popup method: Order window to front.
+ */
+public void toFront()
+{
+    RootView rview = _win.getRootView();
+    TVRootView rviewNtv = (TVRootView)rview.getNative();
+    HTMLCanvasElement canvas = rviewNtv._canvas;
+    canvas.getStyle().setProperty("z-index", String.valueOf(_topWin++));
 }
 
 /**
@@ -103,7 +167,8 @@ public void boundsChanged()
     int y = (int)Math.round(ins.top + _win.getY());
 
     // Set RootView position full-screen
-    canvas.getStyle().setCssText("position:absolute;left:" + x + "px;top:" + y + "px;");
+    canvas.getStyle().setProperty("left", String.valueOf(x) + "px");
+    canvas.getStyle().setProperty("top", String.valueOf(y) + "px");
 }
 
 }

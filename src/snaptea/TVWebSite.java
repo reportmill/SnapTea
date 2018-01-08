@@ -12,20 +12,22 @@ public class TVWebSite extends WebSite {
     List <String>  _paths;
     
     // Whether to debug
-    boolean        _debug = false;
-
+    boolean        _debug = true;
+    
 /**
- * Returns the string identifying the prefix for URLs in this data source.
+ * Creates a new TVWebSite.
  */
-public String getURLScheme()  { return "http"; }
+public TVWebSite()
+{
+    setURL(WebURL.getURL("http://localhost"));
+}
 
 /**
  * Returns a data source file for given path (if file exists).
  */
 public FileHeader getFileHeader(String aPath)
 {
-    String urls = getURLString() + aPath;
-    if(urls.startsWith("http://abc")) urls = aPath.substring(1) + "?v=" + System.currentTimeMillis();
+    String urls = getURLString() + aPath; //urls = aPath.substring(1) + "?v=" + System.currentTimeMillis();
     if(_debug) System.out.println("Head: " + urls);
     
     boolean isDir = isDirPath(aPath);
@@ -38,8 +40,8 @@ public FileHeader getFileHeader(String aPath)
  */
 protected Object getFileContent(String aPath) throws Exception
 {
-    String urls = getURLString() + aPath;
-    if(urls.startsWith("http://abc")) urls = aPath.substring(1) + "?v=" + System.currentTimeMillis();
+    //String urls = getURLString() + aPath; //urls = aPath.substring(1) + "?v=" + System.currentTimeMillis();
+    String urls = aPath.substring(1);
     
     // If directory path, return it
     //System.out.println(" Loading " + aPath);
@@ -72,7 +74,7 @@ protected Object getFileContent(String aPath) throws Exception
 protected WebResponse doPost(WebRequest aReq)
 {
     WebURL url = aReq.getURL();
-    String urls = url.getString(); if(urls.startsWith("http://abc")) urls = url.getPath().substring(1);
+    String urls = url.getString(); if(urls.startsWith("http://localhost")) urls = url.getPath().substring(1);
     
     XMLHttpRequest req = XMLHttpRequest.create();
     req.open("POST", urls, false);
@@ -107,7 +109,7 @@ protected void sendSync(XMLHttpRequest aReq, String aStr)
 public List <String> getPaths()
 {
     if(_paths!=null) return _paths;
-    if(!getURLString().startsWith("http://abc")) return _paths = Collections.EMPTY_LIST;
+    if(!getURLString().startsWith("http://localhost")) return _paths = Collections.EMPTY_LIST;
     
     String urls = "index.txt";
     XMLHttpRequest req = XMLHttpRequest.create();
@@ -158,5 +160,39 @@ public List <String> getDirPaths(String aPath)
  * Standard toString implementation.
  */
 public String toString()  { return "TVWebSite " + getURLString(); }
+
+/**
+ * A custom class.
+ */
+public static class TVLock {
+
+    Object _lock = this; //new Object();
+    boolean   _finished;
+    String    _name = "LocalHost";
+    boolean   _debug;
+
+    /** Called to wait until finished. */    
+    public void lock()
+    {
+        synchronized(_lock) {
+            if(_debug && _name!=null) System.out.println("Wait: " + _name);
+            while(!_finished)
+                try { _lock.wait(); }
+                catch(InterruptedException e) { throw new RuntimeException(e); }
+            if(_debug && _name!=null) System.out.println("WaitDone: " + _name);
+        }
+    }
+    
+    /** Called to notify finished. */
+    public void unlock()
+    {
+        synchronized(_lock) {
+            _finished = true;
+            if(_debug && _name!=null) System.out.println("Notify: " + _name);
+            _lock.notify();
+            if(_debug && _name!=null) System.out.println("NotifyDone: " + _name);
+        }
+    }
+}
 
 }

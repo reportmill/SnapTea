@@ -1,4 +1,5 @@
 package snaptea;
+import java.io.InputStream;
 import org.teavm.jso.canvas.CanvasImageSource;
 import org.teavm.jso.canvas.CanvasRenderingContext2D;
 import org.teavm.jso.canvas.ImageData;
@@ -24,17 +25,13 @@ public class TVImage extends Image {
     // The size
     int                      _pw = -1, _ph = -1;
     
-    // Whether image is loaded
-    boolean                  _loaded, _debug;
-
 /**
  * Creates a new TVImage from source.
  */
 public TVImage(Object aSource)
 {
-    // Get URL and image src from source
-    WebURL url = TVEnv.get().getURL(aSource);
-    _src = url.getString(); if(_src.startsWith("http://abc")) _src = url.getPath().substring(1);
+    // Get Src URL string
+    _src = getSourceURL(aSource);
     
     // Create image    
     _img = _img = HTMLDocument.current().createElement("img").cast(); //.withAttr("src", src)
@@ -43,17 +40,7 @@ public TVImage(Object aSource)
     // Set src and wait till loaded
     setLoaded(false);
     _img.listenLoad(e -> didFinishLoad());
-    _img.setSrc(_src); //doWait();
-}
-
-/** Called to wait for image load. */
-private synchronized void doWait()
-{
-    if(_debug) System.out.println("Waiting for " + _src);
-    while(!_loaded) {
-        try { wait(); }
-        catch(InterruptedException e) { }
-    }
+    _img.setSrc(_src);
 }
 
 /** Called when image has finished load. */
@@ -61,7 +48,44 @@ private synchronized void didFinishLoad()
 {
     _pw = _img.getWidth(); _ph = _img.getHeight();  //_loaded = true; notifyAll();
     setLoaded(true);
-    if(_debug) System.out.println("Waiting done " + _src);
+    System.out.println("Waiting done " + _src);
+}
+
+/**
+ * Returns a Source URL from source object.
+ */
+String getSourceURL(Object aSource)
+{
+    // Handle byte[] and InputStream
+    if(aSource instanceof byte[] || aSource instanceof InputStream) {
+        //readBasicInfo(SnapUtils.getBytes(aSource));
+        //Blob blob = new Blob(aSource, null);
+        //return URL.createObjectURL(blob);
+        System.out.println("TVImage: Can't read from bytes"); return null;
+    }
+    
+    // Get URL
+    WebURL url = WebURL.getURL(aSource);
+    if(url==null)
+        return null;
+        
+    // If URL can't be fetched by browser, load from bytes
+    if(!isBrowsable(url))
+        return getSourceURL(url.getBytes());
+        
+    // Return URL string
+    return url.getString();
+}
+
+/**
+ * Returns whether URL can be fetched by browser.
+ */
+boolean isBrowsable(WebURL aURL)
+{
+    String urls = aURL.getString();
+    String scheme = aURL.getScheme();
+    if(urls.contains("!")) return false;
+    return scheme.equals("http") || scheme.equals("https") || scheme.equals("data") || scheme.equals("blob");
 }
 
 /**
