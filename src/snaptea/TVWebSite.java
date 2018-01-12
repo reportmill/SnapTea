@@ -23,6 +23,47 @@ public TVWebSite()
 }
 
 /**
+ * Handle a get or head request.
+ */
+protected WebResponse doGetOrHead(WebRequest aReq, boolean isHead)
+{
+    // Create empty WebResponse return value
+    WebResponse resp = new WebResponse(aReq);
+ 
+    // Get URL, path and file
+    WebURL url = aReq.getURL();
+    String path = url.getPath(); if(path==null) path = "/";
+    
+    // Get FileHeader
+    FileHeader fhdr = getFileHeader(path);
+    
+    // Handle NOT_FOUND
+    if(fhdr==null) {
+        resp.setCode(WebResponse.NOT_FOUND); return resp; }
+        
+    // Configure response info (just return if isHead). Need to pre-create FileHeader to fix capitalization.
+    resp.setCode(WebResponse.OK);
+    resp.setFileHeader(fhdr);
+    if(isHead)
+        return resp;
+        
+    // If file, just set bytes
+    if(resp.isFile()) {
+        byte bytes[] = getFileBytes(path);
+        resp.setBytes(bytes);
+    }
+    
+    // If directory, configure directory info and return
+    else {
+        List <FileHeader> fhdrs = getFileHeaders(path);
+        resp.setFileHeaders(fhdrs);
+    }
+    
+    // Return response
+    return resp;
+}
+
+/**
  * Returns a data source file for given path (if file exists).
  */
 public FileHeader getFileHeader(String aPath)
@@ -43,26 +84,14 @@ public FileHeader getFileHeader(String aPath)
 }
 
 /**
- * Returns file content (bytes for file, FileHeaders for dir).
+ * Returns bytes for file path.
  */
-protected Object getFileContent(String aPath) throws Exception
+protected byte[] getFileBytes(String aPath)
 {
     //String urls = getURLString() + aPath; //urls = aPath.substring(1) + "?v=" + System.currentTimeMillis();
     String urls = aPath.substring(1);
     
-    // If directory path, return it
-    //System.out.println(" Loading " + aPath);
-    if(isDirPath(aPath)) {
-        List <String> paths = getDirPaths(aPath);
-        List <FileHeader> fhdrs = new ArrayList();
-        for(String path : paths) {
-            boolean isDir = isDirPath(path);
-            FileHeader fhdr = new FileHeader(path, isDir);
-            fhdrs.add(fhdr);
-        }
-        return fhdrs;
-    }
-        
+    // Get XMLHttpRequest
     XMLHttpRequest req = XMLHttpRequest.create();
     req.open("GET", urls, false);
     if(_debug) System.out.println("Get: " + urls);
@@ -75,6 +104,26 @@ protected Object getFileContent(String aPath) throws Exception
     return bytes;
 }
 
+/**
+ * Returns FileHeaders for dir path.
+ */
+protected List <FileHeader> getFileHeaders(String aPath)
+{
+    String urls = aPath.substring(1);
+    List <String> paths = getDirPaths(aPath);
+    List <FileHeader> fhdrs = new ArrayList();
+    
+    // Iterate over paths
+    for(String path : paths) {
+        boolean isDir = isDirPath(path);
+        FileHeader fhdr = new FileHeader(path, isDir);
+        fhdrs.add(fhdr);
+    }
+    
+    // Return FileHeaders
+    return fhdrs;
+}
+        
 /**
  * Handle a get request.
  */
@@ -93,7 +142,7 @@ protected WebResponse doPost(WebRequest aReq)
     
     // Get bytes
     String text = req.getResponseText();
-    WebResponse resp = new WebResponse(); resp.setRequest(aReq);
+    WebResponse resp = new WebResponse(aReq);
     resp.setCode(WebResponse.OK);
     resp.setBytes(text.getBytes());
     return resp;
