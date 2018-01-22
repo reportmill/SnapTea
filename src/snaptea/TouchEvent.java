@@ -1,6 +1,5 @@
 package snaptea;
 import org.teavm.jso.JSProperty;
-import org.teavm.jso.core.JSArray;
 import org.teavm.jso.dom.events.Event;
 
 /**

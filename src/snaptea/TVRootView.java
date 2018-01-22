@@ -36,7 +36,7 @@ public void setView(View aView)
     _canvas.setWidth(w*TVWindow.scale); _canvas.setHeight(h*TVWindow.scale);
     _canvas.getStyle().setProperty("width", w + "px");
     _canvas.getStyle().setProperty("height", h + "px");
-    _canvas.setAttribute("draggable", "true");
+    //_canvas.setAttribute("draggable", "true");
 
     // Create painer
     _pntr = new TVPainter(_canvas);
