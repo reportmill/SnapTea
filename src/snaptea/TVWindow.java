@@ -1,4 +1,5 @@
 package snaptea;
+import org.teavm.jso.JSBody;
 import org.teavm.jso.dom.html.*;
 import snap.gfx.Color;
 import snap.gfx.Insets;
@@ -17,7 +18,7 @@ public class TVWindow implements PropChangeListener {
     static int            _topWin;
     
     // The paint scale
-    public static int     scale = 1; //Window.current().getDevicePixelRatio()==2? 2 : 1;
+    public static int     scale = getDevicePixelRatio()==2? 2 : 1;
     
 /**
  * Sets the window.
@@ -171,4 +172,7 @@ public void boundsChanged()
     canvas.getStyle().setProperty("top", String.valueOf(y) + "px");
 }
 
+@JSBody(params = { }, script = "return window.devicePixelRatio;")
+public static native double getDevicePixelRatio();
+    
 }

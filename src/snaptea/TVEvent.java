@@ -25,8 +25,8 @@ void setXY()
 {
     if(getEvent() instanceof Touch)  { setXYTouch(); return; }
     MouseEvent event = (MouseEvent)getEvent(); if(event==null) { _mx = _my = 0; return; }
-    double x = ((MouseEvent)getEvent()).getClientX();
-    double y = ((MouseEvent)getEvent()).getClientY();
+    double x = event.getClientX();
+    double y = event.getClientY();
     Point pt = getView().parentToLocal(null,x,y);
     _mx = pt.x; _my = pt.y;
 }
@@ -34,9 +34,9 @@ void setXY()
 /** Sets the event point from browser mouse event. */
 void setXYTouch()
 {
-    TouchEvent event = (TouchEvent)getEvent(); if(event==null) { _mx = _my = 0; return; }
-    double x = ((Touch)getEvent()).getClientX();
-    double y = ((Touch)getEvent()).getClientY();
+    Touch touch = (Touch)getEvent();
+    double x = touch.getClientX();
+    double y = touch.getClientY();
     Point pt = getView().parentToLocal(null,x,y);
     _mx = pt.x; _my = pt.y;
 }
@@ -48,16 +48,14 @@ public int getClickCount()  { return _ccount; }
 public double getScrollX()
 {
     WheelEvent event = (WheelEvent)getEvent();
-    _mx = event.getDeltaX();
-    return _mx;
+    return _mx = event.getDeltaX();
 }
 
 /** Returns the scroll amount for a wheel event. */
 public double getScrollY()
 {
     WheelEvent event = (WheelEvent)getEvent();
-    _my = event.getDeltaY();
-    return _my;
+    return _my = event.getDeltaY();
 }
 
 /** Returns the event keycode. */

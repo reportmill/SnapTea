@@ -6,11 +6,14 @@ import org.teavm.jso.dom.html.HTMLCanvasElement;
 import snap.gfx.*;
 
 /**
- * A custom class.
+ * A snap Painter for rendering to a TeaVM HTMLCanvasElement.
  */
 public class TVPainter extends PainterImpl {
     
+    // The canvas
     HTMLCanvasElement _canvas;
+    
+    // The RenderContext2D
     CanvasRenderingContext2D _cntx;
 
 /**
@@ -18,10 +21,19 @@ public class TVPainter extends PainterImpl {
  */
 public TVPainter(HTMLCanvasElement aCnvs)
 {
+    // Set canvas and context
     _canvas = aCnvs;
     _cntx = (CanvasRenderingContext2D)_canvas.getContext("2d");
-    _cntx.setTransform(1,0,0,1,0,0);
+    
+    // Clip to canvas bounds
     clip(new Rect(0,0,_canvas.getWidth(),_canvas.getHeight()));
+    
+    // If hidpi, scale default transform
+    System.out.println("Scale: " + TVWindow.scale);
+    if(TVWindow.scale>1) {
+        _cntx.transform(TVWindow.scale,0,0,TVWindow.scale,0,0);
+        System.out.println("DidTrans");
+    }
 }
 
 /**
@@ -68,7 +80,9 @@ public void setTransform(Transform aTrans)
 {
     super.setTransform(aTrans);
     double m[] = aTrans.getMatrix();
-    _cntx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
+    
+    // Set transform with CJWindow.scale (in case hidpi)
+    _cntx.setTransform(m[0]*TVWindow.scale, m[1], m[2], m[3]*TVWindow.scale, m[4], m[5]);
 }
 
 /**

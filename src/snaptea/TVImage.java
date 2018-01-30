@@ -40,8 +40,6 @@ public TVImage(Object aSource)
     // Set src and wait till loaded
     setLoaded(false);
     _img.listenLoad(e -> didFinishLoad());
-    
-    //
     _img.setSrc(_src);
 }
 
@@ -93,13 +91,28 @@ boolean isBrowsable(WebURL aURL)
 }
 
 /**
+ * Read basic info if bytes.
+ */
+void readBasicInfo(byte theBytes[])
+{
+    String type = ImageUtils.getImageType(theBytes);
+    if(type.equals("jpg")) {
+        ImageUtils.ImageInfo info = ImageUtils.getInfoJPG(theBytes);
+        _pw = info.width; _ph = info.height;
+    }
+}
+
+/**
  * Creates a new TVImage for size.
  */
 public TVImage(double aWidth, double aHeight, boolean hasAlpha)
 {
-    _pw = (int)aWidth; _ph = (int)aHeight;
-    _canvas = HTMLDocument.current().createElement("canvas").withAttr("width", String.valueOf(_pw))
-        .withAttr("height", String.valueOf(_ph)).cast();
+    int w = (int)aWidth, h = (int)aHeight;
+    _pw = w*TVWindow.scale; _ph = h*TVWindow.scale;
+    _canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
+    _canvas.setWidth(_pw); _canvas.setHeight(_ph);
+    _canvas.getStyle().setProperty("width", w + "px");
+    _canvas.getStyle().setProperty("height", h + "px");
 }
 
 /**
@@ -119,6 +132,16 @@ public int getPixHeight()
     if(_ph>=0) return _ph;
     return _ph = _img.getHeight();
 }
+
+/**
+ * Returns the width of given image.
+ */
+public double getWidthDPI()  { return _img!=null? 72 : 72*TVWindow.scale; }
+
+/**
+ * Returns the height of given image.
+ */
+public double getHeightDPI()  { return _img!=null? 72 : 72*TVWindow.scale; }
 
 /**
  * Returns whether image has alpha.
@@ -142,7 +165,7 @@ public int getRGB(int aX, int aY)
 {
     getPainter();
     CanvasRenderingContext2D cntx = (CanvasRenderingContext2D)_canvas.getContext("2d");
-    ImageData idata = cntx.getImageData(aX, aY, 1, 1);
+    ImageData idata = cntx.getImageData(aX*TVWindow.scale, aY*TVWindow.scale, 1, 1);
     Uint8ClampedArray data = idata.getData();
     int d1 = data.get(0), d2 = data.get(1), d3 = data.get(2), d4 = data.get(3);
     return d4<<24 | d1<<16 | d2<<8 | d3;
@@ -178,12 +201,16 @@ public byte[] getBytesPNG()  { return null; }
 public Painter getPainter()
 {
     if(_img!=null) {
-        _canvas = HTMLDocument.current().createElement("canvas").withAttr("width", String.valueOf(getPixWidth()))
-            .withAttr("height", String.valueOf(getPixHeight())).cast();
+        int w = getPixWidth(), h = getPixHeight(); _pw *= TVWindow.scale; _ph *= TVWindow.scale;
+        _canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
+        _canvas.setWidth(_pw); _canvas.setHeight(_ph);
+        _canvas.getStyle().setProperty("width", w + "px");
+        _canvas.getStyle().setProperty("height", h + "px");
         Painter pntr = new TVPainter(_canvas);
         pntr.drawImage(this, 0, 0); _img = null;
-        return pntr;
     }
+    
+    // Return painter for canvas
     return new TVPainter(_canvas);
 }
 

@@ -27,7 +27,7 @@ public void setView(View aView)
     _rview = (RootView)aView; _rview.addPropChangeListener(this);
     
     // Create canvas
-    _canvas = HTMLDocument.current().createElement("canvas").withAttr("style", "border:1px solid #EEEEEE;").cast();
+    _canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
     _canvas.getStyle().setCssText("position:absolute;border:1px solid #EEEEEE;");
         
     // Set canvas size
@@ -82,6 +82,7 @@ public void setCursor(Cursor aCursor)
 public void repaint(Rect aRect)
 {
     if(_rview.getFill()==null) _pntr.clearRect(0,0,_rview.getWidth(), _rview.getHeight());
+    _pntr.setTransform(1,0,0,1,0,0); // I don't know why I need this!
     ViewUtils.paintAll(_rview, _pntr);
 }
 
