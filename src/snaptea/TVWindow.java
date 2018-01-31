@@ -61,10 +61,8 @@ synchronized void showModal()
     _win.addPropChangeListener(hideLsnr);
     
     // Wait until window is hidden
-    System.out.println("WillWait");
     try { wait(); }
     catch(Exception e) { throw new RuntimeException(e); }
-    System.out.println("DidWait");
 }
 
 /**

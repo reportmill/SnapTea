@@ -29,11 +29,7 @@ public TVPainter(HTMLCanvasElement aCnvs)
     clip(new Rect(0,0,_canvas.getWidth(),_canvas.getHeight()));
     
     // If hidpi, scale default transform
-    System.out.println("Scale: " + TVWindow.scale);
-    if(TVWindow.scale>1) {
-        _cntx.transform(TVWindow.scale,0,0,TVWindow.scale,0,0);
-        System.out.println("DidTrans");
-    }
+    if(TVWindow.scale>1) _cntx.transform(TVWindow.scale,0,0,TVWindow.scale,0,0);
 }
 
 /**
