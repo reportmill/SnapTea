@@ -2,6 +2,7 @@ package snaptea;
 import org.teavm.jso.canvas.CanvasGradient;
 import org.teavm.jso.canvas.CanvasRenderingContext2D;
 import snap.gfx.*;
+import snap.util.SnapUtils;
 
 /**
  * A custom class.
@@ -39,6 +40,6 @@ public static String get(Font aFont)
 /**
  * Sets the TeaVM environment.
  */
-public static void set()  { TVViewEnv.set(); }
+public static void set()  { if(SnapUtils.isTeaVM) TVViewEnv.set(); }
 
 }
