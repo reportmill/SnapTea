@@ -27,7 +27,7 @@ void setXY()
     MouseEvent event = (MouseEvent)getEvent(); if(event==null) { _mx = _my = 0; return; }
     double x = event.getClientX();
     double y = event.getClientY();
-    Point pt = getView().parentToLocal(null,x,y);
+    Point pt = getView().parentToLocal(x,y, null);
     _mx = pt.x; _my = pt.y;
 }
 
@@ -37,7 +37,7 @@ void setXYTouch()
     Touch touch = (Touch)getEvent();
     double x = touch.getClientX();
     double y = touch.getClientY();
-    Point pt = getView().parentToLocal(null,x,y);
+    Point pt = getView().parentToLocal(x,y,null);
     _mx = pt.x; _my = pt.y;
 }
 
