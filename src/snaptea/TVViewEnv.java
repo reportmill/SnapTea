@@ -11,7 +11,7 @@ import snap.view.*;
 public class TVViewEnv extends ViewEnv {
     
     // The clipboard
-    //TVClipboard               _clipboard;
+    TVClipboard               _clipboard;
     
     // A map of window.setIntervals() return ids
     Map <Runnable,Integer>    _intervalIds = new HashMap();
@@ -62,7 +62,7 @@ public void stopIntervals(Runnable aRun)
 /**
  * Returns the system clipboard.
  */
-public Clipboard getClipboard()  { return null; } //_clipboard!=null? _clipboard : (_clipboard=SwingClipboard.get()); }
+public Clipboard getClipboard()  { return _clipboard!=null? _clipboard : (_clipboard=TVClipboard.get()); }
 
 /**
  * Returns a new ViewHelper for given native component.
