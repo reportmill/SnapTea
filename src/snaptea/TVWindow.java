@@ -81,10 +81,10 @@ public void showImpl()
         BoxView box = new BoxView(c); box.setPadding(4,4,4,4); rview.setContent(box); }
 
     // Set PrefSize
-    _win.pack();
+    //_win.pack();
     
     // Position window
-    _win.setXY(10,10);
+    //_win.setXY(10,10);
     
     // Add canvas
     HTMLDocument doc = HTMLDocument.current();
