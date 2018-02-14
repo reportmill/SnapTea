@@ -19,7 +19,11 @@ public class TVWebSite extends WebSite {
  */
 public TVWebSite()
 {
+    // Set URL
     setURL(WebURL.getURL("http://localhost"));
+    
+    // Configure WebGetter to evaluate Class.getResource() URLs using index.txt
+    WebGetter._hpr = (c,p) -> { return getURL(c,p); };
 }
 
 /**
@@ -206,6 +210,16 @@ public List <String> getDirPaths(String aPath)
         if(!paths.contains(p)) paths.add(p);
     }
     return paths;
+}
+
+/**
+ * Return URL for class and path.
+ */
+java.net.URL getURL(Class c, String p)
+{
+    if(!isPath(p)) return null;
+    try { return new java.net.URL("http://localhost" + p); }
+    catch(java.net.MalformedURLException e) { throw new RuntimeException(e); }
 }
 
 /**
