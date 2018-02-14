@@ -12,7 +12,7 @@ public class TVWebSite extends WebSite {
     List <String>  _paths;
     
     // Whether to debug
-    boolean        _debug = true;
+    boolean        _debug = false;
     
 /**
  * Creates a new TVWebSite.
@@ -72,12 +72,10 @@ public FileHeader getFileHeader(String aPath)
     if(_debug) System.out.println("Head: " + urls);
     
     if(!isPath(aPath)) {
-        System.out.println("File Not found: " + aPath);
+        if(_debug) System.out.println("TVWebSite.getFileHeader: File Not found: " + aPath);
         return null;
     }
     
-    System.out.println("File found: " + aPath);
-        
     boolean isDir = isDirPath(aPath);
     FileHeader finfo = new FileHeader(aPath, isDir); //isDir
     return finfo;
@@ -207,7 +205,6 @@ public List <String> getDirPaths(String aPath)
         if(ind>0) p = p.substring(0, ind);
         if(!paths.contains(p)) paths.add(p);
     }
-    System.out.println("GetDirPaths: " + aPath + ", is " + paths);
     return paths;
 }
 
