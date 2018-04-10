@@ -225,6 +225,27 @@ public boolean isPremultiplied()  { return _pm; } boolean _pm;
 public void setPremultiplied(boolean aValue)  { _pm = aValue; }
 
 /**
+ * Blurs the image by mixing pixels with those around it to given radius.
+ */
+public void blur(int aRad)
+{
+    // Just go to canvas - should be rare to blur a raw image
+    if(_img!=null) getPainter();
+    
+    // Only works for Chrome
+    HTMLCanvasElement canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
+    canvas.setWidth(_pw); canvas.setHeight(_ph);
+    canvas.getStyle().setProperty("width", (_pw/TVWindow.scale) + "px");
+    canvas.getStyle().setProperty("height", (_ph/TVWindow.scale) + "px");
+    TVPainter pntr = new TVPainter(canvas);
+    pntr._cntx.setShadowBlur(aRad);
+    pntr._cntx.setShadowColor("black");
+    pntr.drawImage(this, 0, 0); _img = null;
+    pntr._cntx.setShadowBlur(0);
+    _canvas = canvas;
+}
+
+/**
  * Returns the native object.
  */
 public CanvasImageSource getNative()  { return _img!=null? _img : _canvas; }

@@ -166,8 +166,9 @@ public void drawImage(Image anImg, Transform xform)
 public void drawImage(Image anImg, double sx, double sy, double sw, double sh, double dx,double dy,double dw,double dh)
 {
     // Correct source width/height for image dpi
-    if(anImg.getWidthDPI()!=72) sw *= anImg.getWidthDPI()/72;
-    if(anImg.getHeightDPI()!=72) sh *= anImg.getHeightDPI()/72;
+    double isw = anImg.getWidthDPI()/72, ish = anImg.getHeightDPI()/72;
+    if(isw!=1) { sx *= isw; sw *= isw; }
+    if(ish!=1) { sy *= ish; sh *= ish; }
     
     // Get points for corner as ints and draw image
     CanvasImageSource img = anImg instanceof TVImage? (CanvasImageSource)anImg.getNative() : null;
