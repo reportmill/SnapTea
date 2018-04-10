@@ -40,23 +40,22 @@ public void initWindow()
  */
 public void show()
 {
-    //if(_win.isModal()) showModal(); else
-    showImpl();
+    if(_win.isModal()) showModal();
+    else showImpl();
 }
 
 /**
- * Shows window.
+ * Shows modal window.
  */
-synchronized void showModal()
+protected synchronized void showModal()
 {
     // Do normal show
     showImpl();
     
     // Register listener to activate current thread on window not showing
-    PropChangeListener hideLsnr = pce -> {
-        if(_win.isShowing()) return;
+    PropChangeListener hideLsnr = pce -> { if(_win.isShowing()) return;
         _win.removePropChangeListener(this, View.Showing_Prop);
-        notify();
+        synchronized(TVWindow.this) { TVWindow.this.notify(); }
     };
     _win.addPropChangeListener(hideLsnr);
     

@@ -112,7 +112,7 @@ public void mouseMove(MouseEvent anEvent)
     // Dispatch MouseMove event
     ViewEvent event = TVViewEnv.get().createEvent(rview, anEvent, View.MouseMove, null);
     ((TVEvent)event)._ccount = _clicks;
-    rview.dispatchEvent(event);
+    dispatchEvent(rview, event);
 }
 
 /**
@@ -130,7 +130,7 @@ public void mouseDown(MouseEvent anEvent)
     // Dispatch MousePress event
     ViewEvent event = TVViewEnv.get().createEvent(_mouseDownView, anEvent, View.MousePress, null);
     ((TVEvent)event)._ccount = _clicks;
-    _mouseDownView.dispatchEvent(event);
+    dispatchEvent(_mouseDownView, event);
 }
 
 /**
@@ -140,7 +140,7 @@ public void mouseDrag(MouseEvent anEvent)
 {
     ViewEvent event = TVViewEnv.get().createEvent(_mouseDownView, anEvent, View.MouseDrag, null);
     ((TVEvent)event)._ccount = _clicks;
-    _mouseDownView.dispatchEvent(event);
+    dispatchEvent(_mouseDownView, event);
 }
 
 /**
@@ -151,7 +151,7 @@ public void mouseUp(MouseEvent anEvent)
     RootView mouseDownView = _mouseDownView; _mouseDownView = null;
     ViewEvent event = TVViewEnv.get().createEvent(mouseDownView, anEvent, View.MouseRelease, null);
     ((TVEvent)event)._ccount = _clicks;
-    mouseDownView.dispatchEvent(event);
+    dispatchEvent(mouseDownView, event);
 }
 
 /* Only Y Axis Scrolling has been implemented */
@@ -162,7 +162,7 @@ public void mouseWheel(WheelEvent anEvent)
 
     // Dispatch WheelEvent event
     ViewEvent event = TVViewEnv.get().createEvent(rview, anEvent, View.Scroll, null);
-    rview.dispatchEvent(event);
+    dispatchEvent(rview, event);
     anEvent.stopPropagation();
     anEvent.preventDefault();
 }
@@ -173,7 +173,7 @@ public void mouseWheel(WheelEvent anEvent)
 public void keyDown(KeyboardEvent anEvent)
 {
     ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyPress, null);
-    _rview.dispatchEvent(event);
+    dispatchEvent(_rview, event);
     anEvent.stopPropagation();
 }
 
@@ -183,7 +183,7 @@ public void keyDown(KeyboardEvent anEvent)
 public void keyPress(KeyboardEvent anEvent)
 {
     ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyType, null);
-    _rview.dispatchEvent(event);
+    dispatchEvent(_rview, event);
     anEvent.stopPropagation();
 }
 
@@ -193,7 +193,7 @@ public void keyPress(KeyboardEvent anEvent)
 public void keyUp(KeyboardEvent anEvent)
 {
     ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyRelease, null);
-    _rview.dispatchEvent(event);
+    dispatchEvent(_rview, event);
     anEvent.stopPropagation();
 }
 
@@ -217,7 +217,7 @@ public void touchStart(TouchEvent anEvent)
     // Dispatch MousePress event
     ViewEvent event = TVViewEnv.get().createEvent(_mouseDownView, touch, View.MousePress, null);
     ((TVEvent)event)._ccount = _clicks;
-    _mouseDownView.dispatchEvent(event);
+    dispatchEvent(_mouseDownView, event);
 }
 
 /**
@@ -232,7 +232,7 @@ public void touchMove(TouchEvent anEvent)
     
     ViewEvent event = TVViewEnv.get().createEvent(_mouseDownView, touch, View.MouseDrag, null);
     ((TVEvent)event)._ccount = _clicks;
-    _mouseDownView.dispatchEvent(event);
+    dispatchEvent(_mouseDownView, event);
 }
 
 /**
@@ -248,7 +248,7 @@ public void touchEnd(TouchEvent anEvent)
     RootView mouseDownView = _mouseDownView; _mouseDownView = null;
     ViewEvent event = TVViewEnv.get().createEvent(mouseDownView, touch, View.MouseRelease, null);
     ((TVEvent)event)._ccount = _clicks;
-    mouseDownView.dispatchEvent(event);
+    dispatchEvent(mouseDownView, event);
 }
 
 /**
@@ -308,6 +308,17 @@ public void boundsChanged()
     for(WindowView win : _windows)
         if(win.isGrowWidth())
             win.setBounds(getBounds());
+}
+
+/**
+ * Dispatches an event to given view.
+ */
+void dispatchEvent(RootView aView, ViewEvent anEvent)
+{
+    // We really need a proper event queue - but in the meantime, create thread in case it gets blocked by modal
+    new Thread() {
+        public void run() { aView.dispatchEvent(anEvent); }
+    }.start();
 }
 
 /**
