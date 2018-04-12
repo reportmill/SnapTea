@@ -1,7 +1,6 @@
 package snaptea;
-import org.teavm.jso.canvas.CanvasGradient;
-import org.teavm.jso.canvas.CanvasImageSource;
-import org.teavm.jso.canvas.CanvasRenderingContext2D;
+import org.teavm.jso.canvas.*;
+import org.teavm.jso.core.*;
 import org.teavm.jso.dom.html.HTMLCanvasElement;
 import snap.gfx.*;
 
@@ -47,9 +46,24 @@ public void setPaint(Paint aPaint)
 /** Sets the current stroke. */
 public void setStroke(Stroke aStroke)
 {
+    // Do normal version
     super.setStroke(aStroke);
+    
+    // Set LineWidth
     _cntx.setLineWidth(aStroke!=null? aStroke.getWidth() : 1);
+    
+    // Set DashArray, DashOffset
+    if(aStroke.getDashArray()==null) _cntx.setLineDash(_empty);
+    else {
+        double da[] = aStroke.getDashArray();
+        JSArray jsa = JSArray.create(); for(double d : da) jsa.push(JSNumber.valueOf(d));
+        _cntx.setLineDash(jsa);
+    }
+    _cntx.setLineDashOffset((float)aStroke.getDashOffset());
 }
+
+// Empty Dash array
+JSArray _empty = JSArray.create();
 
 /**
  * Sets the opacity.
