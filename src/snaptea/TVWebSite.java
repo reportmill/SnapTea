@@ -29,11 +29,8 @@ public TVWebSite()
 /**
  * Handle a get or head request.
  */
-protected WebResponse doGetOrHead(WebRequest aReq, boolean isHead)
+protected void doGetOrHead(WebRequest aReq, WebResponse aResp, boolean isHead)
 {
-    // Create empty WebResponse return value
-    WebResponse resp = new WebResponse(aReq);
- 
     // Get URL, path and file
     WebURL url = aReq.getURL();
     String path = url.getPath(); if(path==null) path = "/";
@@ -43,28 +40,25 @@ protected WebResponse doGetOrHead(WebRequest aReq, boolean isHead)
     
     // Handle NOT_FOUND
     if(fhdr==null) {
-        resp.setCode(WebResponse.NOT_FOUND); return resp; }
+        aResp.setCode(WebResponse.NOT_FOUND); return; }
         
     // Configure response info (just return if isHead). Need to pre-create FileHeader to fix capitalization.
-    resp.setCode(WebResponse.OK);
-    resp.setFileHeader(fhdr);
+    aResp.setCode(WebResponse.OK);
+    aResp.setFileHeader(fhdr);
     if(isHead)
-        return resp;
+        return;
         
     // If file, just set bytes
-    if(resp.isFile()) {
+    if(aResp.isFile()) {
         byte bytes[] = getFileBytes(path);
-        resp.setBytes(bytes);
+        aResp.setBytes(bytes);
     }
     
     // If directory, configure directory info and return
     else {
         List <FileHeader> fhdrs = getFileHeaders(path);
-        resp.setFileHeaders(fhdrs);
+        aResp.setFileHeaders(fhdrs);
     }
-    
-    // Return response
-    return resp;
 }
 
 /**
@@ -129,7 +123,7 @@ protected List <FileHeader> getFileHeaders(String aPath)
 /**
  * Handle a get request.
  */
-protected WebResponse doPost(WebRequest aReq)
+protected void doPost(WebRequest aReq, WebResponse aResp)
 {
     WebURL url = aReq.getURL();
     String urls = url.getString(); if(urls.startsWith("http://localhost")) urls = url.getPath().substring(1);
@@ -137,17 +131,15 @@ protected WebResponse doPost(WebRequest aReq)
     XMLHttpRequest req = XMLHttpRequest.create();
     req.open("POST", urls, false);
     
-    String str = new String(aReq.getPostBytes());
+    String str = new String(aReq.getSendBytes());
     if(_debug) System.out.println("Post: " + urls);
     sendSync(req, str); //req.send(str); - if not open Async
     if(_debug) System.out.println("PostDone: " + urls);
     
     // Get bytes
     String text = req.getResponseText();
-    WebResponse resp = new WebResponse(aReq);
-    resp.setCode(WebResponse.OK);
-    resp.setBytes(text.getBytes());
-    return resp;
+    aResp.setCode(WebResponse.OK);
+    aResp.setBytes(text.getBytes());
 }
 
 /**
