@@ -14,6 +14,9 @@ public class TVWebSite extends WebSite {
     // Whether to debug
     boolean        _debug = false;
     
+    // The shared site
+    static TVWebSite  _shared;
+    
 /**
  * Creates a new TVWebSite.
  */
@@ -24,6 +27,7 @@ public TVWebSite()
     
     // Configure WebGetter to evaluate Class.getResource() URLs using index.txt
     WebGetter._hpr = (c,p) -> { return getURL(c,p); };
+    _shared = this;
 }
 
 /**
@@ -167,7 +171,7 @@ public List <String> getPaths()
     
     String text = req.getResponseText();
     String pathStrings[] = text.split("\n");
-    return _paths = Arrays.asList(pathStrings);
+    return _paths = new ArrayList(Arrays.asList(pathStrings));
 }
 
 /**
@@ -218,6 +222,11 @@ java.net.URL getURL(Class c, String p)
  * Standard toString implementation.
  */
 public String toString()  { return "TVWebSite " + getURLString(); }
+
+/**
+ * Adds a known path.
+ */
+public static void addKnownPath(String aPath)  { _shared.getPaths().add(aPath); }
 
 /**
  * A custom class.
