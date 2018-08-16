@@ -25,6 +25,9 @@ public class TVImage extends Image {
     // The size
     int                      _pw = -1, _ph = -1;
     
+    // Whether image has transparency
+    boolean                  _hasAlpha = true;
+    
 /**
  * Creates a new TVImage from source.
  */
@@ -47,6 +50,7 @@ public TVImage(Object aSource)
 private synchronized void didFinishLoad()
 {
     _pw = _img.getWidth(); _ph = _img.getHeight();  //_loaded = true; notifyAll();
+    if(_src.toLowerCase().endsWith(".jpg")) _hasAlpha = false;
     setLoaded(true);
     //System.out.println("Waiting done " + _src);
 }
@@ -113,6 +117,7 @@ public TVImage(double aWidth, double aHeight, boolean hasAlpha)
     _canvas.setWidth(_pw); _canvas.setHeight(_ph);
     _canvas.getStyle().setProperty("width", w + "px");
     _canvas.getStyle().setProperty("height", h + "px");
+    _hasAlpha = hasAlpha;
 }
 
 /**
@@ -146,7 +151,7 @@ public double getHeightDPI()  { return _img!=null? 72 : 72*TVWindow.scale; }
 /**
  * Returns whether image has alpha.
  */
-public boolean hasAlpha()  { return false; }
+public boolean hasAlpha()  { return _hasAlpha; }
 
 /**
  * Returns number of components.
@@ -163,7 +168,10 @@ public boolean isIndexedColor()  { return false; }
  */
 public int getRGB(int aX, int aY)
 {
-    getPainter();
+    // If HTMLImageElement, convert to canvas
+    if(_img!=null) convertToCanvas();
+    
+    // Get image data and return rgb at point
     CanvasRenderingContext2D cntx = (CanvasRenderingContext2D)_canvas.getContext("2d");
     ImageData idata = cntx.getImageData(aX*TVWindow.scale, aY*TVWindow.scale, 1, 1);
     Uint8ClampedArray data = idata.getData();
@@ -200,18 +208,26 @@ public byte[] getBytesPNG()  { return null; }
  */
 public Painter getPainter()
 {
-    if(_img!=null) {
-        int w = getPixWidth(), h = getPixHeight(); _pw *= TVWindow.scale; _ph *= TVWindow.scale;
-        _canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
-        _canvas.setWidth(_pw); _canvas.setHeight(_ph);
-        _canvas.getStyle().setProperty("width", w + "px");
-        _canvas.getStyle().setProperty("height", h + "px");
-        Painter pntr = new TVPainter(_canvas);
-        pntr.drawImage(this, 0, 0); _img = null;
-    }
+    // If HTMLImageElement, convert to canvas
+    if(_img!=null) convertToCanvas();
     
     // Return painter for canvas
     return new TVPainter(_canvas);
+}
+
+/**
+ * Converts to canvas.
+ */
+protected void convertToCanvas()
+{
+    int w = getPixWidth(), h = getPixHeight(); _pw *= TVWindow.scale; _ph *= TVWindow.scale;
+    _canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
+    _canvas.setWidth(_pw); _canvas.setHeight(_ph);
+    _canvas.getStyle().setProperty("width", w + "px");
+    _canvas.getStyle().setProperty("height", h + "px");
+    Painter pntr = new TVPainter(_canvas);
+    pntr.drawImage(this, 0, 0); _img = null;
+    //CanvasRenderingContext2D cntx = (CanvasRenderingContext2D)_canvas.getContext("2d"); cntx.drawImage(_img, 0, 0);
 }
 
 /**
@@ -229,18 +245,20 @@ public void setPremultiplied(boolean aValue)  { _pm = aValue; }
  */
 public void blur(int aRad)
 {
-    // Just go to canvas - should be rare to blur a raw image
-    if(_img!=null) getPainter();
+    // If HTMLImageElement, convert to canvas
+    if(_img!=null) convertToCanvas();
     
-    // Only works for Chrome
+    // Create new canvas to do blur
     HTMLCanvasElement canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
     canvas.setWidth(_pw); canvas.setHeight(_ph);
     canvas.getStyle().setProperty("width", (_pw/TVWindow.scale) + "px");
     canvas.getStyle().setProperty("height", (_ph/TVWindow.scale) + "px");
+    
+    // Paint image into new canvas with ShadowBlur
     TVPainter pntr = new TVPainter(canvas);
     pntr._cntx.setShadowBlur(aRad);
     pntr._cntx.setShadowColor("black");
-    pntr.drawImage(this, 0, 0); _img = null;
+    pntr.drawImage(this, 0, 0);
     pntr._cntx.setShadowBlur(0);
     _canvas = canvas;
 }
