@@ -1,29 +1,37 @@
 package snaptea;
-import org.teavm.jso.JSBody;
+import org.teavm.jso.browser.Window;
 import org.teavm.jso.dom.html.*;
-import snap.gfx.Color;
-import snap.gfx.Insets;
+import snap.gfx.*;
 import snap.util.*;
 import snap.view.*;
 
 /**
  * A class to represent the WindowView in the browser page.
  */
-public class TVWindow implements PropChangeListener {
+public class TVWindow {
 
     // The Window View
     WindowView            _win;
+    
+    // The container element
+    HTMLElement           _container;
+    
+    // Whether container is created by this window
+    boolean               _isOwner;
+    
+    // A listener for hide
+    PropChangeListener    _hideLsnr;
     
     // The last top window
     static int            _topWin;
     
     // The paint scale
-    public static int     scale = getDevicePixelRatio()==2? 2 : 1;
+    public static int     scale = TV.getDevicePixelRatio()==2? 2 : 1;
     
 /**
  * Sets the window.
  */
-public void setView(WindowView aWin)  { _win = aWin; _win.addPropChangeListener(this); }
+public void setView(WindowView aWin)  { _win = aWin; }
 
 /**
  * Initializes window.
@@ -34,6 +42,38 @@ public void initWindow()
     if(rview.getFill()==null) rview.setFill(ViewUtils.getBackFill());
     if(rview.getBorder()==null) rview.setBorder(Color.GRAY, 1);
 }
+
+/**
+ * Returns the container element for this window.
+ */
+public HTMLElement getContainer()
+{
+    // If already set, just return
+    if(_container!=null) return _container;
+
+    // Look for container in doc
+    HTMLDocument doc = HTMLDocument.current();
+    _container = doc.getElementById("container");
+    
+    // If not found, use body
+    if(_container==null) { _container = doc.getBody(); _isOwner = true; }
+    return _container;
+}
+
+/**
+ * Returns the canvas for the window.
+ */
+public HTMLCanvasElement getCanvas()
+{
+    RootView rview = _win.getRootView();
+    TVRootView rviewNtv = (TVRootView)rview.getNative();
+    return rviewNtv._canvas;
+}
+
+/**
+ * Returns whether this window determines it's own bounds.
+ */
+public boolean isOwner()  { return _isOwner; }
 
 /**
  * Shows window.
@@ -53,11 +93,11 @@ protected synchronized void showModal()
     showImpl();
     
     // Register listener to activate current thread on window not showing
-    PropChangeListener hideLsnr = pce -> { if(_win.isShowing()) return;
-        _win.removePropChangeListener(this, View.Showing_Prop);
+    _hideLsnr = pce -> { if(_win.isShowing()) return;
+        _win.removePropChangeListener(_hideLsnr);
         synchronized(TVWindow.this) { TVWindow.this.notify(); }
     };
-    _win.addPropChangeListener(hideLsnr);
+    _win.addPropChangeListener(_hideLsnr, View.Showing_Prop);
     
     // Wait until window is hidden
     try { wait(); }
@@ -69,33 +109,46 @@ protected synchronized void showModal()
  */
 public void showImpl()
 {
-    // Get root view and canvas
-    RootView rview = _win.getRootView();
-    TVRootView rviewNtv = (TVRootView)rview.getNative();
-    HTMLCanvasElement canvas = rviewNtv._canvas;
+    // Get canvas
+    HTMLCanvasElement canvas = getCanvas();
     
     // Silly stuff
-    View c = rview.getContent();
+    RootView rview = _win.getRootView(); View c = rview.getContent();
     if(c instanceof Label || c instanceof ButtonBase) { c.setPadding(4,6,4,6); c.setFont(c.getFont().deriveFont(14));
         BoxView box = new BoxView(c); box.setPadding(4,4,4,4); rview.setContent(box); }
 
-    // Set PrefSize
-    //_win.pack();
-    
-    // Position window
-    //_win.setXY(10,10);
-    
     // Add canvas
-    HTMLDocument doc = HTMLDocument.current();
-    HTMLBodyElement body = doc.getBody();
-    body.appendChild(canvas);
-    canvas.getStyle().setProperty("z-index", String.valueOf(_topWin++));
+    HTMLElement parentE = getContainer();
+    parentE.appendChild(canvas);
+    
+    // If Window is owner of window
+    if(isOwner()) {
+        canvas.getStyle().setCssText("position:absolute;border:1px solid #EEEEEE;");
+        canvas.getStyle().setProperty("z-index", String.valueOf(_topWin++));
+        windowViewSizeChanged(null);
+        _win.addPropChangeListener(pce -> windowViewXYChanged(), View.X_Prop, View.Y_Prop);
+        _win.addPropChangeListener(pce -> windowViewSizeChanged(pce), View.Width_Prop, View.Height_Prop);
+    }
+    
+    // If not owner, register for resize on Container
+    else {
+        
+        // Set canvas to always match size of its container
+        canvas.getStyle().setProperty("width", "100%");
+        canvas.getStyle().setProperty("height", "100%");
+        
+        // Make sure there is no growing
+        _win.setGrowWidth(false); _win.getRootView().setGrowWidth(false);
+        
+        // Resize canvas pixel size and window (do whenever window is resized)
+        containerResized();
+        Window.current().addEventListener("resize", e -> containerResized());
+    }
     
     // Set FullScreen from RootView.Content
     if(rview.getContent().isGrowWidth()) _win.setGrowWidth(true);
-    if(_win.isGrowWidth()) {
-        _win.setPadding(5,5,5,5); _win.setXY(0,0); }
-    boundsChanged();
+    if(_win.isGrowWidth()) { _win.setPadding(5,5,5,5); _win.setXY(0,0); }
+    windowViewXYChanged();
     
     // Add to screen
     TVScreen screen = TVScreen.get();
@@ -110,15 +163,12 @@ public void showImpl()
  */
 public void hide()
 {
-    // Get root view and canvas
-    RootView rview = _win.getRootView();
-    TVRootView rviewNtv = (TVRootView)rview.getNative();
-    HTMLCanvasElement canvas = rviewNtv._canvas;
+    // Get canvas
+    HTMLCanvasElement canvas = getCanvas();
     
-    // Add canvas
-    HTMLDocument doc = HTMLDocument.current();
-    HTMLBodyElement body = doc.getBody();
-    body.removeChild(canvas);
+    // Remove canvas
+    HTMLElement container = getContainer();
+    container.removeChild(canvas);
     
     // Add to screen
     TVScreen screen = TVScreen.get();
@@ -133,31 +183,37 @@ public void hide()
  */
 public void toFront()
 {
-    RootView rview = _win.getRootView();
-    TVRootView rviewNtv = (TVRootView)rview.getNative();
-    HTMLCanvasElement canvas = rviewNtv._canvas;
+    HTMLCanvasElement canvas = getCanvas();
     canvas.getStyle().setProperty("z-index", String.valueOf(_topWin++));
 }
 
 /**
- * Called when WindowView properties change.
+ * Called when Container element is provided and it is resized by web page.
  */
-public void propertyChange(PropChange aPC)
+void containerResized()
 {
-    String pname = aPC.getPropertyName();
-    switch(pname) {
-        case View.X_Prop: case View.Y_Prop: boundsChanged(); }
+    // Update window location
+    HTMLElement container = getContainer();
+    Point off = TV.getOffsetAll(container);
+    _win.setXY(off.x, off.y);
+    
+    // Get container width/height (just return if Window already matches)
+    int w = container.getClientWidth(), h = container.getClientHeight();
+    if(w==(int)_win.getWidth() && h==(int)_win.getHeight()) return;
+    
+    // Reset canvas and window size
+    HTMLCanvasElement canvas = getCanvas();
+    canvas.setWidth(w*TVWindow.scale); canvas.setHeight(h*TVWindow.scale);
+    _win.setSize(w,h);
 }
 
 /**
  * Called when WindowView bounds changes to sync win size to RootView and win location to RootView.Canvas.
  */
-public void boundsChanged()
+public void windowViewXYChanged()
 {
     // Get Canvas
-    RootView rview = _win.getRootView();
-    TVRootView rviewNtv = (TVRootView)rview.getNative();
-    HTMLCanvasElement canvas = rviewNtv._canvas;
+    HTMLCanvasElement canvas = getCanvas();
     
     // Get canvas x/y
     Insets ins = _win.getInsetsAll();
@@ -169,7 +225,28 @@ public void boundsChanged()
     canvas.getStyle().setProperty("top", String.valueOf(y) + "px");
 }
 
-@JSBody(params = { }, script = "return window.devicePixelRatio;")
-public static native double getDevicePixelRatio();
+/**
+ * Called when WindowView properties change to sync RootView size to canvas.
+ */
+public void windowViewSizeChanged(PropChange aPC)
+{
+    // Get Canvas
+    HTMLCanvasElement canvas = getCanvas();
     
+    // Handle Width change
+    String pname = aPC!=null? aPC.getPropName() : null;
+    if(pname==null || pname==View.Width_Prop) {
+        int w = (int)Math.round(_win.getWidth()) - (int)_win.getInsetsAll().getWidth();
+        canvas.setWidth(w*TVWindow.scale);
+        canvas.getStyle().setProperty("width", w + "px");
+    }
+    
+    // Handle Height change
+    if(pname==null || pname==View.Height_Prop) {
+        int h = (int)Math.round(_win.getHeight()) - (int)_win.getInsetsAll().getHeight();
+        canvas.setHeight(h*TVWindow.scale);
+        canvas.getStyle().setProperty("height", h + "px");
+    }
+}
+
 }

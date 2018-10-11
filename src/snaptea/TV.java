@@ -1,6 +1,11 @@
 package snaptea;
+import org.teavm.jso.JSBody;
 import org.teavm.jso.canvas.CanvasGradient;
 import org.teavm.jso.canvas.CanvasRenderingContext2D;
+import org.teavm.jso.dom.html.HTMLDocument;
+import org.teavm.jso.dom.html.HTMLElement;
+import org.teavm.jso.dom.xml.Node;
+import org.teavm.jso.dom.xml.NodeList;
 import snap.gfx.*;
 import snap.util.SnapUtils;
 
@@ -37,6 +42,45 @@ public static String get(Font aFont)
     return str;
 }
 
+/**
+ * Find a child with given id.
+ */
+public static HTMLElement findElement(HTMLElement anEmt, String aId)
+{
+    NodeList <Node> childEmts = anEmt.getChildNodes();
+    for(int i=0; i<childEmts.getLength(); i++) { HTMLElement emt = (HTMLElement)childEmts.get(i);
+        String id = emt.getAttribute("id");
+        if(id!=null && id.equals(aId))
+            return emt;
+    }
+    for(int i=0; i<childEmts.getLength(); i++) { HTMLElement emt = (HTMLElement)childEmts.get(i);
+        HTMLElement emt2 = findElement(emt, aId);
+        if(emt2!=null)
+            return emt2;
+    }
+    return null;
+}
+
+public static Point getOffsetAll(HTMLElement anEmt)
+{
+    //TextRectangle rect = anEmt.getBoundingClientRect(); return new Point(rect.getLeft(), rect.getTop());
+
+    // Update window location
+    int top = 0, left = 0; HTMLDocument doc = HTMLDocument.current();
+    for(HTMLElement emt=anEmt;emt!=doc;emt=(HTMLElement)emt.getParentNode()) {
+        top += TV.getOffsetTop(emt); left += TV.getOffsetLeft(emt); }
+    return new Point(left,top);
+}
+
+@JSBody(params={ "anEmt" }, script = "return anEmt.offsetTop;")
+public static native int getOffsetTop(HTMLElement anEmt);
+
+@JSBody(params={ "anEmt" }, script = "return anEmt.offsetLeft;")
+public static native int getOffsetLeft(HTMLElement anEmt);
+
+@JSBody(params = { }, script = "return window.devicePixelRatio;")
+public static native double getDevicePixelRatio();
+    
 /**
  * Sets the TeaVM environment.
  */
