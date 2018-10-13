@@ -11,12 +11,6 @@ import snap.view.*;
  */
 public class TVScreen {
 
-    // The HTMLDocument
-    HTMLDocument          _doc = HTMLDocument.current();
-    
-    // The HTMLDocument
-    HTMLBodyElement       _body = _doc.getBody();
-    
     // The RootView hit by last MouseDown (if mouse still down)
     RootView              _mouseDownView;
     
@@ -43,24 +37,28 @@ public class TVScreen {
  */
 private TVScreen()
 {
+    // Get Doc and body
+    HTMLDocument doc = HTMLDocument.current();
+    HTMLBodyElement body = doc.getBody();
+    
     // Add Mouse listeners
-    _body.addEventListener("mousedown", e -> mouseDown((MouseEvent)e));
-    _body.addEventListener("mousemove", e -> mouseMove((MouseEvent)e));
-    _body.addEventListener("mouseup", e -> mouseUp((MouseEvent)e));
-    _body.addEventListener("wheel", e -> mouseWheel((WheelEvent)e));
+    body.addEventListener("mousedown", e -> mouseDown((MouseEvent)e));
+    body.addEventListener("mousemove", e -> mouseMove((MouseEvent)e));
+    body.addEventListener("mouseup", e -> mouseUp((MouseEvent)e));
+    body.addEventListener("wheel", e -> mouseWheel((WheelEvent)e));
     
     // Add Key Listeners
-    _body.addEventListener("keydown", e -> keyDown((KeyboardEvent)e));
-    _body.addEventListener("keypress", e -> keyPress((KeyboardEvent)e));
-    _body.addEventListener("keyup", e -> keyUp((KeyboardEvent)e));
+    body.addEventListener("keydown", e -> keyDown((KeyboardEvent)e));
+    body.addEventListener("keypress", e -> keyPress((KeyboardEvent)e));
+    body.addEventListener("keyup", e -> keyUp((KeyboardEvent)e));
     
     // Add Touch Listeners
-    _body.addEventListener("touchstart", e -> touchStart((TouchEvent)e));
-    _body.addEventListener("touchmove", e -> touchMove((TouchEvent)e));
-    _body.addEventListener("touchend", e -> touchEnd((TouchEvent)e));
+    body.addEventListener("touchstart", e -> touchStart((TouchEvent)e));
+    body.addEventListener("touchmove", e -> touchMove((TouchEvent)e));
+    body.addEventListener("touchend", e -> touchEnd((TouchEvent)e));
     
     // Add bounds listener
-    Window.current().addEventListener("resize", e -> boundsChanged());
+    Window.current().addEventListener("resize", e -> screenSizeChanged());
 }
 
 /**
@@ -310,13 +308,14 @@ public RootView getRootView(int aX, int aY)
 }
 
 /**
- * Called when screen (browser window) size changes.
+ * Called when screen (browser window) size changes to notify windows.
  */
-public void boundsChanged()
+public void screenSizeChanged()
 {
-    for(WindowView win : _windows)
-        if(win.isMaximized())
-            win.setBounds(getBounds());
+    for(WindowView win : _windows) {
+        TVWindow winNtv = (TVWindow)win.getNative();
+        winNtv.screenSizeChanged();
+    }
 }
 
 /**

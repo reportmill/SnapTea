@@ -1,5 +1,4 @@
 package snaptea;
-import org.teavm.jso.browser.Window;
 import org.teavm.jso.dom.html.*;
 import snap.gfx.*;
 import snap.util.*;
@@ -141,9 +140,8 @@ public void showImpl()
         canvas.getStyle().setProperty("width", "100%");
         canvas.getStyle().setProperty("height", "100%");
         
-        // Resize canvas pixel size and window (do whenever window is resized)
-        containerResized();
-        Window.current().addEventListener("resize", e -> containerResized());
+        // Resize canvas to element size
+        screenSizeChanged();
     }
     
     // Add to Screen.Windows
@@ -193,8 +191,18 @@ public void toFront()
 /**
  * Called when Container element is provided and it is resized by web page.
  */
-void containerResized()
+void screenSizeChanged()
 {
+    // Get Screen
+    TVScreen screen = TVScreen.get();
+    
+    // If Window.Maximized, reset bounds and return
+    if(_win.isMaximized()) {
+        _win.setBounds(screen.getBounds()); return; }
+        
+    // If Window floating, just return
+    if(isFloating()) return;
+        
     // Update window location
     HTMLElement container = getContainer();
     Point off = TV.getOffsetAll(container);
