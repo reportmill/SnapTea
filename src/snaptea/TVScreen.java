@@ -64,23 +64,32 @@ private TVScreen()
 }
 
 /**
+ * Returns the list of visible windows.
+ */
+public List <WindowView> getWindows()  { return _windows; }
+
+/**
  * Called when a window is ordered onscreen.
  */
-public void showWindow(WindowView aWin)
+public void addWindow(WindowView aWin)
 {
+    // Add to list
     _windows.add(aWin);
+    
+    // If not Popup, make window main window
     if(!(aWin instanceof PopupWindow)) {
         _win = aWin; _rview = aWin.getRootView(); }
-    if(aWin.isGrowWidth())
-        boundsChanged();
 }
 
 /**
  * Called when a window is hidden.
  */
-public void hideWindow(WindowView aWin)
+public void removeWindow(WindowView aWin)
 {
+    // Remove window from list
     _windows.remove(aWin);
+    
+    // Make next window in list main window
     _win = null;
     for(int i=_windows.size()-1;i>=0;i--) { WindowView win = _windows.get(i);
         if(!(win instanceof PopupWindow)) {
@@ -306,7 +315,7 @@ public RootView getRootView(int aX, int aY)
 public void boundsChanged()
 {
     for(WindowView win : _windows)
-        if(win.isGrowWidth())
+        if(win.isMaximized())
             win.setBounds(getBounds());
 }
 

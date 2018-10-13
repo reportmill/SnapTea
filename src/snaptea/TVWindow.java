@@ -16,8 +16,8 @@ public class TVWindow {
     // The container element
     HTMLElement           _container;
     
-    // Whether container is created by this window
-    boolean               _isOwner;
+    // Whether window canvas is floating above web page (container element not specified)
+    boolean               _floating;
     
     // A listener for hide
     PropChangeListener    _hideLsnr;
@@ -31,7 +31,11 @@ public class TVWindow {
 /**
  * Sets the window.
  */
-public void setView(WindowView aWin)  { _win = aWin; }
+public void setView(WindowView aWin)
+{
+    _win = aWin;
+    _win.addPropChangeListener(pc -> windowViewMaximizedChanged(), WindowView.Maximized_Prop);
+}
 
 /**
  * Initializes window.
@@ -56,7 +60,7 @@ public HTMLElement getContainer()
     _container = doc.getElementById("container");
     
     // If not found, use body
-    if(_container==null) { _container = doc.getBody(); _isOwner = true; }
+    if(_container==null) { _container = doc.getBody(); _floating = true; }
     return _container;
 }
 
@@ -71,9 +75,9 @@ public HTMLCanvasElement getCanvas()
 }
 
 /**
- * Returns whether this window determines it's own bounds.
+ * Returns whether window canvas floats above web page (container element not specified).
  */
-public boolean isOwner()  { return _isOwner; }
+public boolean isFloating()  { return _floating; }
 
 /**
  * Shows window.
@@ -117,12 +121,12 @@ public void showImpl()
     if(c instanceof Label || c instanceof ButtonBase) { c.setPadding(4,6,4,6); c.setFont(c.getFont().deriveFont(14));
         BoxView box = new BoxView(c); box.setPadding(4,4,4,4); rview.setContent(box); }
 
-    // Add canvas
-    HTMLElement parentE = getContainer();
-    parentE.appendChild(canvas);
+    // Add canvas to container element
+    HTMLElement containerEmt = getContainer();
+    containerEmt.appendChild(canvas);
     
-    // If Window is owner of window
-    if(isOwner()) {
+    // Handle Floating Window: Configure canvas with absolute postion above and listen for WindowView bounds changes
+    if(isFloating()) {
         canvas.getStyle().setCssText("position:absolute;border:1px solid #EEEEEE;");
         canvas.getStyle().setProperty("z-index", String.valueOf(_topWin++));
         windowViewSizeChanged(null);
@@ -130,29 +134,28 @@ public void showImpl()
         _win.addPropChangeListener(pce -> windowViewSizeChanged(pce), View.Width_Prop, View.Height_Prop);
     }
     
-    // If not owner, register for resize on Container
+    // Handle Not Floating (tied to container content): Size canvas to 100% of container and listen for emt bnds changes
     else {
         
         // Set canvas to always match size of its container
         canvas.getStyle().setProperty("width", "100%");
         canvas.getStyle().setProperty("height", "100%");
         
-        // Make sure there is no growing
-        _win.setGrowWidth(false); _win.getRootView().setGrowWidth(false);
-        
         // Resize canvas pixel size and window (do whenever window is resized)
         containerResized();
         Window.current().addEventListener("resize", e -> containerResized());
     }
     
-    // Set FullScreen from RootView.Content
-    if(rview.getContent().isGrowWidth()) _win.setGrowWidth(true);
-    if(_win.isGrowWidth()) { _win.setPadding(5,5,5,5); _win.setXY(0,0); }
-    windowViewXYChanged();
-    
-    // Add to screen
+    // Add to Screen.Windows
     TVScreen screen = TVScreen.get();
-    screen.showWindow(_win);
+    screen.addWindow(_win);
+
+    // If Maximized, resize to bounds
+    if(_win.isMaximized()) {
+        _win.setPadding(5,5,5,5);
+        _win.setBounds(screen.getBounds());
+    }
+    windowViewXYChanged();
 
     // Set Window showing    
     _win.setShowing(true);
@@ -172,7 +175,7 @@ public void hide()
     
     // Add to screen
     TVScreen screen = TVScreen.get();
-    screen.hideWindow(_win);
+    screen.removeWindow(_win);
     
     // Set Window not showing
     _win.setShowing(false);
@@ -247,6 +250,19 @@ public void windowViewSizeChanged(PropChange aPC)
         canvas.setHeight(h*TVWindow.scale);
         canvas.getStyle().setProperty("height", h + "px");
     }
+}
+
+/**
+ * Called when WindowView.Maximized is changed.
+ */
+void windowViewMaximizedChanged()
+{
+    // Handle Maximized on
+    if(_win.isMaximized()) {
+        _win.setPadding(5,5,5,5); _win.setBounds(TVScreen.get().getBounds()); }
+    
+    // Handle Maximized off
+    else _win.setPadding(0,0,0,0);
 }
 
 }
