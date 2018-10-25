@@ -34,6 +34,8 @@ public void setView(WindowView aWin)
 {
     _win = aWin;
     _win.addPropChangeListener(pc -> windowViewMaximizedChanged(), WindowView.Maximized_Prop);
+    _win.addPropChangeListener(pce -> windowViewXYChanged(), View.X_Prop, View.Y_Prop);
+    _win.addPropChangeListener(pce -> windowViewSizeChanged(pce), View.Width_Prop, View.Height_Prop);
 }
 
 /**
@@ -77,6 +79,44 @@ public HTMLCanvasElement getCanvas()
  * Returns whether window canvas floats above web page (container element not specified).
  */
 public boolean isFloating()  { return _floating; }
+
+/**
+ * Sets whether window canvas floats above web page (container element not specified).
+ */
+public void setFloating(boolean aValue)
+{
+    // If value already set, just return
+    if(aValue==_floating) return;
+    
+    // Set value
+    _floating = aValue;
+    
+    // Get canvas
+    HTMLCanvasElement canvas = getCanvas();
+    HTMLBodyElement body = HTMLDocument.current().getBody();
+    
+    // If turning on
+    if(aValue) {
+        canvas.getStyle().setProperty("position", "absolute");
+        if(canvas.getParentNode()!=body)
+            body.appendChild(canvas);
+        _container = body;
+        canvas.getStyle().setProperty("z-index", String.valueOf(_topWin++));
+        windowViewXYChanged();
+        windowViewSizeChanged(null);
+    }
+    
+    // If turning off
+    else {
+        _container = null;
+        HTMLElement container = getContainer();
+        canvas.getStyle().setProperty("position", "static");
+        canvas.getStyle().setProperty("width", "100%");
+        canvas.getStyle().setProperty("height", "100%");
+        if(container!=body)
+            container.appendChild(canvas);
+    }
+}
 
 /**
  * Shows window.
@@ -126,11 +166,10 @@ public void showImpl()
     
     // Handle Floating Window: Configure canvas with absolute postion above and listen for WindowView bounds changes
     if(isFloating()) {
-        canvas.getStyle().setCssText("position:absolute;border:1px solid #EEEEEE;");
+        canvas.getStyle().setProperty("position", "absolute");
+        canvas.getStyle().setProperty("border", "1px solid #EEEEEE");
         canvas.getStyle().setProperty("z-index", String.valueOf(_topWin++));
         windowViewSizeChanged(null);
-        _win.addPropChangeListener(pce -> windowViewXYChanged(), View.X_Prop, View.Y_Prop);
-        _win.addPropChangeListener(pce -> windowViewSizeChanged(pce), View.Width_Prop, View.Height_Prop);
     }
     
     // Handle Not Floating (tied to container content): Size canvas to 100% of container and listen for emt bnds changes
@@ -210,12 +249,13 @@ void screenSizeChanged()
     
     // Get container width/height (just return if Window already matches)
     int w = container.getClientWidth(), h = container.getClientHeight();
-    if(w==(int)_win.getWidth() && h==(int)_win.getHeight()) return;
+    //if(w==(int)_win.getWidth() && h==(int)_win.getHeight()) return;
     
     // Reset canvas and window size
     HTMLCanvasElement canvas = getCanvas();
     canvas.setWidth(w*TVWindow.scale); canvas.setHeight(h*TVWindow.scale);
     _win.setSize(w,h);
+    _win.repaint();
 }
 
 /**
@@ -223,6 +263,9 @@ void screenSizeChanged()
  */
 public void windowViewXYChanged()
 {
+    // If not floating, just return (container changes go to win, not win to container)
+    if(!isFloating()) return;
+    
     // Get Canvas
     HTMLCanvasElement canvas = getCanvas();
     
@@ -241,6 +284,9 @@ public void windowViewXYChanged()
  */
 public void windowViewSizeChanged(PropChange aPC)
 {
+    // If not floating, just return (container changes go to win, not win to container)
+    if(!isFloating()) return;
+    
     // Get Canvas
     HTMLCanvasElement canvas = getCanvas();
     
@@ -267,10 +313,17 @@ void windowViewMaximizedChanged()
 {
     // Handle Maximized on
     if(_win.isMaximized()) {
-        _win.setPadding(5,5,5,5); _win.setBounds(TVScreen.get().getBounds()); }
+        setFloating(true);
+        _win.setPadding(5,5,5,5); _win.setBounds(TVScreen.get().getBounds());
+        windowViewXYChanged();
+    }
     
     // Handle Maximized off
-    else _win.setPadding(0,0,0,0);
+    else {
+        _win.setPadding(0,0,0,0);
+        setFloating(false);
+        screenSizeChanged();
+    }
 }
 
 }
