@@ -159,8 +159,10 @@ public void mouseWheel(WheelEvent anEvent)
     // Dispatch WheelEvent event
     ViewEvent event = TVViewEnv.get().createEvent(rview, anEvent, View.Scroll, null);
     dispatchEvent(rview, event);
-    anEvent.stopPropagation();
-    anEvent.preventDefault();
+    if(event.isConsumed()) {
+        anEvent.stopPropagation();
+        anEvent.preventDefault();
+    }
 }
 
 /**

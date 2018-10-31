@@ -2,6 +2,7 @@ package snaptea;
 import org.teavm.jso.JSBody;
 import org.teavm.jso.canvas.CanvasGradient;
 import org.teavm.jso.canvas.CanvasRenderingContext2D;
+import org.teavm.jso.dom.events.MouseEvent;
 import org.teavm.jso.dom.html.HTMLDocument;
 import org.teavm.jso.dom.html.HTMLElement;
 import org.teavm.jso.dom.xml.Node;
@@ -91,6 +92,12 @@ public static native int getBrowserWindowWidth();
 //return window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
 @JSBody(params={ }, script = "return document.body.clientHeight;")
 public static native int getBrowserWindowHeight();
+
+@JSBody(params={ "aME" }, script = "return aME.pageX;")
+public static native int getPageX(MouseEvent aME);
+
+@JSBody(params={ "aME" }, script = "return aME.pageY;")
+public static native int getPageY(MouseEvent aME);
 
 @JSBody(params = { }, script = "return window.devicePixelRatio;")
 public static native double getDevicePixelRatio();

@@ -25,8 +25,9 @@ void setXY()
 {
     if(getEvent() instanceof Touch)  { setXYTouch(); return; }
     MouseEvent event = (MouseEvent)getEvent(); if(event==null) { _mx = _my = 0; return; }
-    double x = event.getClientX();
-    double y = event.getClientY();
+    boolean winMaximized = getView().getWindow().isMaximized();
+    double x = winMaximized? event.getClientX() : TV.getPageX(event);
+    double y = winMaximized? event.getClientY() : TV.getPageY(event);
     Point pt = getView().parentToLocal(x,y, null);
     _mx = pt.x; _my = pt.y;
 }
@@ -34,9 +35,10 @@ void setXY()
 /** Sets the event point from browser mouse event. */
 void setXYTouch()
 {
-    Touch touch = (Touch)getEvent();
-    double x = touch.getClientX();
-    double y = touch.getClientY();
+    Touch event = (Touch)getEvent();
+    boolean winMaximized = getView().getWindow().isMaximized();
+    double x = winMaximized? event.getClientX() : event.getPageX();
+    double y = winMaximized? event.getClientY() : event.getPageY();
     Point pt = getView().parentToLocal(x,y,null);
     _mx = pt.x; _my = pt.y;
 }

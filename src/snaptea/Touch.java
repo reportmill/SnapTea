@@ -19,5 +19,11 @@ int getClientX();
 @JSProperty
 int getClientY();
 
+@JSProperty
+int getPageX();
+
+@JSProperty
+int getPageY();
+
 
 }
