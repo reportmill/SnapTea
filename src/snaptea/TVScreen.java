@@ -3,7 +3,6 @@ import java.util.*;
 import org.teavm.jso.browser.Window;
 import org.teavm.jso.dom.events.*;
 import org.teavm.jso.dom.html.*;
-import snap.gfx.Rect;
 import snap.view.*;
 
 /**
@@ -58,7 +57,7 @@ private TVScreen()
     body.addEventListener("touchend", e -> touchEnd((TouchEvent)e));
     
     // Add bounds listener
-    Window.current().addEventListener("resize", e -> screenSizeChanged());
+    Window.current().addEventListener("resize", e -> windowSizeChanged());
 }
 
 /**
@@ -93,16 +92,6 @@ public void removeWindow(WindowView aWin)
         if(!(win instanceof PopupWindow)) {
             _win = win; break; }}
     _rview = _win!=null? _win.getRootView() : null;
-}
-
-/**
- * Returns the screen (browser window) bounds.
- */
-public Rect getBounds()
-{
-    int w = Window.current().getInnerWidth();
-    int h = Window.current().getInnerHeight();
-    return new Rect(0, 0, w, h);
 }
 
 /**
@@ -310,11 +299,11 @@ public RootView getRootView(int aX, int aY)
 /**
  * Called when screen (browser window) size changes to notify windows.
  */
-public void screenSizeChanged()
+public void windowSizeChanged()
 {
     for(WindowView win : _windows) {
         TVWindow winNtv = (TVWindow)win.getNative();
-        winNtv.screenSizeChanged();
+        winNtv.windowSizeChanged();
     }
 }
 

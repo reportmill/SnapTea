@@ -78,6 +78,20 @@ public static native int getOffsetTop(HTMLElement anEmt);
 @JSBody(params={ "anEmt" }, script = "return anEmt.offsetLeft;")
 public static native int getOffsetLeft(HTMLElement anEmt);
 
+@JSBody(params={ }, script = "return window.scrollX;")
+public static native int getWindowScrollX();
+
+@JSBody(params={ }, script = "return window.scrollY;")
+public static native int getWindowScrollY();
+
+//return window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth
+@JSBody(params={ }, script = "return document.documentElement.clientWidth;")
+public static native int getBrowserWindowWidth();
+
+//return window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
+@JSBody(params={ }, script = "return document.body.clientHeight;")
+public static native int getBrowserWindowHeight();
+
 @JSBody(params = { }, script = "return window.devicePixelRatio;")
 public static native double getDevicePixelRatio();
     

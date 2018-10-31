@@ -97,7 +97,7 @@ public void setFloating(boolean aValue)
     
     // If turning on
     if(aValue) {
-        canvas.getStyle().setProperty("position", "absolute");
+        canvas.getStyle().setProperty("position", _win.isMaximized()? "fixed" : "absolute");
         if(canvas.getParentNode()!=body)
             body.appendChild(canvas);
         _container = body;
@@ -166,9 +166,15 @@ public void showImpl()
     
     // Handle Floating Window: Configure canvas with absolute postion above and listen for WindowView bounds changes
     if(isFloating()) {
-        canvas.getStyle().setProperty("position", "absolute");
+        
+        // Set Canvas CSS props for floating
+        canvas.getStyle().setProperty("position", _win.isMaximized()? "fixed" : "absolute");
         canvas.getStyle().setProperty("border", "1px solid #EEEEEE");
         canvas.getStyle().setProperty("z-index", String.valueOf(_topWin++));
+        
+        // Update canvas location/size
+        if(_win.isMaximized()) _win.setBounds(getMaximizedBounds());
+        windowViewXYChanged();
         windowViewSizeChanged(null);
     }
     
@@ -180,19 +186,12 @@ public void showImpl()
         canvas.getStyle().setProperty("height", "100%");
         
         // Resize canvas to element size
-        screenSizeChanged();
+        windowSizeChanged();
     }
     
     // Add to Screen.Windows
     TVScreen screen = TVScreen.get();
     screen.addWindow(_win);
-
-    // If Maximized, resize to bounds
-    if(_win.isMaximized()) {
-        _win.setPadding(5,5,5,5);
-        _win.setBounds(screen.getBounds());
-    }
-    windowViewXYChanged();
 
     // Set Window showing    
     _win.setShowing(true);
@@ -228,16 +227,13 @@ public void toFront()
 }
 
 /**
- * Called when Container element is provided and it is resized by web page.
+ * Called when browser window resizes.
  */
-void screenSizeChanged()
+void windowSizeChanged()
 {
-    // Get Screen
-    TVScreen screen = TVScreen.get();
-    
     // If Window.Maximized, reset bounds and return
     if(_win.isMaximized()) {
-        _win.setBounds(screen.getBounds()); return; }
+        _win.setBounds(getMaximizedBounds()); return; }
         
     // If Window floating, just return
     if(isFloating()) return;
@@ -314,16 +310,25 @@ void windowViewMaximizedChanged()
     // Handle Maximized on
     if(_win.isMaximized()) {
         setFloating(true);
-        _win.setPadding(5,5,5,5); _win.setBounds(TVScreen.get().getBounds());
+        _win.setBounds(getMaximizedBounds());
         windowViewXYChanged();
     }
     
     // Handle Maximized off
     else {
-        _win.setPadding(0,0,0,0);
         setFloating(false);
-        screenSizeChanged();
+        windowSizeChanged();
     }
+}
+
+/**
+ * Returns the bounds for a maximized window.
+ */
+Rect getMaximizedBounds()
+{
+    int w = TV.getBrowserWindowWidth();
+    int h = TV.getBrowserWindowHeight();
+    return new Rect(5,5,w-10,h-10);
 }
 
 }
