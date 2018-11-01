@@ -56,9 +56,11 @@ public HTMLElement getContainer()
     // If already set, just return
     if(_container!=null) return _container;
 
-    // Look for container in doc
+    // Look for container in doc for WindowView name
     HTMLDocument doc = HTMLDocument.current();
-    _container = doc.getElementById("container");
+    String cname = _win.getName();
+    if(cname!=null)
+        _container = doc.getElementById(cname);
     
     // If not found, use body
     if(_container==null) { _container = doc.getBody(); _floating = true; }
