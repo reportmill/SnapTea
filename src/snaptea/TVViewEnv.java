@@ -4,6 +4,7 @@ import org.teavm.jso.browser.Window;
 import org.teavm.jso.dom.events.Event;
 import snap.gfx.*;
 import snap.view.*;
+import snap.web.WebGetter;
 
 /**
  * A ViewEnv implementation for TeaVM.
@@ -17,7 +18,7 @@ public class TVViewEnv extends ViewEnv {
     Map <Runnable,Integer>    _intervalIds = new HashMap();
     
     // A shared instance.
-    static TVViewEnv          _shared = new TVViewEnv();
+    static TVViewEnv          _shared;
 
 /**
  * Returns whether current thread is event thread.
@@ -96,12 +97,25 @@ public Rect getScreenBoundsInset()  { return new Rect(0,0,1000,1000); }
 /**
  * Returns a shared instance.
  */
-public static TVViewEnv get()  { return _shared; }
+public static TVViewEnv get()
+{
+    if(_shared!=null) return _shared;
+    return _shared = new TVViewEnv();
+}
 
 /**
  * Sets TVViewEnv as the ViewEnv.
  */
-public static void set()  { snap.gfx.GFXEnv.setEnv(TVEnv.get()); ViewEnv.setEnv(get()); }
+public static void set()
+{
+    // Set TV adapter classes for GFXEnv and ViewEnv
+    snap.gfx.GFXEnv.setEnv(TVEnv.get());
+    ViewEnv.setEnv(get());
+    
+    // Create TVWebSite to handle localhost requests and evaluate Class.getResource() URLs using index.txt
+    TVWebSite site = TVWebSite.get();
+    WebGetter._hpr = (c,p) -> { return site.getURL(c,p); };
+}
 
 /**
  * A ViewHelper for RootView + TVRootView.

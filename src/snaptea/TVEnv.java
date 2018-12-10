@@ -9,15 +9,7 @@ import snap.web.*;
 public class TVEnv extends GFXEnv {
 
     // The shared AWTEnv
-    static TVEnv     _shared = new TVEnv();
-
-/**
- * Creates new TVEnv.
- */
-public TVEnv()
-{
-    new TVWebSite();
-}
+    static TVEnv     _shared;
 
 /**
  * Returns a list of all system fontnames (excludes any that don't start with capital A-Z).
@@ -90,11 +82,10 @@ public void beep()  { }
 /**
  * Returns a shared instance.
  */
-public static TVEnv get()  { return _shared; }
-
-/**
- * Sets TVViewEnv as the ViewEnv.
- */
-public static void set()  { GFXEnv.setEnv(get()); }
+public static TVEnv get()
+{
+    if(_shared!=null) return _shared;
+    return _shared = new TVEnv();
+}
 
 }

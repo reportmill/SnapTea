@@ -21,8 +21,8 @@ public class TVClipboard extends Clipboard {
     //DataTransfer     _dataTrans;
     
     // The shared clipboards for system and drag
-    static TVClipboard  _shared = new TVClipboard();
-    static TVClipboard  _sharedDrag = new TVClipboard();
+    static TVClipboard  _shared;
+    static TVClipboard  _sharedDrag;
 
 /**
  * Returns the clipboard content.
@@ -127,15 +127,20 @@ protected void setEvent(ViewEvent anEvent)
 }
 
 /**
- * Returns the shared SwingClipboard.
+ * Returns the shared TVClipboard.
  */
-public static TVClipboard get()  { return _shared; }
+public static TVClipboard get()
+{
+    if(_shared!=null) return _shared;
+    return _shared = new TVClipboard();
+}
 
 /**
- * Returns the shared SwingClipboard for drag and drop.
+ * Returns the shared TVClipboard for drag and drop.
  */
 public static TVClipboard getDrag(ViewEvent anEvent)
 {
+    if(_sharedDrag==null) _sharedDrag = new TVClipboard();
     if(anEvent!=null) _sharedDrag.setEvent(anEvent);
     return _sharedDrag;
 }

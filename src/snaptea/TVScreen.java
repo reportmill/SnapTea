@@ -29,10 +29,10 @@ public class TVScreen {
     RootView              _rview;
     
     // The shared screen object
-    static TVScreen       _screen = new TVScreen();
+    static TVScreen       _screen;
     
 /**
- * Creates a new TVScreen.
+ * Creates a TVScreen.
  */
 private TVScreen()
 {
@@ -323,6 +323,10 @@ void dispatchEvent(RootView aView, ViewEvent anEvent)
 /**
  * Returns the shared screen.
  */
-public static TVScreen get()  { return _screen; }
+public static TVScreen get()
+{
+    if(_screen!=null) return _screen;
+    return _screen = new TVScreen();
+}
 
 }

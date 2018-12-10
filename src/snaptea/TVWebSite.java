@@ -18,16 +18,11 @@ public class TVWebSite extends WebSite {
     static TVWebSite  _shared;
     
 /**
- * Creates a new TVWebSite.
+ * Creates a TVWebSite.
  */
-public TVWebSite()
+protected TVWebSite()
 {
-    // Set URL
     setURL(WebURL.getURL("http://localhost"));
-    
-    // Configure WebGetter to evaluate Class.getResource() URLs using index.txt
-    WebGetter._hpr = (c,p) -> { return getURL(c,p); };
-    _shared = this;
 }
 
 /**
@@ -70,7 +65,7 @@ protected void doGetOrHead(WebRequest aReq, WebResponse aResp, boolean isHead)
  */
 public FileHeader getFileHeader(String aPath)
 {
-    String urls = getURLString() + aPath; //urls = aPath.substring(1) + "?v=" + System.currentTimeMillis();
+    String urls = getURLString() + aPath;
     if(_debug) System.out.println("Head: " + urls);
     
     if(!isPath(aPath)) {
@@ -88,14 +83,13 @@ public FileHeader getFileHeader(String aPath)
  */
 protected byte[] getFileBytes(String aPath)
 {
-    //String urls = getURLString() + aPath; //urls = aPath.substring(1) + "?v=" + System.currentTimeMillis();
     String urls = aPath.substring(1);
     
     // Get XMLHttpRequest
     XMLHttpRequest req = XMLHttpRequest.create();
     req.open("GET", urls, false);
     if(_debug) System.out.println("Get: " + urls);
-    sendSync(req, null); //req.send(); - if not open Async
+    req.send();
     if(_debug) System.out.println("GetDone: " + urls);
     
     // Get bytes
@@ -137,24 +131,13 @@ protected void doPost(WebRequest aReq, WebResponse aResp)
     
     String str = new String(aReq.getSendBytes());
     if(_debug) System.out.println("Post: " + urls);
-    sendSync(req, str); //req.send(str); - if not open Async
+    req.send(str); //req.send(str); - if not open Async
     if(_debug) System.out.println("PostDone: " + urls);
     
     // Get bytes
     String text = req.getResponseText();
     aResp.setCode(WebResponse.OK);
     aResp.setBytes(text.getBytes());
-}
-
-/**
- * Sends an XMLHttpRequest synchronously.
- */
-protected void sendSync(XMLHttpRequest aReq, String aStr)
-{
-    TVLock lock = new TVLock();
-    aReq.onComplete(() -> lock.unlock());
-    if(aStr==null) aReq.send(); else aReq.send(aStr);
-    lock.lock();
 }
 
 /**
@@ -167,7 +150,7 @@ public List <String> getPaths()
     String urls = "index.txt";
     XMLHttpRequest req = XMLHttpRequest.create();
     req.open("GET", urls, false);
-    sendSync(req, null); //req.send(); - if not open Async
+    req.send();
     
     String text = req.getResponseText();
     String pathStrings[] = text.split("\n");
@@ -229,37 +212,12 @@ public String toString()  { return "TVWebSite " + getURLString(); }
 public static void addKnownPath(String aPath)  { _shared.getPaths().add(aPath); }
 
 /**
- * A custom class.
+ * Returns a shared instance.
  */
-public static class TVLock {
-
-    Object _lock = this; //new Object();
-    boolean   _finished;
-    String    _name = "LocalHost";
-    boolean   _debug;
-
-    /** Called to wait until finished. */    
-    public void lock()
-    {
-        synchronized(_lock) {
-            if(_debug && _name!=null) System.out.println("Wait: " + _name);
-            while(!_finished)
-                try { _lock.wait(); }
-                catch(InterruptedException e) { throw new RuntimeException(e); }
-            if(_debug && _name!=null) System.out.println("WaitDone: " + _name);
-        }
-    }
-    
-    /** Called to notify finished. */
-    public void unlock()
-    {
-        synchronized(_lock) {
-            _finished = true;
-            if(_debug && _name!=null) System.out.println("Notify: " + _name);
-            _lock.notify();
-            if(_debug && _name!=null) System.out.println("NotifyDone: " + _name);
-        }
-    }
+public static TVWebSite get()
+{
+    if(_shared!=null) return _shared;
+    return _shared = new TVWebSite();
 }
 
 }
