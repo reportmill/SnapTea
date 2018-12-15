@@ -41,23 +41,23 @@ private TVScreen()
     HTMLBodyElement body = doc.getBody();
     
     // Add Mouse listeners
-    body.addEventListener("mousedown", e -> mouseDown((MouseEvent)e));
-    body.addEventListener("mousemove", e -> mouseMove((MouseEvent)e));
-    body.addEventListener("mouseup", e -> mouseUp((MouseEvent)e));
-    body.addEventListener("wheel", e -> mouseWheel((WheelEvent)e));
+    body.addEventListener("mousedown", e -> TVEnv.runOnAppThread(() -> mouseDown((MouseEvent)e)));
+    body.addEventListener("mousemove", e -> TVEnv.runOnAppThread(() -> mouseMove((MouseEvent)e)));
+    body.addEventListener("mouseup", e -> TVEnv.runOnAppThread(() -> mouseUp((MouseEvent)e)));
+    body.addEventListener("wheel", e -> TVEnv.runOnAppThread(() -> mouseWheel((WheelEvent)e)));
     
     // Add Key Listeners
-    body.addEventListener("keydown", e -> keyDown((KeyboardEvent)e));
-    body.addEventListener("keypress", e -> keyPress((KeyboardEvent)e));
-    body.addEventListener("keyup", e -> keyUp((KeyboardEvent)e));
+    body.addEventListener("keydown", e -> TVEnv.runOnAppThread(() -> keyDown((KeyboardEvent)e)));
+    body.addEventListener("keypress", e -> TVEnv.runOnAppThread(() -> keyPress((KeyboardEvent)e)));
+    body.addEventListener("keyup", e -> TVEnv.runOnAppThread(() -> keyUp((KeyboardEvent)e)));
     
     // Add Touch Listeners
-    body.addEventListener("touchstart", e -> touchStart((TouchEvent)e));
-    body.addEventListener("touchmove", e -> touchMove((TouchEvent)e));
-    body.addEventListener("touchend", e -> touchEnd((TouchEvent)e));
+    body.addEventListener("touchstart", e -> TVEnv.runOnAppThread(() -> touchStart((TouchEvent)e)));
+    body.addEventListener("touchmove", e -> TVEnv.runOnAppThread(() -> touchMove((TouchEvent)e)));
+    body.addEventListener("touchend", e -> TVEnv.runOnAppThread(() -> touchEnd((TouchEvent)e)));
     
     // Add bounds listener
-    Window.current().addEventListener("resize", e -> windowSizeChanged());
+    Window.current().addEventListener("resize", e -> TVEnv.runOnAppThread(() -> windowSizeChanged()));
 }
 
 /**
@@ -315,9 +315,8 @@ public void windowSizeChanged()
 void dispatchEvent(RootView aView, ViewEvent anEvent)
 {
     // We really need a proper event queue - but in the meantime, create thread in case it gets blocked by modal
-    new Thread() {
-        public void run() { aView.dispatchEvent(anEvent); }
-    }.start();
+    //new Thread(() -> aView.dispatchEvent(anEvent)).start();
+    aView.dispatchEvent(anEvent);
 }
 
 /**

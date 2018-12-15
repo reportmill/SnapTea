@@ -28,9 +28,9 @@ public boolean isEventThread()  { return true; }
 /**
  * Run later.
  */
-public void runLater(Runnable aRunnable)
+public void runLater(Runnable aRun)
 {
-    Window.setTimeout(() -> aRunnable.run(), 10);
+    Window.setTimeout(() -> TVEnv.runOnAppThread(aRun), 10);
 }
 
 /**
@@ -38,7 +38,7 @@ public void runLater(Runnable aRunnable)
  */
 public void runDelayed(Runnable aRun, int aDelay, boolean inAppThread)
 {
-    Window.setTimeout(() -> aRun.run(), aDelay);
+    Window.setTimeout(() -> TVEnv.runOnAppThread(aRun), aDelay);
 }
 
 /**
@@ -46,7 +46,7 @@ public void runDelayed(Runnable aRun, int aDelay, boolean inAppThread)
  */
 public void runIntervals(Runnable aRun, int aPeriod, int aDelay, boolean doAll, boolean inAppThread)
 {
-    int id = Window.setInterval(() -> aRun.run(), aPeriod);
+    int id = Window.setInterval(() -> TVEnv.runOnAppThread(aRun), aPeriod);
     _intervalIds.put(aRun, id);
 }
 

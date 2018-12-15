@@ -42,7 +42,7 @@ public TVImage(Object aSource)
     
     // Set src and wait till loaded
     setLoaded(false);
-    _img.listenLoad(e -> didFinishLoad());
+    _img.listenLoad(e -> TVEnv.runOnAppThread(() -> didFinishLoad()));
     _img.setSrc(_src);
 }
 

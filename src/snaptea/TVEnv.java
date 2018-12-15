@@ -1,4 +1,5 @@
 package snaptea;
+import java.util.*;
 import org.teavm.jso.browser.Window;
 import snap.gfx.*;
 import snap.web.*;
@@ -7,9 +8,24 @@ import snap.web.*;
  * A GFXEnv implementation for TeaVM.
  */
 public class TVEnv extends GFXEnv {
+    
+    // The app thread
+    Thread            _appThread;
+    
+    // The runs array and start/end
+    Runnable            _theRuns[] = new Runnable[100];
+    int                 _runStart, _runEnd;
 
     // The shared AWTEnv
-    static TVEnv     _shared;
+    static TVEnv             _shared;
+
+/**
+ * Creates a TVEnv.
+ */
+public TVEnv()
+{
+    startNewAppThread();
+}
 
 /**
  * Returns a list of all system fontnames (excludes any that don't start with capital A-Z).
@@ -78,6 +94,59 @@ public void openURL(Object aSource)
  * Plays a beep.
  */
 public void beep()  { }
+
+/**
+ * Runs the event queue.
+ */
+synchronized void runEventQueue()
+{
+    // Queue runs forever
+    while(true) {
+        
+        // Get next run, if found, just run
+        Runnable run = _runEnd>_runStart? _theRuns[_runStart++] : null; //_theRuns.poll();
+        if(run!=null) {
+             run.run();
+             if(Thread.currentThread()!=_appThread)
+                 break;
+         }
+        
+        // Otherwise, wait till new run added to queue
+        else {
+            _runStart = _runEnd = 0;
+            try { wait(); }
+            catch(Exception e) { throw new RuntimeException(e); }
+        }
+    }
+}
+
+/**
+ * Adds to the event queue.
+ */
+synchronized void addToEventQueue(Runnable aRun)
+{
+    _theRuns[_runEnd++] = aRun;
+    if(_runEnd==1)
+        notify();
+    else if(_runEnd>=_theRuns.length) {
+        System.out.println("TVEnv.addToEventQueue: Increasing runs array to len " + _theRuns.length*2);
+        _theRuns = Arrays.copyOf(_theRuns, _theRuns.length*2);
+    }
+}
+
+/**
+ * Starts a new app thread.
+ */
+public void startNewAppThread()
+{
+    _appThread = new Thread(() -> runEventQueue());
+    _appThread.start();
+}
+
+/**
+ * Runs a runnable on app thread.
+ */
+public static void runOnAppThread(Runnable aRun)  { get().addToEventQueue(aRun); }
 
 /**
  * Returns a shared instance.

@@ -144,6 +144,9 @@ protected synchronized void showModal()
     };
     _win.addPropChangeListener(_hideLsnr, View.Showing_Prop);
     
+    // Start new app thread, since this thread is now tied up until window closes
+    TVEnv.get().startNewAppThread();
+    
     // Wait until window is hidden
     try { wait(); }
     catch(Exception e) { throw new RuntimeException(e); }
