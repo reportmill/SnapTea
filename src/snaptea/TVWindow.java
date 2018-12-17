@@ -130,29 +130,6 @@ public void show()
 }
 
 /**
- * Shows modal window.
- */
-protected synchronized void showModal()
-{
-    // Do normal show
-    showImpl();
-    
-    // Register listener to activate current thread on window not showing
-    _hideLsnr = pce -> { if(_win.isShowing()) return;
-        _win.removePropChangeListener(_hideLsnr);
-        synchronized(TVWindow.this) { TVWindow.this.notify(); }
-    };
-    _win.addPropChangeListener(_hideLsnr, View.Showing_Prop);
-    
-    // Start new app thread, since this thread is now tied up until window closes
-    TVEnv.get().startNewAppThread();
-    
-    // Wait until window is hidden
-    try { wait(); }
-    catch(Exception e) { throw new RuntimeException(e); }
-}
-
-/**
  * Shows window.
  */
 public void showImpl()
@@ -200,6 +177,34 @@ public void showImpl()
 
     // Set Window showing    
     _win.setShowing(true);
+}
+
+/**
+ * Shows modal window.
+ */
+protected synchronized void showModal()
+{
+    // Do normal show
+    showImpl();
+    
+    // Register listener to activate current thread on window not showing
+    _win.addPropChangeListener(_hideLsnr = pce -> windowShowingChanged(), View.Showing_Prop);
+    
+    // Start new app thread, since this thread is now tied up until window closes
+    TVEnv.get().startNewAppThread();
+    
+    // Wait until window is hidden
+    try { wait(); }
+    catch(Exception e) { throw new RuntimeException(e); }
+}
+
+/**
+ * Called when window changes showing.
+ */
+synchronized void windowShowingChanged()
+{
+    _win.removePropChangeListener(_hideLsnr); _hideLsnr = null;
+    notify();
 }
 
 /**
