@@ -104,6 +104,7 @@ public void mouseMove(MouseEvent anEvent)
     
     // Get RootView for MouseEvent
     RootView rview = getRootView(anEvent);
+    if(rview==null) rview = _rview; if(rview==null) return;
 
     // Dispatch MouseMove event
     ViewEvent event = TVViewEnv.get().createEvent(rview, anEvent, View.MouseMove, null);
@@ -122,6 +123,7 @@ public void mouseDown(MouseEvent anEvent)
     
     // Get MouseDownView for event
     _mouseDownView = getRootView(anEvent);
+    if(_mouseDownView==null) return;
     
     // Dispatch MousePress event
     ViewEvent event = TVViewEnv.get().createEvent(_mouseDownView, anEvent, View.MousePress, null);
@@ -134,6 +136,7 @@ public void mouseDown(MouseEvent anEvent)
  */
 public void mouseDrag(MouseEvent anEvent)
 {
+    if(_mouseDownView==null) return;
     ViewEvent event = TVViewEnv.get().createEvent(_mouseDownView, anEvent, View.MouseDrag, null);
     ((TVEvent)event)._ccount = _clicks;
     dispatchEvent(_mouseDownView, event);
@@ -144,6 +147,7 @@ public void mouseDrag(MouseEvent anEvent)
  */
 public void mouseUp(MouseEvent anEvent)
 {
+    if(_mouseDownView==null) return;
     RootView mouseDownView = _mouseDownView; _mouseDownView = null;
     ViewEvent event = TVViewEnv.get().createEvent(mouseDownView, anEvent, View.MouseRelease, null);
     ((TVEvent)event)._ccount = _clicks;
@@ -155,6 +159,7 @@ public void mouseWheel(WheelEvent anEvent)
 {
     // Get RootView for WheelEvent
     RootView rview = getRootView(anEvent);
+    if(rview==null) return;
 
     // Dispatch WheelEvent event
     ViewEvent event = TVViewEnv.get().createEvent(rview, anEvent, View.Scroll, null);
@@ -211,6 +216,7 @@ public void touchStart(TouchEvent anEvent)
     
     // Get MouseDownView for event
     _mouseDownView = getRootView(touch);
+    if(_mouseDownView==null) return;
     
     // Dispatch MousePress event
     ViewEvent event = TVViewEnv.get().createEvent(_mouseDownView, touch, View.MousePress, null);
@@ -223,6 +229,7 @@ public void touchStart(TouchEvent anEvent)
  */
 public void touchMove(TouchEvent anEvent)
 {
+    if(_mouseDownView==null) return;
     anEvent.preventDefault();
     
     Touch touches[] = anEvent.getTouches(); if(touches==null || touches.length==0) return;
@@ -238,6 +245,7 @@ public void touchMove(TouchEvent anEvent)
  */
 public void touchEnd(TouchEvent anEvent)
 {
+    if(_mouseDownView==null) return;
     anEvent.preventDefault();
 
     Touch touches[] = anEvent.getChangedTouches(); if(touches==null || touches.length==0) return;
@@ -295,7 +303,7 @@ public RootView getRootView(int aX, int aY)
     for(int i=_windows.size()-1;i>=0;i--) { WindowView wview = _windows.get(i);
         if(wview.contains(aX - wview.getX(), aY - wview.getY()))
             return wview.getRootView(); }
-    return _rview;
+    return null; //_rview;
 }
 
 /**
