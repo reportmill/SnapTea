@@ -1,7 +1,12 @@
 package snaptea;
 import java.util.*;
+import org.teavm.jso.ajax.XMLHttpRequest;
 import org.teavm.jso.browser.Window;
 import org.teavm.jso.dom.events.Event;
+import org.teavm.jso.dom.html.HTMLDocument;
+import org.teavm.jso.dom.html.HTMLSourceElement;
+import org.teavm.jso.dom.xml.Element;
+import org.teavm.jso.dom.xml.NodeList;
 import snap.gfx.*;
 import snap.view.*;
 import snap.web.WebGetter;
@@ -16,6 +21,9 @@ public class TVViewEnv extends ViewEnv {
     
     // A map of window.setIntervals() return ids
     Map <Runnable,Integer>    _intervalIds = new HashMap();
+    
+    // The URLs 
+    static String             _scriptURL, _scriptURLs[];
     
     // A shared instance.
     static TVViewEnv          _shared;
@@ -93,7 +101,53 @@ public ViewEvent createEvent(View aView, Object anEvent, ViewEvent.Type aType, S
  * Returns the screen bounds inset to usable area.
  */
 public Rect getScreenBoundsInset()  { return new Rect(0,0,1000,1000); }
+
+/**
+ * Returns the URL string for script.
+ */
+public static String[] getScriptRoots()
+{
+    // If already set, just return
+    if(_scriptURLs!=null) return _scriptURLs;
     
+    // Iterate over script tags
+    HTMLDocument doc = HTMLDocument.current();
+    NodeList <Element> scripts = doc.getElementsByTagName("script");
+    List <String> urls = new ArrayList();
+    for(int i=0; i<scripts.getLength(); i++ ) { HTMLSourceElement s = (HTMLSourceElement)scripts.get(i);
+        String urlAll = s.getSrc(); if(urlAll==null || urlAll.length()==0) continue;
+        int ind = urlAll.lastIndexOf('/'); if(ind<0) continue;
+        String url = urlAll.substring(0, ind); if(url.length()<10) continue;
+        if(!urls.contains(url)) urls.add(url);
+    }
+
+    // Return urls
+    return _scriptURLs = urls.toArray(new String[urls.size()]);
+}
+
+/**
+ * Returns the URL string for script.
+ */
+public static String getScriptRoot()
+{
+    // If already set, just return
+    if(_scriptURL!=null) return _scriptURL;
+    
+    // Iterate over script roots
+    String roots[] = getScriptRoots();
+    for(String root : roots) { String url = root + "/index.txt";
+        XMLHttpRequest req = XMLHttpRequest.create();
+        req.open("GET", url, false);
+        req.send();
+        if(req.getStatus()==200)
+            return _scriptURL = root;
+    }
+
+    // Return urls
+    System.err.println("TVViewEnv.getScriptRoot: Can't determine root, settling for " + roots[0]);
+    return _scriptURL = roots[0];
+}
+
 /**
  * Returns a shared instance.
  */
@@ -108,6 +162,9 @@ public static TVViewEnv get()
  */
 public static void set()
 {
+    String root = getScriptRoot();
+    System.out.println("Script Root: " + root);
+    
     // Set TV adapter classes for GFXEnv and ViewEnv
     snap.gfx.GFXEnv.setEnv(TVEnv.get());
     ViewEnv.setEnv(get());

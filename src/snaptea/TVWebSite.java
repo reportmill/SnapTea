@@ -11,6 +11,12 @@ public class TVWebSite extends WebSite {
     // Return the paths that are available from this site
     List <String>  _paths;
     
+    // The site root url string
+    String         ROOT_URL;
+    
+    // Whether root has path
+    boolean        _rootHasPath;
+    
     // Whether to debug
     boolean        _debug = false;
     
@@ -22,7 +28,10 @@ public class TVWebSite extends WebSite {
  */
 protected TVWebSite()
 {
-    setURL(WebURL.getURL("http://localhost"));
+    ROOT_URL = TVViewEnv.getScriptRoot(); // Was "http://localhost"
+    WebURL url = WebURL.getURL(ROOT_URL);
+    _rootHasPath = url.getPath()!=null;
+    setURL(url);
 }
 
 /**
@@ -83,7 +92,7 @@ public FileHeader getFileHeader(String aPath)
  */
 protected byte[] getFileBytes(String aPath)
 {
-    String urls = aPath.substring(1);
+    String urls = ROOT_URL + aPath;  // Was urls = aPath.substring(1);
     
     // Get XMLHttpRequest
     XMLHttpRequest req = XMLHttpRequest.create();
@@ -124,7 +133,7 @@ protected List <FileHeader> getFileHeaders(String aPath)
 protected void doPost(WebRequest aReq, WebResponse aResp)
 {
     WebURL url = aReq.getURL();
-    String urls = url.getString(); if(urls.startsWith("http://localhost")) urls = url.getPath().substring(1);
+    String urls = url.getString(); //if(urls.startsWith("http://localhost")) urls = url.getPath().substring(1);
     
     XMLHttpRequest req = XMLHttpRequest.create();
     req.open("POST", urls, false);
@@ -147,7 +156,7 @@ public List <String> getPaths()
 {
     if(_paths!=null) return _paths;
     
-    String urls = "index.txt";
+    String urls = ROOT_URL + "/index.txt";
     XMLHttpRequest req = XMLHttpRequest.create();
     req.open("GET", urls, false);
     req.send();
@@ -197,7 +206,8 @@ public List <String> getDirPaths(String aPath)
 java.net.URL getURL(Class c, String p)
 {
     if(!isPath(p)) return null;
-    try { return new java.net.URL("http://localhost" + p); }
+    String urls = _rootHasPath? (ROOT_URL + '!' + p) : (ROOT_URL + p);
+    try { return new java.net.URL(urls); } // was "http://localhost"
     catch(java.net.MalformedURLException e) { throw new RuntimeException(e); }
 }
 
