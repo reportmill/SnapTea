@@ -60,6 +60,20 @@ public void setStroke(Stroke aStroke)
         _cntx.setLineDash(jsa);
     }
     _cntx.setLineDashOffset((float)aStroke.getDashOffset());
+    
+    // Set cap
+    switch(aStroke.getCap()) {
+        case Round: _cntx.setLineCap("round"); break;
+        case Butt: _cntx.setLineCap("butt"); break;
+        case Square: _cntx.setLineCap("square"); break;
+    }
+    
+    // Set join
+    switch(aStroke.getJoin()) {
+        case Miter: _cntx.setLineJoin("miter"); _cntx.setMiterLimit(aStroke.getMiterLimit()); break;
+        case Round: _cntx.setLineJoin("round"); break;
+        case Bevel: _cntx.setLineJoin("bevel"); break;
+    }
 }
 
 // Empty Dash array
