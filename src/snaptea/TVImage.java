@@ -89,8 +89,7 @@ String getSourceURL(Object aSource)
 boolean isBrowsable(WebURL aURL)
 {
     String urls = aURL.getString();
-    String scheme = aURL.getScheme();
-    if(urls.contains("!")) return false;
+    String scheme = aURL.getScheme(); //if(urls.contains("!")) return false;
     return scheme.equals("http") || scheme.equals("https") || scheme.equals("data") || scheme.equals("blob");
 }
 
