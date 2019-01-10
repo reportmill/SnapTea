@@ -347,12 +347,12 @@ public void touchEnd(TouchEvent anEvent)
 /**
  * Returns the RootView for an event.
  */
-public RootView getRootView(MouseEvent anEvent)  { return getRootView(anEvent.getClientX(), anEvent.getClientY()); }
+public RootView getRootView(MouseEvent anEvent)  { return getRootView(TV.getPageX(anEvent), TV.getPageY(anEvent)); }
 
 /**
  * Returns the RootView for an event.
  */
-public RootView getRootView(Touch anEvent)  { return getRootView(anEvent.getClientX(), anEvent.getClientY()); }
+public RootView getRootView(Touch anEvent)  { return getRootView(anEvent.getPageX(), anEvent.getPageY()); }
 
 /**
  * Returns the RootView for an event.
