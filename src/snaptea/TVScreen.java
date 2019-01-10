@@ -2,6 +2,7 @@ package snaptea;
 import java.util.*;
 import org.teavm.jso.browser.Window;
 import org.teavm.jso.dom.events.*;
+import org.teavm.jso.dom.events.EventListener;
 import org.teavm.jso.dom.html.*;
 import snap.view.*;
 
@@ -10,8 +11,8 @@ import snap.view.*;
  */
 public class TVScreen {
 
-    // The RootView hit by last MouseDown (if mouse still down)
-    RootView              _mouseDownView;
+    // The RootView hit by last MouseDown and MouseMove (if mouse still down)
+    RootView              _mousePressView, _mouseDownView, _mouseMoveView;
     
     // Time of last mouse release
     long                  _lastReleaseTime;
@@ -41,23 +42,92 @@ private TVScreen()
     HTMLBodyElement body = doc.getBody();
     
     // Add Mouse listeners
-    body.addEventListener("mousedown", e -> TVEnv.runOnAppThread(() -> mouseDown((MouseEvent)e)));
-    body.addEventListener("mousemove", e -> TVEnv.runOnAppThread(() -> mouseMove((MouseEvent)e)));
-    body.addEventListener("mouseup", e -> TVEnv.runOnAppThread(() -> mouseUp((MouseEvent)e)));
-    body.addEventListener("wheel", e -> TVEnv.runOnAppThread(() -> mouseWheel((WheelEvent)e)));
+    EventListener lsnr = e -> handleEvent(e);
+    body.addEventListener("mousedown", lsnr);
+    body.addEventListener("mousemove", lsnr);
+    body.addEventListener("mouseup", lsnr);
+    body.addEventListener("click", lsnr);
+    body.addEventListener("contextmenu", lsnr);
+    body.addEventListener("wheel", lsnr);
     
     // Add Key Listeners
-    body.addEventListener("keydown", e -> TVEnv.runOnAppThread(() -> keyDown((KeyboardEvent)e)));
-    body.addEventListener("keypress", e -> TVEnv.runOnAppThread(() -> keyPress((KeyboardEvent)e)));
-    body.addEventListener("keyup", e -> TVEnv.runOnAppThread(() -> keyUp((KeyboardEvent)e)));
+    body.addEventListener("keydown", lsnr);
+    body.addEventListener("keypress", lsnr);
+    body.addEventListener("keyup", lsnr);
     
     // Add Touch Listeners
-    body.addEventListener("touchstart", e -> TVEnv.runOnAppThread(() -> touchStart((TouchEvent)e)));
-    body.addEventListener("touchmove", e -> TVEnv.runOnAppThread(() -> touchMove((TouchEvent)e)));
-    body.addEventListener("touchend", e -> TVEnv.runOnAppThread(() -> touchEnd((TouchEvent)e)));
+    body.addEventListener("touchstart", lsnr);
+    body.addEventListener("touchmove", lsnr);
+    body.addEventListener("touchend", lsnr);
     
     // Add bounds listener
     Window.current().addEventListener("resize", e -> TVEnv.runOnAppThread(() -> windowSizeChanged()));
+}
+
+/**
+ * Handles an event.
+ */
+void handleEvent(Event e)
+{
+    Runnable run = null;
+    boolean stopProp = false, prevDefault = false, ifOver = false, ifPress = false;
+    switch(e.getType()) {
+        case "mousedown":
+            run = () -> mouseDown((MouseEvent)e);
+            _mousePressView = _mouseDownView = getRootView((MouseEvent)e);
+            stopProp = prevDefault = ifPress = true; break;
+        case "mousemove":
+            run = () -> mouseMove((MouseEvent)e);
+            _mouseMoveView = getRootView((MouseEvent)e);
+            stopProp = prevDefault = ifPress = true; break;
+        case "mouseup":
+            run = () -> mouseUp((MouseEvent)e);
+            stopProp = prevDefault = ifPress = true; break;
+        case "click":
+        case "contextmenu":
+            stopProp = prevDefault = ifPress = true; break;
+        case "wheel":
+            run = () -> mouseWheel((WheelEvent)e);
+            stopProp = prevDefault = ifOver = true; break;
+        case "keydown":
+            run = () -> keyDown((KeyboardEvent)e);
+            stopProp = prevDefault = ifPress = true; break;
+        case "keypress":
+            run = () -> keyPress((KeyboardEvent)e);
+            stopProp = prevDefault = ifPress = true; break;
+        case "keyup":
+            run = () -> keyUp((KeyboardEvent)e);
+            stopProp = prevDefault = ifPress = true; break;
+        case "touchstart":
+            run = () -> touchStart((TouchEvent)e);
+            _mousePressView = _mouseDownView = getRootView((TouchEvent)e);
+            stopProp = prevDefault = ifPress = true; break;
+        case "touchmove":
+            run = () -> touchMove((TouchEvent)e);
+            _mouseMoveView = getRootView((TouchEvent)e);
+            stopProp = prevDefault = ifPress = true; break;
+        case "touchend":
+            run = () -> touchEnd((TouchEvent)e);
+            stopProp = prevDefault = ifPress = true; break;
+        default:
+            System.err.println("TVScreen.handleEvent: Not handled: " + e.getType()); return;
+    }
+    
+    // Update stop flags for Over and Press conditions
+    if(ifOver && _mouseMoveView==null)
+        stopProp = prevDefault = false;
+    if(ifPress && _mousePressView==null)
+        stopProp = prevDefault = false;
+        
+    // Handle StopPropagation and PreventDefault
+    if(stopProp)
+        e.stopPropagation();
+    if(prevDefault)
+        e.preventDefault();
+    
+    // Run event
+    if(run!=null)
+        TVEnv.runOnAppThread(run);
 }
 
 /**
@@ -163,11 +233,7 @@ public void mouseWheel(WheelEvent anEvent)
 
     // Dispatch WheelEvent event
     ViewEvent event = TVViewEnv.get().createEvent(rview, anEvent, View.Scroll, null);
-    dispatchEvent(rview, event);
-    if(event.isConsumed()) {
-        anEvent.stopPropagation();
-        anEvent.preventDefault();
-    }
+    dispatchEvent(rview, event); //if(event.isConsumed()) { anEvent.stopPropagation(); anEvent.preventDefault(); }
 }
 
 /**
@@ -176,8 +242,7 @@ public void mouseWheel(WheelEvent anEvent)
 public void keyDown(KeyboardEvent anEvent)
 {
     ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyPress, null);
-    dispatchEvent(_rview, event);
-    anEvent.stopPropagation();
+    dispatchEvent(_rview, event); //anEvent.stopPropagation();
 }
 
 /**
@@ -186,8 +251,7 @@ public void keyDown(KeyboardEvent anEvent)
 public void keyPress(KeyboardEvent anEvent)
 {
     ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyType, null);
-    dispatchEvent(_rview, event);
-    anEvent.stopPropagation();
+    dispatchEvent(_rview, event); //anEvent.stopPropagation();
 }
 
 /**
@@ -196,8 +260,7 @@ public void keyPress(KeyboardEvent anEvent)
 public void keyUp(KeyboardEvent anEvent)
 {
     ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyRelease, null);
-    dispatchEvent(_rview, event);
-    anEvent.stopPropagation();
+    dispatchEvent(_rview, event); //anEvent.stopPropagation();
 }
 
 /**
@@ -205,8 +268,6 @@ public void keyUp(KeyboardEvent anEvent)
  */
 public void touchStart(TouchEvent anEvent)
 {
-    anEvent.preventDefault();
-    
     Touch touches[] = anEvent.getTouches(); if(touches==null || touches.length==0) return;
     Touch touch = touches[0];
     
@@ -216,7 +277,7 @@ public void touchStart(TouchEvent anEvent)
     
     // Get MouseDownView for event
     _mouseDownView = getRootView(touch);
-    if(_mouseDownView==null) return;
+    if(_mouseDownView==null) return; //anEvent.preventDefault();
     
     // Dispatch MousePress event
     ViewEvent event = TVViewEnv.get().createEvent(_mouseDownView, touch, View.MousePress, null);
@@ -229,8 +290,7 @@ public void touchStart(TouchEvent anEvent)
  */
 public void touchMove(TouchEvent anEvent)
 {
-    if(_mouseDownView==null) return;
-    anEvent.preventDefault();
+    if(_mouseDownView==null) return; //anEvent.preventDefault();
     
     Touch touches[] = anEvent.getTouches(); if(touches==null || touches.length==0) return;
     Touch touch = touches[0];
@@ -245,8 +305,7 @@ public void touchMove(TouchEvent anEvent)
  */
 public void touchEnd(TouchEvent anEvent)
 {
-    if(_mouseDownView==null) return;
-    anEvent.preventDefault();
+    if(_mouseDownView==null) return; //anEvent.preventDefault();
 
     Touch touches[] = anEvent.getChangedTouches(); if(touches==null || touches.length==0) return;
     Touch touch = touches[0];
@@ -294,6 +353,15 @@ public RootView getRootView(MouseEvent anEvent)  { return getRootView(anEvent.ge
  * Returns the RootView for an event.
  */
 public RootView getRootView(Touch anEvent)  { return getRootView(anEvent.getClientX(), anEvent.getClientY()); }
+
+/**
+ * Returns the RootView for an event.
+ */
+public RootView getRootView(TouchEvent anEvent)
+{
+    Touch touches[] = anEvent.getTouches(); if(touches==null || touches.length==0) return null;
+    return getRootView(touches[0]);
+}
 
 /**
  * Returns the RootView for an event.

@@ -27,6 +27,9 @@ public void setView(View aView)
     
     // Create canvas
     _canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
+
+    // Have to do this so TouchEvent.preventDefault doesn't complain
+    _canvas.getStyle().setProperty("touch-action", "none");
         
     // Create painer
     _pntr = new TVPainter(_canvas);

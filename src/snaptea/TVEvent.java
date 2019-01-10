@@ -111,6 +111,12 @@ public boolean isShortcutDown()
     return false;
 }
 
+/** Returns whether popup trigger is down. */
+public boolean isPopupTrigger()
+{
+    return isMouseEvent() && ((MouseEvent)getEvent()).getButton()==MouseEvent.RIGHT_BUTTON;
+}
+
 /**
  * Returns a view event at new point.
  */
