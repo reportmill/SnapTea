@@ -61,7 +61,7 @@ private TVScreen()
     body.addEventListener("touchend", lsnr);
     
     // Add bounds listener
-    Window.current().addEventListener("resize", e -> TVEnv.runOnAppThread(() -> windowSizeChanged()));
+    Window.current().addEventListener("resize", e -> TVEnv.runOnAppThread(() -> browserWindowSizeChanged()));
 }
 
 /**
@@ -377,11 +377,11 @@ public RootView getRootView(int aX, int aY)
 /**
  * Called when screen (browser window) size changes to notify windows.
  */
-public void windowSizeChanged()
+public void browserWindowSizeChanged()
 {
     for(WindowView win : _windows) {
         TVWindow winNtv = (TVWindow)win.getNative();
-        winNtv.windowSizeChanged();
+        winNtv.browserWindowSizeChanged();
     }
 }
 

@@ -45,9 +45,9 @@ public TVWindow()
 public void setView(WindowView aWin)
 {
     _win = aWin;
-    _win.addPropChangeListener(pc -> windowViewMaximizedChanged(), WindowView.Maximized_Prop);
-    _win.addPropChangeListener(pce -> windowViewXYChanged(), View.X_Prop, View.Y_Prop);
-    _win.addPropChangeListener(pce -> windowViewSizeChanged(pce), View.Width_Prop, View.Height_Prop);
+    _win.addPropChangeListener(pc -> snapWindowMaximizedChanged(), WindowView.Maximized_Prop);
+    _win.addPropChangeListener(pce -> snapWindowXYChanged(), View.X_Prop, View.Y_Prop);
+    _win.addPropChangeListener(pce -> snapWindowSizeChanged(pce), View.Width_Prop, View.Height_Prop);
 }
 
 /**
@@ -115,8 +115,8 @@ public void setFloating(boolean aValue)
             body.appendChild(_winEmt);
         _container = body;
         _winEmt.getStyle().setProperty("z-index", String.valueOf(_topWin++));
-        windowViewXYChanged();
-        windowViewSizeChanged(null);
+        snapWindowXYChanged();
+        snapWindowSizeChanged(null);
     }
     
     // If turning off
@@ -147,12 +147,8 @@ public void showImpl()
 {
     // Make sure canvas is inside WinEmt
     HTMLCanvasElement canvas = getCanvas();
-    if(canvas.getParentNode()==null) {
+    if(canvas.getParentNode()==null)
         _winEmt.appendChild(canvas);
-        canvas.getStyle().setProperty("width", "100%");
-        canvas.getStyle().setProperty("height", "100%");
-        canvas.getStyle().setProperty("box-sizing", "border-box");
-    }
     
     // Silly stuff
     RootView rview = _win.getRootView(); View c = rview.getContent();
@@ -172,8 +168,8 @@ public void showImpl()
         
         // Update canvas location/size
         if(_win.isMaximized()) _win.setBounds(getMaximizedBounds());
-        windowViewXYChanged();
-        windowViewSizeChanged(null);
+        snapWindowXYChanged();
+        snapWindowSizeChanged(null);
     }
     
     // Handle Not Floating (tied to container content): Size canvas to 100% of container and listen for emt bnds changes
@@ -184,8 +180,8 @@ public void showImpl()
         _winEmt.getStyle().setProperty("height", "100%");
         _winEmt.getStyle().setProperty("box-sizing", "border-box");
         
-        // Resize canvas to element size
-        windowSizeChanged();
+        // Resize snap window to container size
+        browserWindowSizeChanged();
     }
     
     // Add to Screen.Windows
@@ -205,7 +201,7 @@ protected synchronized void showModal()
     showImpl();
     
     // Register listener to activate current thread on window not showing
-    _win.addPropChangeListener(_hideLsnr = pce -> windowShowingChanged(), View.Showing_Prop);
+    _win.addPropChangeListener(_hideLsnr = pce -> snapWindowShowingChanged(), View.Showing_Prop);
     
     // Start new app thread, since this thread is now tied up until window closes
     TVEnv.get().startNewAppThread();
@@ -218,7 +214,7 @@ protected synchronized void showModal()
 /**
  * Called when window changes showing.
  */
-synchronized void windowShowingChanged()
+synchronized void snapWindowShowingChanged()
 {
     _win.removePropChangeListener(_hideLsnr); _hideLsnr = null;
     notify();
@@ -252,7 +248,7 @@ public void toFront()
 /**
  * Called when browser window resizes.
  */
-void windowSizeChanged()
+void browserWindowSizeChanged()
 {
     // If Window.Maximized, reset bounds and return
     if(_win.isMaximized()) {
@@ -261,20 +257,13 @@ void windowSizeChanged()
     // If Window floating, just return
     if(isFloating()) return;
         
-    // Update window location
+    // Reset window location
     HTMLElement container = getContainer();
     Point off = TV.getOffsetAll(container);
     _win.setXY(off.x, off.y);
     
-    // Get container width/height (just return if Window already matches)
+    // Reset window size
     int w = container.getClientWidth(), h = container.getClientHeight();
-    //if(w==(int)_win.getWidth() && h==(int)_win.getHeight()) return;
-    
-    // Reset canvas and window size
-    HTMLCanvasElement canvas = getCanvas();
-    Insets ins = _win.getInsetsAll();
-    int cw = w - (int)ins.getWidth(), ch = h - (int)ins.getHeight();
-    canvas.setWidth(cw*TVWindow.scale); canvas.setHeight(ch*TVWindow.scale);
     _win.setSize(w,h);
     _win.repaint();
 }
@@ -282,17 +271,13 @@ void windowSizeChanged()
 /**
  * Called when WindowView bounds changes to sync win size to RootView and win location to RootView.Canvas.
  */
-public void windowViewXYChanged()
+public void snapWindowXYChanged()
 {
     // If not floating, just return (container changes go to win, not win to container)
     if(!isFloating()) return;
     
-    // Get WinEmt x/y
-    Insets ins = Insets.EMPTY; //_win.getInsetsAll();
-    int x = (int)Math.round(ins.left + _win.getX());
-    int y = (int)Math.round(ins.top + _win.getY());
-
-    // Set WinEmt position full-screen
+    // Get WinEmt x/y and set
+    int x = (int)Math.round(_win.getX()), y = (int)Math.round(_win.getY());
     _winEmt.getStyle().setProperty("left", String.valueOf(x) + "px");
     _winEmt.getStyle().setProperty("top", String.valueOf(y) + "px");
 }
@@ -300,34 +285,29 @@ public void windowViewXYChanged()
 /**
  * Called when WindowView properties change to sync RootView size to canvas.
  */
-public void windowViewSizeChanged(PropChange aPC)
+void snapWindowSizeChanged(PropChange aPC)
 {
     // If not floating, just return (container changes go to win, not win to container)
     if(!isFloating()) return;
     
-    // Get Canvas
-    HTMLCanvasElement canvas = getCanvas();
-    
     // Handle Width change
     String pname = aPC!=null? aPC.getPropName() : null;
     if(pname==null || pname==View.Width_Prop) {
-        int ww = (int)Math.round(_win.getWidth()), cw = ww - (int)_win.getInsetsAll().getWidth();
-        canvas.setWidth(cw*TVWindow.scale);
-        _winEmt.getStyle().setProperty("width", ww + "px");
+        int w = (int)Math.round(_win.getWidth());
+        _winEmt.getStyle().setProperty("width", w + "px");
     }
     
     // Handle Height change
     if(pname==null || pname==View.Height_Prop) {
-        int wh = (int)Math.round(_win.getHeight()), ch = wh - (int)_win.getInsetsAll().getHeight();
-        canvas.setHeight(ch*TVWindow.scale);
-        _winEmt.getStyle().setProperty("height", wh + "px");
+        int h = (int)Math.round(_win.getHeight());
+        _winEmt.getStyle().setProperty("height", h + "px");
     }
 }
 
 /**
  * Called when WindowView.Maximized is changed.
  */
-void windowViewMaximizedChanged()
+void snapWindowMaximizedChanged()
 {
     // Handle Maximized on
     if(_win.isMaximized()) {
@@ -336,7 +316,7 @@ void windowViewMaximizedChanged()
         getCanvas().getStyle().setProperty("box-shadow", "1px 1px 8px grey");
         setFloating(true);
         _win.setBounds(getMaximizedBounds());
-        windowViewXYChanged();
+        snapWindowXYChanged();
     }
     
     // Handle Maximized off
@@ -345,7 +325,7 @@ void windowViewMaximizedChanged()
         _winEmt.getStyle().setProperty("padding", null);
         getCanvas().getStyle().setProperty("box-shadow", null);
         setFloating(false);
-        windowSizeChanged();
+        browserWindowSizeChanged();
     }
 }
 
@@ -356,7 +336,7 @@ Rect getMaximizedBounds()
 {
     int w = TV.getBrowserWindowWidth();
     int h = TV.getBrowserWindowHeight();
-    return new Rect(0,0,w,h); //new Rect(5,5,w-10,h-10);
+    return new Rect(0,0,w,h);
 }
 
 }

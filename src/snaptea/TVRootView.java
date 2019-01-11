@@ -25,9 +25,15 @@ public void setView(View aView)
     // Set RootView
     _rview = (RootView)aView;
     
-    // Create canvas
+    // Create canvas and configure to totally fill window element (minus padding insets)
     _canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
+    _canvas.getStyle().setProperty("width", "100%");
+    _canvas.getStyle().setProperty("height", "100%");
+    _canvas.getStyle().setProperty("box-sizing", "border-box");
 
+    // Add RootView listener to propagate size changes to canvas
+    _rview.addPropChangeListener(pc -> rootViewSizeChange(), View.Width_Prop, View.Height_Prop);
+    
     // Have to do this so TouchEvent.preventDefault doesn't complain and iOS doesn't scroll doc
     _canvas.getStyle().setProperty("touch-action", "none");
     _canvas.setAttribute("touch-action", "none");
@@ -79,6 +85,15 @@ public void repaint(Rect aRect)
     if(_rview.getFill()==null) _pntr.clearRect(0,0,_rview.getWidth(), _rview.getHeight());
     _pntr.setTransform(1,0,0,1,0,0); // I don't know why I need this!
     ViewUtils.paintAll(_rview, _pntr);
+}
+
+/**
+ * Called when root view size changes.
+ */
+void rootViewSizeChange()
+{
+    int w = (int)Math.ceil(_rview.getWidth()), h = (int)Math.ceil(_rview.getHeight());
+    _canvas.setWidth(w*TVWindow.scale); _canvas.setHeight(h*TVWindow.scale);
 }
 
 /** Called to handle a drag event. */
