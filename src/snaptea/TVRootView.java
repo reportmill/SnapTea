@@ -28,9 +28,13 @@ public void setView(View aView)
     // Create canvas
     _canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
 
-    // Have to do this so TouchEvent.preventDefault doesn't complain
+    // Have to do this so TouchEvent.preventDefault doesn't complain and iOS doesn't scroll doc
     _canvas.getStyle().setProperty("touch-action", "none");
-        
+    _canvas.setAttribute("touch-action", "none");
+    _canvas.addEventListener("touchstart", e -> e.preventDefault());
+    _canvas.addEventListener("touchmove", e -> e.preventDefault());
+    _canvas.addEventListener("touchend", e -> e.preventDefault());
+    
     // Create painer
     _pntr = new TVPainter(_canvas);
     
