@@ -12,6 +12,9 @@ public class TVWindow {
     // The Window View
     WindowView            _win;
     
+    // The element to represent the window
+    HTMLElement           _winEmt;
+    
     // The container element
     HTMLElement           _container;
     
@@ -26,7 +29,16 @@ public class TVWindow {
     
     // The paint scale
     public static int     scale = TV.getDevicePixelRatio()==2? 2 : 1;
-    
+
+/**
+ * Creates a TVWindow.
+ */
+public TVWindow()
+{
+    _winEmt = HTMLDocument.current().createElement("div");
+    _winEmt.getStyle().setProperty("background", "#BBBBBBCC");
+}
+
 /**
  * Sets the window.
  */
@@ -93,17 +105,16 @@ public void setFloating(boolean aValue)
     // Set value
     _floating = aValue;
     
-    // Get canvas
-    HTMLCanvasElement canvas = getCanvas();
+    // Get body
     HTMLBodyElement body = HTMLDocument.current().getBody();
     
     // If turning on
     if(aValue) {
-        canvas.getStyle().setProperty("position", _win.isMaximized()? "fixed" : "absolute");
-        if(canvas.getParentNode()!=body)
-            body.appendChild(canvas);
+        _winEmt.getStyle().setProperty("position", _win.isMaximized()? "fixed" : "absolute");
+        if(_winEmt.getParentNode()!=body)
+            body.appendChild(_winEmt);
         _container = body;
-        canvas.getStyle().setProperty("z-index", String.valueOf(_topWin++));
+        _winEmt.getStyle().setProperty("z-index", String.valueOf(_topWin++));
         windowViewXYChanged();
         windowViewSizeChanged(null);
     }
@@ -112,11 +123,11 @@ public void setFloating(boolean aValue)
     else {
         _container = null;
         HTMLElement container = getContainer();
-        canvas.getStyle().setProperty("position", "static");
-        canvas.getStyle().setProperty("width", "100%");
-        canvas.getStyle().setProperty("height", "100%");
+        _winEmt.getStyle().setProperty("position", "static");
+        _winEmt.getStyle().setProperty("width", "100%");
+        _winEmt.getStyle().setProperty("height", "100%");
         if(container!=body)
-            container.appendChild(canvas);
+            container.appendChild(_winEmt);
     }
 }
 
@@ -134,8 +145,14 @@ public void show()
  */
 public void showImpl()
 {
-    // Get canvas
+    // Make sure canvas is inside WinEmt
     HTMLCanvasElement canvas = getCanvas();
+    if(canvas.getParentNode()==null) {
+        _winEmt.appendChild(canvas);
+        canvas.getStyle().setProperty("width", "100%");
+        canvas.getStyle().setProperty("height", "100%");
+        canvas.getStyle().setProperty("box-sizing", "border-box");
+    }
     
     // Silly stuff
     RootView rview = _win.getRootView(); View c = rview.getContent();
@@ -144,15 +161,14 @@ public void showImpl()
 
     // Add canvas to container element
     HTMLElement containerEmt = getContainer();
-    containerEmt.appendChild(canvas);
+    containerEmt.appendChild(_winEmt);
     
     // Handle Floating Window: Configure canvas with absolute postion above and listen for WindowView bounds changes
     if(isFloating()) {
         
-        // Set Canvas CSS props for floating
-        canvas.getStyle().setProperty("position", _win.isMaximized()? "fixed" : "absolute");
-        canvas.getStyle().setProperty("border", "1px solid #EEEEEE");
-        canvas.getStyle().setProperty("z-index", String.valueOf(_topWin++));
+        // Set WinEmt CSS props for floating
+        _winEmt.getStyle().setProperty("position", _win.isMaximized()? "fixed" : "absolute");
+        _winEmt.getStyle().setProperty("z-index", String.valueOf(_topWin++));
         
         // Update canvas location/size
         if(_win.isMaximized()) _win.setBounds(getMaximizedBounds());
@@ -164,8 +180,9 @@ public void showImpl()
     else {
         
         // Set canvas to always match size of its container
-        canvas.getStyle().setProperty("width", "100%");
-        canvas.getStyle().setProperty("height", "100%");
+        _winEmt.getStyle().setProperty("width", "100%");
+        _winEmt.getStyle().setProperty("height", "100%");
+        _winEmt.getStyle().setProperty("box-sizing", "border-box");
         
         // Resize canvas to element size
         windowSizeChanged();
@@ -212,12 +229,9 @@ synchronized void windowShowingChanged()
  */
 public void hide()
 {
-    // Get canvas
-    HTMLCanvasElement canvas = getCanvas();
-    
     // Remove canvas
     HTMLElement container = getContainer();
-    container.removeChild(canvas);
+    container.removeChild(_winEmt);
     
     // Add to screen
     TVScreen screen = TVScreen.get();
@@ -232,8 +246,7 @@ public void hide()
  */
 public void toFront()
 {
-    HTMLCanvasElement canvas = getCanvas();
-    canvas.getStyle().setProperty("z-index", String.valueOf(_topWin++));
+    _winEmt.getStyle().setProperty("z-index", String.valueOf(_topWin++));
 }
 
 /**
@@ -259,7 +272,9 @@ void windowSizeChanged()
     
     // Reset canvas and window size
     HTMLCanvasElement canvas = getCanvas();
-    canvas.setWidth(w*TVWindow.scale); canvas.setHeight(h*TVWindow.scale);
+    Insets ins = _win.getInsetsAll();
+    int cw = w - (int)ins.getWidth(), ch = h - (int)ins.getHeight();
+    canvas.setWidth(cw*TVWindow.scale); canvas.setHeight(ch*TVWindow.scale);
     _win.setSize(w,h);
     _win.repaint();
 }
@@ -272,17 +287,14 @@ public void windowViewXYChanged()
     // If not floating, just return (container changes go to win, not win to container)
     if(!isFloating()) return;
     
-    // Get Canvas
-    HTMLCanvasElement canvas = getCanvas();
-    
-    // Get canvas x/y
-    Insets ins = _win.getInsetsAll();
+    // Get WinEmt x/y
+    Insets ins = Insets.EMPTY; //_win.getInsetsAll();
     int x = (int)Math.round(ins.left + _win.getX());
     int y = (int)Math.round(ins.top + _win.getY());
 
-    // Set RootView position full-screen
-    canvas.getStyle().setProperty("left", String.valueOf(x) + "px");
-    canvas.getStyle().setProperty("top", String.valueOf(y) + "px");
+    // Set WinEmt position full-screen
+    _winEmt.getStyle().setProperty("left", String.valueOf(x) + "px");
+    _winEmt.getStyle().setProperty("top", String.valueOf(y) + "px");
 }
 
 /**
@@ -299,16 +311,16 @@ public void windowViewSizeChanged(PropChange aPC)
     // Handle Width change
     String pname = aPC!=null? aPC.getPropName() : null;
     if(pname==null || pname==View.Width_Prop) {
-        int w = (int)Math.round(_win.getWidth()) - (int)_win.getInsetsAll().getWidth();
-        canvas.setWidth(w*TVWindow.scale);
-        canvas.getStyle().setProperty("width", w + "px");
+        int ww = (int)Math.round(_win.getWidth()), cw = ww - (int)_win.getInsetsAll().getWidth();
+        canvas.setWidth(cw*TVWindow.scale);
+        _winEmt.getStyle().setProperty("width", ww + "px");
     }
     
     // Handle Height change
     if(pname==null || pname==View.Height_Prop) {
-        int h = (int)Math.round(_win.getHeight()) - (int)_win.getInsetsAll().getHeight();
-        canvas.setHeight(h*TVWindow.scale);
-        canvas.getStyle().setProperty("height", h + "px");
+        int wh = (int)Math.round(_win.getHeight()), ch = wh - (int)_win.getInsetsAll().getHeight();
+        canvas.setHeight(ch*TVWindow.scale);
+        _winEmt.getStyle().setProperty("height", wh + "px");
     }
 }
 
@@ -319,6 +331,9 @@ void windowViewMaximizedChanged()
 {
     // Handle Maximized on
     if(_win.isMaximized()) {
+        _win.setPadding(5,5,5,5);
+        _winEmt.getStyle().setProperty("padding", "5px");
+        getCanvas().getStyle().setProperty("box-shadow", "1px 1px 8px grey");
         setFloating(true);
         _win.setBounds(getMaximizedBounds());
         windowViewXYChanged();
@@ -326,6 +341,9 @@ void windowViewMaximizedChanged()
     
     // Handle Maximized off
     else {
+        _win.setPadding(0,0,0,0);
+        _winEmt.getStyle().setProperty("padding", null);
+        getCanvas().getStyle().setProperty("box-shadow", null);
         setFloating(false);
         windowSizeChanged();
     }
@@ -338,7 +356,7 @@ Rect getMaximizedBounds()
 {
     int w = TV.getBrowserWindowWidth();
     int h = TV.getBrowserWindowHeight();
-    return new Rect(5,5,w-10,h-10);
+    return new Rect(0,0,w,h); //new Rect(5,5,w-10,h-10);
 }
 
 }
