@@ -69,7 +69,12 @@ public int getKeyCode()
 }
 
 /** Returns the event key char. */
-public char getKeyChar()  { return (char)getKeyCode(); }
+public String getKeyString()
+{
+    KeyboardEvent kev = (KeyboardEvent)getEvent();
+    String str = kev.getKey();
+    return str;
+}
 
 /** Returns whether shift key is down. */
 public boolean isShiftDown()

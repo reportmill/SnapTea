@@ -52,7 +52,6 @@ private TVScreen()
     
     // Add Key Listeners
     body.addEventListener("keydown", lsnr);
-    body.addEventListener("keypress", lsnr);
     body.addEventListener("keyup", lsnr);
     
     // Add Touch Listeners
@@ -70,55 +69,54 @@ private TVScreen()
 void handleEvent(Event e)
 {
     Runnable run = null;
-    boolean stopProp = false, prevDefault = false, ifOver = false, ifPress = false;
+    boolean stopProp = false, prevDefault = false;
     switch(e.getType()) {
         case "mousedown":
             run = () -> mouseDown((MouseEvent)e);
             _mousePressView = _mouseDownView = getRootView((MouseEvent)e);
-            stopProp = prevDefault = ifPress = true; break;
+            if(_mousePressView==null) return;
+            stopProp = prevDefault = true; break;
         case "mousemove":
             run = () -> mouseMove((MouseEvent)e);
-            _mouseMoveView = getRootView((MouseEvent)e);
-            stopProp = prevDefault = ifPress = true; break;
+            _mouseMoveView = getRootView((MouseEvent)e); break;
         case "mouseup":
             run = () -> mouseUp((MouseEvent)e);
-            stopProp = prevDefault = ifPress = true; break;
+            if(_mousePressView==null) return;
+            stopProp = prevDefault = true; break;
         case "click":
         case "contextmenu":
-            stopProp = prevDefault = ifPress = true; break;
+            if(_mousePressView==null) return;
+            stopProp = prevDefault = true; break;
         case "wheel":
+            if(_mouseMoveView==null) return;
             run = () -> mouseWheel((WheelEvent)e);
-            stopProp = prevDefault = ifOver = true; break;
+            stopProp = prevDefault = true; break;
         case "keydown":
+            if(_mousePressView==null) return;
             run = () -> keyDown((KeyboardEvent)e);
-            stopProp = prevDefault = ifPress = true; break;
-        case "keypress":
-            run = () -> keyPress((KeyboardEvent)e);
-            stopProp = prevDefault = ifPress = true; break;
+            stopProp = prevDefault = true; break;
         case "keyup":
+            if(_mousePressView==null) return;
             run = () -> keyUp((KeyboardEvent)e);
-            stopProp = prevDefault = ifPress = true; break;
+            stopProp = prevDefault = true; break;
         case "touchstart":
             run = () -> touchStart((TouchEvent)e);
             _mousePressView = _mouseDownView = getRootView((TouchEvent)e);
-            stopProp = prevDefault = ifPress = true; break;
+            if(_mousePressView==null) return;
+            stopProp = prevDefault = true; break;
         case "touchmove":
+            if(_mousePressView==null) return;
             run = () -> touchMove((TouchEvent)e);
             _mouseMoveView = getRootView((TouchEvent)e);
-            stopProp = prevDefault = ifPress = true; break;
+            stopProp = prevDefault = true; break;
         case "touchend":
+            if(_mousePressView==null) return;
             run = () -> touchEnd((TouchEvent)e);
-            stopProp = prevDefault = ifPress = true; break;
+            stopProp = prevDefault = true; break;
         default:
             System.err.println("TVScreen.handleEvent: Not handled: " + e.getType()); return;
     }
     
-    // Update stop flags for Over and Press conditions
-    if(ifOver && _mouseMoveView==null)
-        stopProp = prevDefault = false;
-    if(ifPress && _mousePressView==null)
-        stopProp = prevDefault = false;
-        
     // Handle StopPropagation and PreventDefault
     if(stopProp)
         e.stopPropagation();
@@ -243,6 +241,11 @@ public void keyDown(KeyboardEvent anEvent)
 {
     ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyPress, null);
     dispatchEvent(_rview, event); //anEvent.stopPropagation();
+    
+    String str = anEvent.getKey();
+    if(str==null || str.length()==0 || str.equals("Control") || str.equals("Alt") ||
+        str.equals("Meta") || str.equals("Shift")) return;
+    keyPress(anEvent);
 }
 
 /**
