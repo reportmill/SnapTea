@@ -36,6 +36,7 @@ public class TVWindow {
 public TVWindow()
 {
     _winEmt = HTMLDocument.current().createElement("div");
+    _winEmt.getStyle().setProperty("box-sizing", "border-box");
     _winEmt.getStyle().setProperty("background", "#BBBBBBCC");
 }
 

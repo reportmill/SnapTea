@@ -33,6 +33,7 @@ public void setView(View aView)
 
     // Add RootView listener to propagate size changes to canvas
     _rview.addPropChangeListener(pc -> rootViewSizeChange(), View.Width_Prop, View.Height_Prop);
+    rootViewSizeChange();
     
     // Have to do this so TouchEvent.preventDefault doesn't complain and iOS doesn't scroll doc
     _canvas.getStyle().setProperty("touch-action", "none");
