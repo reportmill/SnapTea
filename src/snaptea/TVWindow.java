@@ -1,4 +1,6 @@
 package snaptea;
+import org.teavm.jso.browser.Window;
+import org.teavm.jso.dom.events.EventListener;
 import org.teavm.jso.dom.html.*;
 import snap.gfx.*;
 import snap.util.*;
@@ -15,14 +17,14 @@ public class TVWindow {
     // The element to represent the window
     HTMLElement           _winEmt;
     
-    // The container element
-    HTMLElement           _container;
-    
-    // Whether window canvas is floating above web page (container element not specified)
-    boolean               _floating;
+    // The parent element
+    HTMLElement           _parent;
     
     // A listener for hide
     PropChangeListener    _hideLsnr;
+    
+    // A listener for browser window resize
+    EventListener         _resizeLsnr = null;
     
     // The body overflow value
     String                _bodyOverflow;
@@ -50,8 +52,8 @@ public void setView(WindowView aWin)
 {
     _win = aWin;
     _win.addPropChangeListener(pc -> snapWindowMaximizedChanged(), WindowView.Maximized_Prop);
-    _win.addPropChangeListener(pce -> snapWindowXYChanged(), View.X_Prop, View.Y_Prop);
-    _win.addPropChangeListener(pce -> snapWindowSizeChanged(pce), View.Width_Prop, View.Height_Prop);
+    _win.addPropChangeListener(pce -> snapWindowBoundsChanged(pce), View.X_Prop, View.Y_Prop,
+        View.Width_Prop, View.Height_Prop);
 }
 
 /**
@@ -65,40 +67,93 @@ public void initWindow()
 }
 
 /**
- * Returns the container element for this window.
+ * Returns the body element.
  */
-public HTMLElement getContainer()
+HTMLBodyElement getBody()  { return HTMLDocument.current().getBody(); }
+
+/**
+ * Returns the parent DOM element of this window.
+ */
+public HTMLElement getParent()  { return _parent; }
+
+/**
+ * Sets the parent DOM element of this window.
+ */
+protected void setParent(HTMLElement aNode)
 {
     // If already set, just return
-    if(_container!=null) return _container;
+    if(aNode==_parent) return;
+    
+    // Set new value
+    HTMLElement par = _parent; _parent = aNode;
+    
+    // If null, just remove from old parent and return
+    if(aNode==null) {
+        if(par!=null) par.removeChild(_winEmt); return; }
+    
+    // Add WinEmt to given node
+    aNode.appendChild(_winEmt);
+    
+    // If body, configure special
+    if(aNode==getBody()) {
+        
+        // Set body and html height so that document covers the whole browser page
+        HTMLHtmlElement html = HTMLDocument.current().getDocumentElement();
+        HTMLBodyElement body = getBody();
+        html.getStyle().setProperty("height", "100%");
+        body.getStyle().setProperty("min-height", "100%");
 
-    // Look for container in doc for WindowView name
-    HTMLDocument doc = HTMLDocument.current();
-    String cname = _win.getName();
-    if(cname!=null)
-        _container = doc.getElementById(cname);
+        // Configure WinEmt for body
+        _winEmt.getStyle().setProperty("position", _win.isMaximized()? "fixed" : "absolute");
+        _winEmt.getStyle().setProperty("z-index", String.valueOf(_topWin++));
+    }
     
-    // If not found, use body
-    if(_container==null) {
-        setContainerToBody(); _floating = true; }
-    
-    // Return container
-    return _container;
+    // If arbitrary element
+    else {
+        _winEmt.getStyle().setProperty("position", "static");
+        _winEmt.getStyle().setProperty("width", "100%");
+        _winEmt.getStyle().setProperty("height", "100%");
+    }
 }
 
 /**
- * Sets the container to body.
+ * Returns the parent DOM element of this window.
  */
-void setContainerToBody()
+private HTMLElement getParentForWin()
 {
-    // Get body and set Container
-    HTMLBodyElement body = HTMLDocument.current().getBody();
-    _container = body;
+    // If window is maximized, parent should always be body
+    if(_win.isMaximized()) return getBody();
     
-    // Set body and html height so that document covers the whole browser page
-    HTMLHtmlElement html = HTMLDocument.current().getDocumentElement();
-    body.getStyle().setProperty("min-height", "100%");
-    html.getStyle().setProperty("height", "100%");
+    // If window has named element, return that
+    String pname = _win.getName();
+    if(pname!=null) {
+        HTMLDocument doc = HTMLDocument.current();
+        HTMLElement par = doc.getElementById(pname);
+        if(par!=null)
+            return par;
+    }
+    
+    // Default to body
+    return getBody();
+}
+
+/**
+ * Resets the parent DOM element and Window/WinEmt bounds.
+ */
+protected void resetParentAndBounds()
+{
+    // Get proper parent node and set
+    HTMLElement par = getParentForWin();
+    setParent(par);
+
+    // If window floating in body, set WinEmt bounds from Window
+    if(par==getBody()) {
+        if(_win.isMaximized()) _win.setBounds(getMaximizedBounds());
+        snapWindowBoundsChanged(null);
+    }
+    
+    // If window in DOM container element
+    else browserWindowSizeChanged();
 }
 
 /**
@@ -112,46 +167,9 @@ public HTMLCanvasElement getCanvas()
 }
 
 /**
- * Returns whether window canvas floats above web page (container element not specified).
+ * Returns whether window is child of body.
  */
-public boolean isFloating()  { return _floating; }
-
-/**
- * Sets whether window canvas floats above web page (container element not specified).
- */
-public void setFloating(boolean aValue)
-{
-    // If value already set, just return
-    if(aValue==_floating) return;
-    
-    // Set value
-    _floating = aValue;
-    
-    // Get body
-    HTMLBodyElement body = HTMLDocument.current().getBody();
-    
-    // If turning on
-    if(aValue) {
-        _winEmt.getStyle().setProperty("position", _win.isMaximized()? "fixed" : "absolute");
-        if(_winEmt.getParentNode()!=body)
-            body.appendChild(_winEmt);
-        setContainerToBody();
-        _winEmt.getStyle().setProperty("z-index", String.valueOf(_topWin++));
-        snapWindowXYChanged();
-        snapWindowSizeChanged(null);
-    }
-    
-    // If turning off
-    else {
-        _container = null;
-        HTMLElement container = getContainer();
-        _winEmt.getStyle().setProperty("position", "static");
-        _winEmt.getStyle().setProperty("width", "100%");
-        _winEmt.getStyle().setProperty("height", "100%");
-        if(container!=body)
-            container.appendChild(_winEmt);
-    }
-}
+public boolean isChildOfBody()  { return getParent()==getBody(); }
 
 /**
  * Shows window.
@@ -167,44 +185,18 @@ public void show()
  */
 public void showImpl()
 {
-    // Make sure canvas is inside WinEmt
-    HTMLCanvasElement canvas = getCanvas();
-    if(canvas.getParentNode()==null)
-        _winEmt.appendChild(canvas);
-    
     // Silly stuff
     RootView rview = _win.getRootView(); View c = rview.getContent();
     if(c instanceof Label || c instanceof ButtonBase) { c.setPadding(4,6,4,6); c.setFont(c.getFont().deriveFont(14));
         BoxView box = new BoxView(c); box.setPadding(4,4,4,4); rview.setContent(box); }
 
-    // Add canvas to container element
-    HTMLElement containerEmt = getContainer();
-    containerEmt.appendChild(_winEmt);
-    
-    // Handle Floating Window: Configure canvas with absolute postion above and listen for WindowView bounds changes
-    if(isFloating()) {
+    // Make sure canvas is inside WinEmt
+    HTMLCanvasElement canvas = getCanvas();
+    if(canvas.getParentNode()==null)
+        _winEmt.appendChild(canvas);
         
-        // Set WinEmt CSS props for floating
-        _winEmt.getStyle().setProperty("position", _win.isMaximized()? "fixed" : "absolute");
-        _winEmt.getStyle().setProperty("z-index", String.valueOf(_topWin++));
-        
-        // Update canvas location/size
-        if(_win.isMaximized()) _win.setBounds(getMaximizedBounds());
-        snapWindowXYChanged();
-        snapWindowSizeChanged(null);
-    }
-    
-    // Handle Not Floating (tied to container content): Size canvas to 100% of container and listen for emt bnds changes
-    else {
-        
-        // Set canvas to always match size of its container
-        _winEmt.getStyle().setProperty("width", "100%");
-        _winEmt.getStyle().setProperty("height", "100%");
-        _winEmt.getStyle().setProperty("box-sizing", "border-box");
-        
-        // Resize snap window to container size
-        browserWindowSizeChanged();
-    }
+    // Make sure WinEmt is in proper parent node with proper bounds
+    resetParentAndBounds();
     
     // Add to Screen.Windows
     TVScreen screen = TVScreen.get();
@@ -212,6 +204,10 @@ public void showImpl()
 
     // Set Window showing    
     _win.setShowing(true);
+    
+    // Start listening to browser window resizes
+    if(_resizeLsnr==null) _resizeLsnr = e -> TVEnv.runOnAppThread(() -> browserWindowSizeChanged());
+    Window.current().addEventListener("resize", _resizeLsnr);
 }
 
 /**
@@ -247,16 +243,18 @@ synchronized void snapWindowShowingChanged()
  */
 public void hide()
 {
-    // Remove canvas
-    HTMLElement container = getContainer();
-    container.removeChild(_winEmt);
+    // Remove WinEmt from parent
+    setParent(null);
     
-    // Add to screen
+    // Remove Window from screen
     TVScreen screen = TVScreen.get();
     screen.removeWindow(_win);
     
     // Set Window not showing
     _win.setShowing(false);
+    
+    // Stop listening to browser window resizes
+    Window.current().removeEventListener("resize", _resizeLsnr); _resizeLsnr = null;
 }
 
 /**
@@ -272,58 +270,46 @@ public void toFront()
  */
 void browserWindowSizeChanged()
 {
-    // If Window.Maximized, reset bounds and return
-    if(_win.isMaximized()) {
-        _win.setBounds(getMaximizedBounds()); return; }
-        
-    // If Window floating, just return
-    if(isFloating()) return;
+    // If Window is child of body, just return
+    if(isChildOfBody()) {
+        if(_win.isMaximized())
+            _win.setBounds(getMaximizedBounds());
+        return;
+    }
         
     // Reset window location
-    HTMLElement container = getContainer();
-    Point off = TV.getOffsetAll(container);
+    HTMLElement parent = getParent();
+    Point off = TV.getOffsetAll(parent);
     _win.setXY(off.x, off.y);
     
     // Reset window size
-    int w = container.getClientWidth(), h = container.getClientHeight();
+    int w = parent.getClientWidth(), h = parent.getClientHeight();
     _win.setSize(w,h);
     _win.repaint();
 }
 
 /**
- * Called when WindowView bounds changes to sync win size to RootView and win location to RootView.Canvas.
+ * Called when WindowView has bounds change to sync to WinEmt.
  */
-public void snapWindowXYChanged()
+void snapWindowBoundsChanged(PropChange aPC)
 {
-    // If not floating, just return (container changes go to win, not win to container)
-    if(!isFloating()) return;
+    // If Window not child of body, just return (parent node changes go to win, not win to parent)
+    if(!isChildOfBody()) return;
     
-    // Get WinEmt x/y and set
+    // Get bounds x, y, width, height and PropChange name
     int x = (int)Math.round(_win.getX()), y = (int)Math.round(_win.getY());
-    _winEmt.getStyle().setProperty("left", String.valueOf(x) + "px");
-    _winEmt.getStyle().setProperty("top", String.valueOf(y) + "px");
-}
-
-/**
- * Called when WindowView properties change to sync RootView size to canvas.
- */
-void snapWindowSizeChanged(PropChange aPC)
-{
-    // If not floating, just return (container changes go to win, not win to container)
-    if(!isFloating()) return;
-    
-    // Handle Width change
+    int w = (int)Math.round(_win.getWidth()), h = (int)Math.round(_win.getHeight());
     String pname = aPC!=null? aPC.getPropName() : null;
-    if(pname==null || pname==View.Width_Prop) {
-        int w = (int)Math.round(_win.getWidth());
-        _winEmt.getStyle().setProperty("width", w + "px");
-    }
     
-    // Handle Height change
-    if(pname==null || pname==View.Height_Prop) {
-        int h = (int)Math.round(_win.getHeight());
+    // Handle changes
+    if(pname==null || pname==View.X_Prop)
+        _winEmt.getStyle().setProperty("left", String.valueOf(x) + "px");
+    if(pname==null || pname==View.Y_Prop)
+        _winEmt.getStyle().setProperty("top", String.valueOf(y) + "px");
+    if(pname==null || pname==View.Width_Prop)
+        _winEmt.getStyle().setProperty("width", w + "px");
+    if(pname==null || pname==View.Height_Prop)
         _winEmt.getStyle().setProperty("height", h + "px");
-    }
 }
 
 /**
@@ -332,7 +318,7 @@ void snapWindowSizeChanged(PropChange aPC)
 void snapWindowMaximizedChanged()
 {
     // Get body and canvas
-    HTMLBodyElement body = HTMLDocument.current().getBody();
+    HTMLBodyElement body = getBody();
     HTMLCanvasElement canvas = getCanvas();
 
     // Handle Maximized on
@@ -342,17 +328,12 @@ void snapWindowMaximizedChanged()
         _bodyOverflow = body.getStyle().getPropertyValue("overflow");
         body.getStyle().setProperty("overflow", "hidden");
         
-        // Set window/WinEmt padding
+        // Set Window/WinEmt padding
         _win.setPadding(5,5,5,5);
         _winEmt.getStyle().setProperty("padding", "5px");
         
         // Add a shadow to canvas
         canvas.getStyle().setProperty("box-shadow", "1px 1px 8px grey");
-        
-        // Set window floating and bounds to MaximizedBounds
-        setFloating(true);
-        _win.setBounds(getMaximizedBounds());
-        snapWindowXYChanged();
     }
     
     // Handle Maximized off
@@ -361,23 +342,22 @@ void snapWindowMaximizedChanged()
         // Restore body overflow
         body.getStyle().setProperty("overflow", _bodyOverflow);
         
-        // Clear window/WinEmt padding
+        // Clear Window/WinEmt padding
         _win.setPadding(0,0,0,0);
         _winEmt.getStyle().setProperty("padding", null);
         
         // Remove shadow from canvas
         canvas.getStyle().setProperty("box-shadow", null);
-        
-        // Stop window floating and reset window bounds from browser
-        setFloating(false);
-        browserWindowSizeChanged();
     }
+    
+    // Reset parent and Window/WinEmt bounds
+    resetParentAndBounds();
 }
 
 /**
  * Returns the bounds for a maximized window.
  */
-Rect getMaximizedBounds()
+private Rect getMaximizedBounds()
 {
     int w = TV.getBrowserWindowWidth();
     int h = TV.getBrowserWindowHeight();

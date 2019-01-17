@@ -1,6 +1,5 @@
 package snaptea;
 import java.util.*;
-import org.teavm.jso.browser.Window;
 import org.teavm.jso.dom.events.*;
 import org.teavm.jso.dom.events.EventListener;
 import org.teavm.jso.dom.html.*;
@@ -58,9 +57,6 @@ private TVScreen()
     body.addEventListener("touchstart", lsnr);
     body.addEventListener("touchmove", lsnr);
     body.addEventListener("touchend", lsnr);
-    
-    // Add bounds listener
-    Window.current().addEventListener("resize", e -> TVEnv.runOnAppThread(() -> browserWindowSizeChanged()));
 }
 
 /**
@@ -375,17 +371,6 @@ public RootView getRootView(int aX, int aY)
         if(wview.contains(aX - wview.getX(), aY - wview.getY()))
             return wview.getRootView(); }
     return null; //_rview;
-}
-
-/**
- * Called when screen (browser window) size changes to notify windows.
- */
-public void browserWindowSizeChanged()
-{
-    for(WindowView win : _windows) {
-        TVWindow winNtv = (TVWindow)win.getNative();
-        winNtv.browserWindowSizeChanged();
-    }
 }
 
 /**
