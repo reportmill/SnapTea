@@ -36,24 +36,24 @@ public class TVWindow {
     public static int     scale = TV.getDevicePixelRatio()==2? 2 : 1;
 
 /**
- * Creates a TVWindow.
- */
-public TVWindow()
-{
-    _winEmt = HTMLDocument.current().createElement("div");
-    _winEmt.getStyle().setProperty("box-sizing", "border-box");
-    _winEmt.getStyle().setProperty("background", "#F4F4F4CC");
-}
-
-/**
  * Sets the window.
  */
 public void setView(WindowView aWin)
 {
+    // Set window and start listening to bounds and Maximized changes
     _win = aWin;
     _win.addPropChangeListener(pc -> snapWindowMaximizedChanged(), WindowView.Maximized_Prop);
     _win.addPropChangeListener(pce -> snapWindowBoundsChanged(pce), View.X_Prop, View.Y_Prop,
         View.Width_Prop, View.Height_Prop);
+    
+    // Create/configure WinEmt, the HTMLElement to hold window and canvas
+    _winEmt = HTMLDocument.current().createElement("div");
+    _winEmt.getStyle().setProperty("box-sizing", "border-box");
+    _winEmt.getStyle().setProperty("background", "#F4F4F4CC");
+    
+    // Get RootView canvas and add to WinEmt
+    HTMLCanvasElement canvas = getCanvas();
+    _winEmt.appendChild(canvas);
 }
 
 /**
@@ -72,12 +72,22 @@ public void initWindow()
 HTMLBodyElement getBody()  { return HTMLDocument.current().getBody(); }
 
 /**
- * Returns the parent DOM element of this window.
+ * Returns the canvas for the window.
+ */
+public HTMLCanvasElement getCanvas()
+{
+    RootView rview = _win.getRootView();
+    TVRootView rviewNtv = (TVRootView)rview.getNative();
+    return rviewNtv._canvas;
+}
+
+/**
+ * Returns the parent DOM element of this window (WinEmt).
  */
 public HTMLElement getParent()  { return _parent; }
 
 /**
- * Sets the parent DOM element of this window.
+ * Sets the parent DOM element of this window (WinEmt).
  */
 protected void setParent(HTMLElement aNode)
 {
@@ -138,6 +148,11 @@ private HTMLElement getParentForWin()
 }
 
 /**
+ * Returns whether window is child of body.
+ */
+private boolean isChildOfBody()  { return getParent()==getBody(); }
+
+/**
  * Resets the parent DOM element and Window/WinEmt bounds.
  */
 protected void resetParentAndBounds()
@@ -155,21 +170,6 @@ protected void resetParentAndBounds()
     // If window in DOM container element
     else browserWindowSizeChanged();
 }
-
-/**
- * Returns the canvas for the window.
- */
-public HTMLCanvasElement getCanvas()
-{
-    RootView rview = _win.getRootView();
-    TVRootView rviewNtv = (TVRootView)rview.getNative();
-    return rviewNtv._canvas;
-}
-
-/**
- * Returns whether window is child of body.
- */
-public boolean isChildOfBody()  { return getParent()==getBody(); }
 
 /**
  * Shows window.
@@ -190,11 +190,6 @@ public void showImpl()
     if(c instanceof Label || c instanceof ButtonBase) { c.setPadding(4,6,4,6); c.setFont(c.getFont().deriveFont(14));
         BoxView box = new BoxView(c); box.setPadding(4,4,4,4); rview.setContent(box); }
 
-    // Make sure canvas is inside WinEmt
-    HTMLCanvasElement canvas = getCanvas();
-    if(canvas.getParentNode()==null)
-        _winEmt.appendChild(canvas);
-        
     // Make sure WinEmt is in proper parent node with proper bounds
     resetParentAndBounds();
     
