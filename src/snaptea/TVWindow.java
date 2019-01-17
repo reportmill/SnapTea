@@ -364,8 +364,41 @@ private Rect getMaximizedBounds()
 }
 
 /**
- * Called to register for repaint.
+ * A WindowHpr to map WindowView to TVWindow.
  */
-public void repaint(Rect aRect)  { _rviewNtv.repaint(aRect); }
+public static class TVWindowHpr extends WindowView.WindowHpr <TVWindow> {
+
+    // The snap Window and TVWindow
+    WindowView     _win;
+    TVWindow       _winNtv;
+    
+    /** Creates the native. */
+    public WindowView getWindow()  { return _win; }
+    
+    /** Override to set snap Window in TVWindow. */
+    public void setWindow(WindowView aWin)
+    {
+        _win = aWin;
+        _winNtv = new TVWindow(); _winNtv.setWindow(aWin);
+    }
+        
+    /** Returns the native. */
+    public TVWindow getNative()  { return _winNtv; }
+    
+    /** Window method: initializes native window. */
+    public void initWindow()  { _winNtv.initWindow(); }
+
+    /** Window/Popup method: Shows the window. */
+    public void show()  { _winNtv.show(); }
+    
+    /** Window/Popup method: Hides the window. */
+    public void hide()  { _winNtv.hide(); }
+    
+    /** Window/Popup method: Order window to front. */
+    public void toFront()  { _winNtv.toFront(); }
+    
+    /** Registers a view for repaint. */
+    public void requestPaint(Rect aRect)  { _winNtv._rviewNtv.repaint(aRect); }
+}
 
 }

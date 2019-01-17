@@ -76,7 +76,7 @@ public Clipboard getClipboard()  { return _clipboard!=null? _clipboard : (_clipb
 /**
  * Returns a new ViewHelper for given native component.
  */
-public WindowHpr createHelper(View aView)  { return new TVWindowHpr(); }
+public WindowView.WindowHpr createHelper(View aView)  { return new TVWindow.TVWindowHpr(); }
 
 /**
  * Creates an event for a UI view.
@@ -167,33 +167,6 @@ public static void set()
     // Create TVWebSite to handle localhost requests and evaluate Class.getResource() URLs using index.txt
     TVWebSite site = TVWebSite.get();
     WebGetter._hpr = (c,p) -> { return site.getURL(c,p); };
-}
-
-/**
- * A WindowHpr to map WindowView to TVWindow.
- */
-public static class TVWindowHpr <T extends TVWindow> extends WindowHpr <T> {
-
-    /** Creates the native. */
-    protected T createNative()  { return (T)new TVWindow(); }
-    
-    /** Override to set snap Window in TVWindow. */
-    public void setWindow(WindowView aWin)  { super.setWindow(aWin); get().setWindow(aWin); }
-        
-    /** Window method: initializes native window. */
-    public void initWindow()  { get().initWindow(); }
-
-    /** Window/Popup method: Shows the window. */
-    public void show()  { get().show(); }
-    
-    /** Window/Popup method: Hides the window. */
-    public void hide()  { get().hide(); }
-    
-    /** Window/Popup method: Order window to front. */
-    public void toFront()  { get().toFront(); }
-    
-    /** Registers a view for repaint. */
-    public void requestPaint(Rect aRect)  { get().repaint(aRect); }
 }
 
 }
