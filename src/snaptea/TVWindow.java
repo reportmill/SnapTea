@@ -24,6 +24,9 @@ public class TVWindow {
     // A listener for hide
     PropChangeListener    _hideLsnr;
     
+    // The body overflow value
+    String                _bodyOverflow;
+    
     // The last top window
     static int            _topWin;
     
@@ -37,7 +40,7 @@ public TVWindow()
 {
     _winEmt = HTMLDocument.current().createElement("div");
     _winEmt.getStyle().setProperty("box-sizing", "border-box");
-    _winEmt.getStyle().setProperty("background", "#BBBBBBCC");
+    _winEmt.getStyle().setProperty("background", "#F4F4F4CC");
 }
 
 /**
@@ -76,8 +79,26 @@ public HTMLElement getContainer()
         _container = doc.getElementById(cname);
     
     // If not found, use body
-    if(_container==null) { _container = doc.getBody(); _floating = true; }
+    if(_container==null) {
+        setContainerToBody(); _floating = true; }
+    
+    // Return container
     return _container;
+}
+
+/**
+ * Sets the container to body.
+ */
+void setContainerToBody()
+{
+    // Get body and set Container
+    HTMLBodyElement body = HTMLDocument.current().getBody();
+    _container = body;
+    
+    // Set body and html height so that document covers the whole browser page
+    HTMLHtmlElement html = HTMLDocument.current().getDocumentElement();
+    body.getStyle().setProperty("min-height", "100%");
+    html.getStyle().setProperty("height", "100%");
 }
 
 /**
@@ -114,7 +135,7 @@ public void setFloating(boolean aValue)
         _winEmt.getStyle().setProperty("position", _win.isMaximized()? "fixed" : "absolute");
         if(_winEmt.getParentNode()!=body)
             body.appendChild(_winEmt);
-        _container = body;
+        setContainerToBody();
         _winEmt.getStyle().setProperty("z-index", String.valueOf(_topWin++));
         snapWindowXYChanged();
         snapWindowSizeChanged(null);
@@ -310,11 +331,25 @@ void snapWindowSizeChanged(PropChange aPC)
  */
 void snapWindowMaximizedChanged()
 {
+    // Get body and canvas
+    HTMLBodyElement body = HTMLDocument.current().getBody();
+    HTMLCanvasElement canvas = getCanvas();
+
     // Handle Maximized on
     if(_win.isMaximized()) {
+        
+        // Set body overflow to hidden (to get rid of scrollbars)
+        _bodyOverflow = body.getStyle().getPropertyValue("overflow");
+        body.getStyle().setProperty("overflow", "hidden");
+        
+        // Set window/WinEmt padding
         _win.setPadding(5,5,5,5);
         _winEmt.getStyle().setProperty("padding", "5px");
-        getCanvas().getStyle().setProperty("box-shadow", "1px 1px 8px grey");
+        
+        // Add a shadow to canvas
+        canvas.getStyle().setProperty("box-shadow", "1px 1px 8px grey");
+        
+        // Set window floating and bounds to MaximizedBounds
         setFloating(true);
         _win.setBounds(getMaximizedBounds());
         snapWindowXYChanged();
@@ -322,9 +357,18 @@ void snapWindowMaximizedChanged()
     
     // Handle Maximized off
     else {
+        
+        // Restore body overflow
+        body.getStyle().setProperty("overflow", _bodyOverflow);
+        
+        // Clear window/WinEmt padding
         _win.setPadding(0,0,0,0);
         _winEmt.getStyle().setProperty("padding", null);
-        getCanvas().getStyle().setProperty("box-shadow", null);
+        
+        // Remove shadow from canvas
+        canvas.getStyle().setProperty("box-shadow", null);
+        
+        // Stop window floating and reset window bounds from browser
         setFloating(false);
         browserWindowSizeChanged();
     }
