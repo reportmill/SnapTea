@@ -20,10 +20,10 @@ public class TVRootView {
 /**
  * Sets the view.
  */
-public void setView(View aView)
+public void setView(RootView aView)
 {
     // Set RootView
-    _rview = (RootView)aView;
+    _rview = aView;
     
     // Create canvas and configure to totally fill window element (minus padding insets)
     _canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
@@ -45,6 +45,9 @@ public void setView(View aView)
     // Create painer
     _pntr = new TVPainter(_canvas);
     
+    // Add listener to update cursor
+    _rview.addPropChangeListener(pc -> rootViewCurrentCursorChanged(), RootView.CurrentCursor_Prop);
+    
     // Register for drop events
     //_canvas.setAttribute("draggable", "true");
     //cjdom.EventListener dragLsnr = e -> handleDragEvent((DragEvent)e);
@@ -58,8 +61,9 @@ public void setView(View aView)
 /**
  * Sets the cursor.
  */
-public void setCursor(Cursor aCursor)
+void rootViewCurrentCursorChanged()
 {
+    Cursor aCursor = _rview.getCurrentCursor();
     String cstr = "default";
     if(aCursor==Cursor.DEFAULT) cstr = "default";
     if(aCursor==Cursor.CROSSHAIR) cstr = "crosshair";

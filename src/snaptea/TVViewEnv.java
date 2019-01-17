@@ -76,12 +76,7 @@ public Clipboard getClipboard()  { return _clipboard!=null? _clipboard : (_clipb
 /**
  * Returns a new ViewHelper for given native component.
  */
-public ViewHelper createHelper(View aView)
-{
-    if(aView instanceof RootView) return new TVRootViewHpr();
-    if(aView instanceof WindowView) return new TVWindowHpr();
-    return null;
-}
+public WindowHpr createHelper(View aView)  { return new TVWindowHpr(); }
 
 /**
  * Creates an event for a UI view.
@@ -175,36 +170,15 @@ public static void set()
 }
 
 /**
- * A ViewHelper for RootView + TVRootView.
+ * A WindowHpr to map WindowView to TVWindow.
  */
-public static class TVRootViewHpr <T extends TVRootView> extends ViewHelper <T> {
-
-    /** Creates the native. */
-    protected T createNative()  { return (T)new TVRootView(); }
-
-    /** Override to set view in RootView. */
-    public void setView(View aView)  { super.setView(aView); get().setView(aView); }
-    
-    /** Sets the cursor. */
-    public void setCursor(Cursor aCursor)  { get().setCursor(aCursor); }
-    
-    /** Registers a view for repaint. */
-    public void requestPaint(Rect aRect)  { get().repaint(aRect); }
-}
-
-/**
- * A ViewHelper for WindowView + TVWindow.
- */
-public static class TVWindowHpr <T extends TVWindow> extends ViewHelper <T> {
+public static class TVWindowHpr <T extends TVWindow> extends WindowHpr <T> {
 
     /** Creates the native. */
     protected T createNative()  { return (T)new TVWindow(); }
     
-    /** Override to get view as WindowView. */
-    public WindowView getView()  { return (WindowView)super.getView(); }
-        
-    /** Override to set view in RootView. */
-    public void setView(View aView)  { super.setView(aView); get().setView((WindowView)aView); }
+    /** Override to set snap Window in TVWindow. */
+    public void setWindow(WindowView aWin)  { super.setWindow(aWin); get().setWindow(aWin); }
         
     /** Window method: initializes native window. */
     public void initWindow()  { get().initWindow(); }
@@ -217,6 +191,9 @@ public static class TVWindowHpr <T extends TVWindow> extends ViewHelper <T> {
     
     /** Window/Popup method: Order window to front. */
     public void toFront()  { get().toFront(); }
+    
+    /** Registers a view for repaint. */
+    public void requestPaint(Rect aRect)  { get().repaint(aRect); }
 }
 
 }

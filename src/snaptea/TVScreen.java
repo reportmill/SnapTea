@@ -239,8 +239,10 @@ public void keyDown(KeyboardEvent anEvent)
     dispatchEvent(_rview, event); //anEvent.stopPropagation();
     
     String str = anEvent.getKey();
-    if(str==null || str.length()==0 || str.equals("Control") || str.equals("Alt") ||
-        str.equals("Meta") || str.equals("Shift")) return;
+    if(str==null || str.length()==0) return;
+    if(str.equals("Control") || str.equals("Alt") || str.equals("Meta") || str.equals("Shift")) return;
+    if(str.equals("ArrowUp") || str.equals("ArrowDown") || str.equals("ArrowLeft") || str.equals("ArrowRight")) return;
+    if(str.equals("Backspace") || str.equals("Escape")) return;
     keyPress(anEvent);
 }
 

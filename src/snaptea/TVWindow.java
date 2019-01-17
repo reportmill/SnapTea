@@ -17,6 +17,12 @@ public class TVWindow {
     // The element to represent the window
     HTMLElement           _winEmt;
     
+    // The RootView
+    RootView              _rview;
+    
+    // The native RootView
+    TVRootView            _rviewNtv;
+    
     // The parent element
     HTMLElement           _parent;
     
@@ -36,9 +42,9 @@ public class TVWindow {
     public static int     scale = TV.getDevicePixelRatio()==2? 2 : 1;
 
 /**
- * Sets the window.
+ * Sets the snap window.
  */
-public void setView(WindowView aWin)
+public void setWindow(WindowView aWin)
 {
     // Set window and start listening to bounds and Maximized changes
     _win = aWin;
@@ -51,6 +57,10 @@ public void setView(WindowView aWin)
     _winEmt.getStyle().setProperty("box-sizing", "border-box");
     _winEmt.getStyle().setProperty("background", "#F4F4F4CC");
     
+    // Get RootView and TVRootView
+    _rview = _win.getRootView();
+    _rviewNtv = new TVRootView(); _rviewNtv.setView(_rview);
+    
     // Get RootView canvas and add to WinEmt
     HTMLCanvasElement canvas = getCanvas();
     _winEmt.appendChild(canvas);
@@ -61,9 +71,8 @@ public void setView(WindowView aWin)
  */
 public void initWindow()
 {
-    RootView rview = _win.getRootView();
-    if(rview.getFill()==null) rview.setFill(ViewUtils.getBackFill());
-    if(rview.getBorder()==null) rview.setBorder(Color.GRAY, 1);
+    if(_rview.getFill()==null) _rview.setFill(ViewUtils.getBackFill());
+    if(_rview.getBorder()==null) _rview.setBorder(Color.GRAY, 1);
 }
 
 /**
@@ -74,12 +83,7 @@ HTMLBodyElement getBody()  { return HTMLDocument.current().getBody(); }
 /**
  * Returns the canvas for the window.
  */
-public HTMLCanvasElement getCanvas()
-{
-    RootView rview = _win.getRootView();
-    TVRootView rviewNtv = (TVRootView)rview.getNative();
-    return rviewNtv._canvas;
-}
+public HTMLCanvasElement getCanvas()  { return _rviewNtv._canvas; }
 
 /**
  * Returns the parent DOM element of this window (WinEmt).
@@ -358,5 +362,10 @@ private Rect getMaximizedBounds()
     int h = TV.getBrowserWindowHeight();
     return new Rect(0,0,w,h);
 }
+
+/**
+ * Called to register for repaint.
+ */
+public void repaint(Rect aRect)  { _rviewNtv.repaint(aRect); }
 
 }
