@@ -380,9 +380,8 @@ public RootView getRootView(int aX, int aY)
  */
 void dispatchEvent(RootView aView, ViewEvent anEvent)
 {
-    // We really need a proper event queue - but in the meantime, create thread in case it gets blocked by modal
-    //new Thread(() -> aView.dispatchEvent(anEvent)).start();
-    aView.dispatchEvent(anEvent);
+    WindowView win = aView.getWindow();
+    win.dispatchEvent(anEvent);
 }
 
 /**
