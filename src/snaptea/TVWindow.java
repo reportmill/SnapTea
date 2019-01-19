@@ -46,11 +46,12 @@ public class TVWindow {
  */
 public void setWindow(WindowView aWin)
 {
-    // Set window and start listening to bounds and Maximized changes
+    // Set window and start listening to bounds, Maximized and ActiveCursor changes
     _win = aWin;
     _win.addPropChangeListener(pc -> snapWindowMaximizedChanged(), WindowView.Maximized_Prop);
     _win.addPropChangeListener(pce -> snapWindowBoundsChanged(pce), View.X_Prop, View.Y_Prop,
         View.Width_Prop, View.Height_Prop);
+    _win.addPropChangeListener(pc -> snapWindowActiveCursorChanged(), WindowView.ActiveCursor_Prop);
     
     // Create/configure WinEmt, the HTMLElement to hold window and canvas
     _winEmt = HTMLDocument.current().createElement("div");
@@ -351,6 +352,30 @@ void snapWindowMaximizedChanged()
     
     // Reset parent and Window/WinEmt bounds
     resetParentAndBounds();
+}
+
+/**
+ * Sets the cursor.
+ */
+void snapWindowActiveCursorChanged()
+{
+    Cursor aCursor = _win.getActiveCursor();
+    String cstr = "default";
+    if(aCursor==Cursor.DEFAULT) cstr = "default";
+    if(aCursor==Cursor.CROSSHAIR) cstr = "crosshair";
+    if(aCursor==Cursor.HAND) cstr = "pointer";
+    if(aCursor==Cursor.MOVE) cstr = "move";
+    if(aCursor==Cursor.TEXT) cstr = "text";
+    if(aCursor==Cursor.NONE) cstr = "none";
+    if(aCursor==Cursor.N_RESIZE) cstr = "n-resize";
+    if(aCursor==Cursor.S_RESIZE) cstr = "s-resize";
+    if(aCursor==Cursor.E_RESIZE) cstr = "e-resize";
+    if(aCursor==Cursor.W_RESIZE) cstr = "w-resize";
+    if(aCursor==Cursor.NE_RESIZE) cstr = "ne-resize";
+    if(aCursor==Cursor.NW_RESIZE) cstr = "nw-resize";
+    if(aCursor==Cursor.SE_RESIZE) cstr = "se-resize";
+    if(aCursor==Cursor.SW_RESIZE) cstr = "sw-resize";
+    getCanvas().getStyle().setProperty("cursor", cstr);
 }
 
 /**

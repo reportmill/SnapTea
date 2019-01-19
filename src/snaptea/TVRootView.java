@@ -45,9 +45,6 @@ public void setView(RootView aView)
     // Create painer
     _pntr = new TVPainter(_canvas);
     
-    // Add listener to update cursor
-    _rview.addPropChangeListener(pc -> rootViewCurrentCursorChanged(), RootView.CurrentCursor_Prop);
-    
     // Register for drop events
     //_canvas.setAttribute("draggable", "true");
     //cjdom.EventListener dragLsnr = e -> handleDragEvent((DragEvent)e);
@@ -56,30 +53,6 @@ public void setView(RootView aView)
     // Register for drag start event
     //_canvas.addEventListener("dragstart", e -> handleDragGesture((DragEvent)e));
     //_canvas.addEventListener("dragend", e -> handleDragEnd((DragEvent)e));
-}
-
-/**
- * Sets the cursor.
- */
-void rootViewCurrentCursorChanged()
-{
-    Cursor aCursor = _rview.getCurrentCursor();
-    String cstr = "default";
-    if(aCursor==Cursor.DEFAULT) cstr = "default";
-    if(aCursor==Cursor.CROSSHAIR) cstr = "crosshair";
-    if(aCursor==Cursor.HAND) cstr = "pointer";
-    if(aCursor==Cursor.MOVE) cstr = "move";
-    if(aCursor==Cursor.TEXT) cstr = "text";
-    if(aCursor==Cursor.NONE) cstr = "none";
-    if(aCursor==Cursor.N_RESIZE) cstr = "n-resize";
-    if(aCursor==Cursor.S_RESIZE) cstr = "s-resize";
-    if(aCursor==Cursor.E_RESIZE) cstr = "e-resize";
-    if(aCursor==Cursor.W_RESIZE) cstr = "w-resize";
-    if(aCursor==Cursor.NE_RESIZE) cstr = "ne-resize";
-    if(aCursor==Cursor.NW_RESIZE) cstr = "nw-resize";
-    if(aCursor==Cursor.SE_RESIZE) cstr = "se-resize";
-    if(aCursor==Cursor.SW_RESIZE) cstr = "sw-resize";
-    _canvas.getStyle().setProperty("cursor",cstr);
 }
 
 /**
