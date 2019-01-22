@@ -190,11 +190,6 @@ public void show()
  */
 public void showImpl()
 {
-    // Silly stuff
-    RootView rview = _win.getRootView(); View c = rview.getContent();
-    if(c instanceof Label || c instanceof ButtonBase) { c.setPadding(4,6,4,6); c.setFont(c.getFont().deriveFont(14));
-        BoxView box = new BoxView(c); box.setPadding(4,4,4,4); rview.setContent(box); }
-
     // Make sure WinEmt is in proper parent node with proper bounds
     resetParentAndBounds();
     
