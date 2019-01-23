@@ -171,8 +171,8 @@ public void mouseMove(MouseEvent anEvent)
     if(rview==null) rview = _rview; if(rview==null) return;
 
     // Dispatch MouseMove event
-    ViewEvent event = TVViewEnv.get().createEvent(rview, anEvent, View.MouseMove, null);
-    ((TVEvent)event)._ccount = _clicks;
+    ViewEvent event = ViewEvent.createEvent(rview, anEvent, View.MouseMove, null);
+    event.setClickCount(_clicks);
     dispatchEvent(rview, event);
 }
 
@@ -190,8 +190,8 @@ public void mouseDown(MouseEvent anEvent)
     if(_mouseDownView==null) return;
     
     // Dispatch MousePress event
-    ViewEvent event = TVViewEnv.get().createEvent(_mouseDownView, anEvent, View.MousePress, null);
-    ((TVEvent)event)._ccount = _clicks;
+    ViewEvent event = ViewEvent.createEvent(_mouseDownView, anEvent, View.MousePress, null);
+    event.setClickCount(_clicks);
     dispatchEvent(_mouseDownView, event);
 }
 
@@ -201,8 +201,8 @@ public void mouseDown(MouseEvent anEvent)
 public void mouseDrag(MouseEvent anEvent)
 {
     if(_mouseDownView==null) return;
-    ViewEvent event = TVViewEnv.get().createEvent(_mouseDownView, anEvent, View.MouseDrag, null);
-    ((TVEvent)event)._ccount = _clicks;
+    ViewEvent event = ViewEvent.createEvent(_mouseDownView, anEvent, View.MouseDrag, null);
+    event.setClickCount(_clicks);
     dispatchEvent(_mouseDownView, event);
 }
 
@@ -213,8 +213,8 @@ public void mouseUp(MouseEvent anEvent)
 {
     if(_mouseDownView==null) return;
     RootView mouseDownView = _mouseDownView; _mouseDownView = null;
-    ViewEvent event = TVViewEnv.get().createEvent(mouseDownView, anEvent, View.MouseRelease, null);
-    ((TVEvent)event)._ccount = _clicks;
+    ViewEvent event = ViewEvent.createEvent(mouseDownView, anEvent, View.MouseRelease, null);
+    event.setClickCount(_clicks);
     dispatchEvent(mouseDownView, event);
 }
 
@@ -226,7 +226,7 @@ public void mouseWheel(WheelEvent anEvent)
     if(rview==null) return;
 
     // Dispatch WheelEvent event
-    ViewEvent event = TVViewEnv.get().createEvent(rview, anEvent, View.Scroll, null);
+    ViewEvent event = ViewEvent.createEvent(rview, anEvent, View.Scroll, null);
     dispatchEvent(rview, event); //if(event.isConsumed()) { anEvent.stopPropagation(); anEvent.preventDefault(); }
 }
 
@@ -235,7 +235,7 @@ public void mouseWheel(WheelEvent anEvent)
  */
 public void keyDown(KeyboardEvent anEvent)
 {
-    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyPress, null);
+    ViewEvent event = ViewEvent.createEvent(_rview, anEvent, View.KeyPress, null);
     dispatchEvent(_rview, event); //anEvent.stopPropagation();
     
     String str = anEvent.getKey();
@@ -251,7 +251,7 @@ public void keyDown(KeyboardEvent anEvent)
  */
 public void keyPress(KeyboardEvent anEvent)
 {
-    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyType, null);
+    ViewEvent event = ViewEvent.createEvent(_rview, anEvent, View.KeyType, null);
     dispatchEvent(_rview, event); //anEvent.stopPropagation();
 }
 
@@ -260,7 +260,7 @@ public void keyPress(KeyboardEvent anEvent)
  */
 public void keyUp(KeyboardEvent anEvent)
 {
-    ViewEvent event = TVViewEnv.get().createEvent(_rview, anEvent, View.KeyRelease, null);
+    ViewEvent event = ViewEvent.createEvent(_rview, anEvent, View.KeyRelease, null);
     dispatchEvent(_rview, event); //anEvent.stopPropagation();
 }
 
@@ -281,8 +281,8 @@ public void touchStart(TouchEvent anEvent)
     if(_mouseDownView==null) return; //anEvent.preventDefault();
     
     // Dispatch MousePress event
-    ViewEvent event = TVViewEnv.get().createEvent(_mouseDownView, touch, View.MousePress, null);
-    ((TVEvent)event)._ccount = _clicks;
+    ViewEvent event = ViewEvent.createEvent(_mouseDownView, touch, View.MousePress, null);
+    event.setClickCount(_clicks);
     dispatchEvent(_mouseDownView, event);
 }
 
@@ -296,8 +296,8 @@ public void touchMove(TouchEvent anEvent)
     Touch touches[] = anEvent.getTouches(); if(touches==null || touches.length==0) return;
     Touch touch = touches[0];
     
-    ViewEvent event = TVViewEnv.get().createEvent(_mouseDownView, touch, View.MouseDrag, null);
-    ((TVEvent)event)._ccount = _clicks;
+    ViewEvent event = ViewEvent.createEvent(_mouseDownView, touch, View.MouseDrag, null);
+    event.setClickCount(_clicks);
     dispatchEvent(_mouseDownView, event);
 }
 
@@ -312,8 +312,8 @@ public void touchEnd(TouchEvent anEvent)
     Touch touch = touches[0];
     
     RootView mouseDownView = _mouseDownView; _mouseDownView = null;
-    ViewEvent event = TVViewEnv.get().createEvent(mouseDownView, touch, View.MouseRelease, null);
-    ((TVEvent)event)._ccount = _clicks;
+    ViewEvent event = ViewEvent.createEvent(mouseDownView, touch, View.MouseRelease, null);
+    event.setClickCount(_clicks);
     dispatchEvent(mouseDownView, event);
 }
 
