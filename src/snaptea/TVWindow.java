@@ -198,7 +198,7 @@ public void showImpl()
     screen.addWindow(_win);
 
     // Set Window showing    
-    _win.setShowing(true);
+    ViewUtils.setShowing(_win, true);
     
     // Start listening to browser window resizes
     if(_resizeLsnr==null) _resizeLsnr = e -> TVEnv.runOnAppThread(() -> browserWindowSizeChanged());
@@ -246,7 +246,7 @@ public void hide()
     screen.removeWindow(_win);
     
     // Set Window not showing
-    _win.setShowing(false);
+    ViewUtils.setShowing(_win, false);
     
     // Stop listening to browser window resizes
     Window.current().removeEventListener("resize", _resizeLsnr); _resizeLsnr = null;
