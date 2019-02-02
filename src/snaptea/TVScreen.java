@@ -10,8 +10,8 @@ import snap.view.*;
  */
 public class TVScreen {
 
-    // The RootView hit by last MouseDown and MouseMove (if mouse still down)
-    RootView              _mousePressView, _mouseDownView, _mouseMoveView;
+    // The Window hit by last MouseDown and MouseMove (if mouse still down)
+    WindowView            _mousePressWin, _mouseDownWin, _mouseMoveWin;
     
     // Time of last mouse release
     long                  _lastReleaseTime;
@@ -24,9 +24,6 @@ public class TVScreen {
     
     // The current main window
     WindowView            _win;
-    
-    // The focused root view
-    RootView              _rview;
     
     // The shared screen object
     static TVScreen       _screen;
@@ -69,45 +66,45 @@ void handleEvent(Event e)
     switch(e.getType()) {
         case "mousedown":
             run = () -> mouseDown((MouseEvent)e);
-            _mousePressView = _mouseDownView = getRootView((MouseEvent)e);
-            if(_mousePressView==null) return;
+            _mousePressWin = _mouseDownWin = getWindow((MouseEvent)e);
+            if(_mousePressWin==null) return;
             stopProp = prevDefault = true; break;
         case "mousemove":
-            if(_mouseDownView!=null) run = () -> mouseDrag((MouseEvent)e);
+            if(_mouseDownWin!=null) run = () -> mouseDrag((MouseEvent)e);
             else run = () -> mouseMove((MouseEvent)e);
-            _mouseMoveView = getRootView((MouseEvent)e); break;
+            _mouseMoveWin = getWindow((MouseEvent)e); break;
         case "mouseup":
             run = () -> mouseUp((MouseEvent)e);
-            if(_mousePressView==null) return;
+            if(_mousePressWin==null) return;
             stopProp = prevDefault = true; break;
         case "click":
         case "contextmenu":
-            if(_mousePressView==null) return;
+            if(_mousePressWin==null) return;
             stopProp = prevDefault = true; break;
         case "wheel":
-            if(_mouseMoveView==null) return;
+            if(_mouseMoveWin==null) return;
             run = () -> mouseWheel((WheelEvent)e);
             stopProp = prevDefault = true; break;
         case "keydown":
-            if(_mousePressView==null) return;
+            if(_mousePressWin==null) return;
             run = () -> keyDown((KeyboardEvent)e);
             stopProp = prevDefault = true; break;
         case "keyup":
-            if(_mousePressView==null) return;
+            if(_mousePressWin==null) return;
             run = () -> keyUp((KeyboardEvent)e);
             stopProp = prevDefault = true; break;
         case "touchstart":
             run = () -> touchStart((TouchEvent)e);
-            _mousePressView = _mouseDownView = getRootView((TouchEvent)e);
-            if(_mousePressView==null) return;
+            _mousePressWin = _mouseDownWin = getWindow((TouchEvent)e);
+            if(_mousePressWin==null) return;
             stopProp = prevDefault = true; break;
         case "touchmove":
-            if(_mousePressView==null) return;
+            if(_mousePressWin==null) return;
             run = () -> touchMove((TouchEvent)e);
-            _mouseMoveView = getRootView((TouchEvent)e);
+            _mouseMoveWin = getWindow((TouchEvent)e);
             stopProp = prevDefault = true; break;
         case "touchend":
-            if(_mousePressView==null) return;
+            if(_mousePressWin==null) return;
             run = () -> touchEnd((TouchEvent)e);
             stopProp = prevDefault = true; break;
         default:
@@ -139,8 +136,8 @@ public void addWindow(WindowView aWin)
     _windows.add(aWin);
     
     // If not Popup, make window main window
-    if(!(aWin instanceof PopupWindow)) {
-        _win = aWin; _rview = aWin.getRootView(); }
+    if(!(aWin instanceof PopupWindow))
+        _win = aWin;
 }
 
 /**
@@ -156,7 +153,6 @@ public void removeWindow(WindowView aWin)
     for(int i=_windows.size()-1;i>=0;i--) { WindowView win = _windows.get(i);
         if(!(win instanceof PopupWindow)) {
             _win = win; break; }}
-    _rview = _win!=null? _win.getRootView() : null;
 }
 
 /**
@@ -164,14 +160,14 @@ public void removeWindow(WindowView aWin)
  */
 public void mouseMove(MouseEvent anEvent)
 {
-    // Get RootView for MouseEvent
-    RootView rview = getRootView(anEvent);
-    if(rview==null) rview = _rview; if(rview==null) return;
+    // Get window for MouseEvent
+    WindowView win = getWindow(anEvent);
+    if(win==null) win = _win; if(win==null) return;
 
     // Dispatch MouseMove event
-    ViewEvent event = ViewEvent.createEvent(rview, anEvent, View.MouseMove, null);
+    ViewEvent event = createEvent(win, anEvent, View.MouseMove, null);
     event.setClickCount(_clicks);
-    dispatchEvent(rview, event);
+    win.dispatchEvent(event);
 }
 
 /**
@@ -183,14 +179,14 @@ public void mouseDown(MouseEvent anEvent)
     long time = System.currentTimeMillis();
     _clicks = time - _lastReleaseTime<400? (_clicks+1) : 1; _lastReleaseTime = time;
     
-    // Get MouseDownView for event
-    _mouseDownView = getRootView(anEvent);
-    if(_mouseDownView==null) return;
+    // Get MouseDownWin for event
+    _mouseDownWin = getWindow(anEvent);
+    if(_mouseDownWin==null) return;
     
     // Dispatch MousePress event
-    ViewEvent event = ViewEvent.createEvent(_mouseDownView, anEvent, View.MousePress, null);
+    ViewEvent event = createEvent(_mouseDownWin, anEvent, View.MousePress, null);
     event.setClickCount(_clicks);
-    dispatchEvent(_mouseDownView, event);
+    _mouseDownWin.dispatchEvent(event);
 }
 
 /**
@@ -198,10 +194,10 @@ public void mouseDown(MouseEvent anEvent)
  */
 public void mouseDrag(MouseEvent anEvent)
 {
-    if(_mouseDownView==null) return;
-    ViewEvent event = ViewEvent.createEvent(_mouseDownView, anEvent, View.MouseDrag, null);
+    if(_mouseDownWin==null) return;
+    ViewEvent event = createEvent(_mouseDownWin, anEvent, View.MouseDrag, null);
     event.setClickCount(_clicks);
-    dispatchEvent(_mouseDownView, event);
+    _mouseDownWin.dispatchEvent(event);
 }
 
 /**
@@ -209,23 +205,23 @@ public void mouseDrag(MouseEvent anEvent)
  */
 public void mouseUp(MouseEvent anEvent)
 {
-    if(_mouseDownView==null) return;
-    RootView mouseDownView = _mouseDownView; _mouseDownView = null;
-    ViewEvent event = ViewEvent.createEvent(mouseDownView, anEvent, View.MouseRelease, null);
+    if(_mouseDownWin==null) return;
+    WindowView mouseDownWin = _mouseDownWin; _mouseDownWin = null;
+    ViewEvent event = createEvent(mouseDownWin, anEvent, View.MouseRelease, null);
     event.setClickCount(_clicks);
-    dispatchEvent(mouseDownView, event);
+    mouseDownWin.dispatchEvent(event);
 }
 
 /* Only Y Axis Scrolling has been implemented */
 public void mouseWheel(WheelEvent anEvent)
 {
-    // Get RootView for WheelEvent
-    RootView rview = getRootView(anEvent);
-    if(rview==null) return;
+    // Get window for WheelEvent
+    WindowView win = getWindow(anEvent);
+    if(win==null) return;
 
     // Dispatch WheelEvent event
-    ViewEvent event = ViewEvent.createEvent(rview, anEvent, View.Scroll, null);
-    dispatchEvent(rview, event); //if(event.isConsumed()) { anEvent.stopPropagation(); anEvent.preventDefault(); }
+    ViewEvent event = createEvent(win, anEvent, View.Scroll, null);
+    win.dispatchEvent(event); //if(event.isConsumed()) { anEvent.stopPropagation(); anEvent.preventDefault(); }
 }
 
 /**
@@ -233,8 +229,8 @@ public void mouseWheel(WheelEvent anEvent)
  */
 public void keyDown(KeyboardEvent anEvent)
 {
-    ViewEvent event = ViewEvent.createEvent(_rview, anEvent, View.KeyPress, null);
-    dispatchEvent(_rview, event); //anEvent.stopPropagation();
+    ViewEvent event = createEvent(_win, anEvent, View.KeyPress, null);
+    _win.dispatchEvent(event); //anEvent.stopPropagation();
     
     String str = anEvent.getKey();
     if(str==null || str.length()==0) return;
@@ -249,8 +245,8 @@ public void keyDown(KeyboardEvent anEvent)
  */
 public void keyPress(KeyboardEvent anEvent)
 {
-    ViewEvent event = ViewEvent.createEvent(_rview, anEvent, View.KeyType, null);
-    dispatchEvent(_rview, event); //anEvent.stopPropagation();
+    ViewEvent event = createEvent(_win, anEvent, View.KeyType, null);
+    _win.dispatchEvent(event); //anEvent.stopPropagation();
 }
 
 /**
@@ -258,8 +254,8 @@ public void keyPress(KeyboardEvent anEvent)
  */
 public void keyUp(KeyboardEvent anEvent)
 {
-    ViewEvent event = ViewEvent.createEvent(_rview, anEvent, View.KeyRelease, null);
-    dispatchEvent(_rview, event); //anEvent.stopPropagation();
+    ViewEvent event = createEvent(_win, anEvent, View.KeyRelease, null);
+    _win.dispatchEvent(event); //anEvent.stopPropagation();
 }
 
 /**
@@ -274,14 +270,14 @@ public void touchStart(TouchEvent anEvent)
     long time = System.currentTimeMillis();
     _clicks = time - _lastReleaseTime<400? (_clicks+1) : 1; _lastReleaseTime = time;
     
-    // Get MouseDownView for event
-    _mouseDownView = getRootView(touch);
-    if(_mouseDownView==null) return; //anEvent.preventDefault();
+    // Get MouseDownWin for event
+    _mouseDownWin = getWindow(touch);
+    if(_mouseDownWin==null) return; //anEvent.preventDefault();
     
     // Dispatch MousePress event
-    ViewEvent event = ViewEvent.createEvent(_mouseDownView, touch, View.MousePress, null);
+    ViewEvent event = createEvent(_mouseDownWin, touch, View.MousePress, null);
     event.setClickCount(_clicks);
-    dispatchEvent(_mouseDownView, event);
+    _mouseDownWin.dispatchEvent(event);
 }
 
 /**
@@ -289,14 +285,14 @@ public void touchStart(TouchEvent anEvent)
  */
 public void touchMove(TouchEvent anEvent)
 {
-    if(_mouseDownView==null) return; //anEvent.preventDefault();
+    if(_mouseDownWin==null) return; //anEvent.preventDefault();
     
     Touch touches[] = anEvent.getTouches(); if(touches==null || touches.length==0) return;
     Touch touch = touches[0];
     
-    ViewEvent event = ViewEvent.createEvent(_mouseDownView, touch, View.MouseDrag, null);
+    ViewEvent event = createEvent(_mouseDownWin, touch, View.MouseDrag, null);
     event.setClickCount(_clicks);
-    dispatchEvent(_mouseDownView, event);
+    _mouseDownWin.dispatchEvent(event);
 }
 
 /**
@@ -304,15 +300,15 @@ public void touchMove(TouchEvent anEvent)
  */
 public void touchEnd(TouchEvent anEvent)
 {
-    if(_mouseDownView==null) return; //anEvent.preventDefault();
+    if(_mouseDownWin==null) return; //anEvent.preventDefault();
 
     Touch touches[] = anEvent.getChangedTouches(); if(touches==null || touches.length==0) return;
     Touch touch = touches[0];
     
-    RootView mouseDownView = _mouseDownView; _mouseDownView = null;
-    ViewEvent event = ViewEvent.createEvent(mouseDownView, touch, View.MouseRelease, null);
+    WindowView mouseDownWin = _mouseDownWin; _mouseDownWin = null;
+    ViewEvent event = createEvent(mouseDownWin, touch, View.MouseRelease, null);
     event.setClickCount(_clicks);
-    dispatchEvent(mouseDownView, event);
+    mouseDownWin.dispatchEvent(event);
 }
 
 /**
@@ -344,42 +340,43 @@ public void touchEnd(TouchEvent anEvent)
 }*/
 
 /**
- * Returns the RootView for an event.
+ * Returns the WindowView for an event.
  */
-public RootView getRootView(MouseEvent anEvent)  { return getRootView(TV.getPageX(anEvent), TV.getPageY(anEvent)); }
+public WindowView getWindow(MouseEvent anEvent)  { return getWindow(TV.getPageX(anEvent), TV.getPageY(anEvent)); }
 
 /**
- * Returns the RootView for an event.
+ * Returns the WindowView for an event.
  */
-public RootView getRootView(Touch anEvent)  { return getRootView(anEvent.getPageX(), anEvent.getPageY()); }
+public WindowView getWindow(Touch anEvent)  { return getWindow(anEvent.getPageX(), anEvent.getPageY()); }
 
 /**
- * Returns the RootView for an event.
+ * Returns the WindowView for an event.
  */
-public RootView getRootView(TouchEvent anEvent)
+public WindowView getWindow(TouchEvent anEvent)
 {
     Touch touches[] = anEvent.getTouches(); if(touches==null || touches.length==0) return null;
-    return getRootView(touches[0]);
+    return getWindow(touches[0]);
 }
 
 /**
- * Returns the RootView for an event.
+ * Returns the WindowView for an event.
  */
-public RootView getRootView(int aX, int aY)
+public WindowView getWindow(int aX, int aY)
 {
-    for(int i=_windows.size()-1;i>=0;i--) { WindowView wview = _windows.get(i);
-        if(wview.contains(aX - wview.getX(), aY - wview.getY()))
-            return wview.getRootView(); }
-    return null; //_rview;
+    for(int i=_windows.size()-1;i>=0;i--) { WindowView win = _windows.get(i);
+        if(win.contains(aX - win.getX(), aY - win.getY()))
+            return win; }
+    return null;
 }
 
 /**
- * Dispatches an event to given view.
+ * Creates an Event.
  */
-void dispatchEvent(RootView aView, ViewEvent anEvent)
+ViewEvent createEvent(WindowView aWin, Object anEvent, ViewEvent.Type aType, String aName)
 {
-    WindowView win = aView.getWindow();
-    win.dispatchEvent(anEvent);
+    View rootView = aWin.getRootView();
+    ViewEvent event = ViewEvent.createEvent(rootView, anEvent, aType, aName);
+    return event;
 }
 
 /**
