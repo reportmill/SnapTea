@@ -73,7 +73,8 @@ void handleEvent(Event e)
             if(_mousePressView==null) return;
             stopProp = prevDefault = true; break;
         case "mousemove":
-            run = () -> mouseMove((MouseEvent)e);
+            if(_mouseDownView!=null) run = () -> mouseDrag((MouseEvent)e);
+            else run = () -> mouseMove((MouseEvent)e);
             _mouseMoveView = getRootView((MouseEvent)e); break;
         case "mouseup":
             run = () -> mouseUp((MouseEvent)e);
@@ -163,9 +164,6 @@ public void removeWindow(WindowView aWin)
  */
 public void mouseMove(MouseEvent anEvent)
 {
-    // If MouseDown, forward to mouseDrag()
-    if(_mouseDownView!=null) { mouseDrag(anEvent); return; }
-    
     // Get RootView for MouseEvent
     RootView rview = getRootView(anEvent);
     if(rview==null) rview = _rview; if(rview==null) return;

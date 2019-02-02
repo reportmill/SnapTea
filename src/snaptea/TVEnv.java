@@ -129,6 +129,9 @@ synchronized void addToEventQueue(Runnable aRun)
     if(_runEnd==1)
         notify();
     else if(_runEnd>=_theRuns.length) {
+        if(_theRuns.length>500) {
+            System.err.println("TVEnv.addToEventQueue: To many events in queue - somthing is broken");
+            _runStart = _runEnd = 0; return; }
         System.out.println("TVEnv.addToEventQueue: Increasing runs array to len " + _theRuns.length*2);
         _theRuns = Arrays.copyOf(_theRuns, _theRuns.length*2);
     }
