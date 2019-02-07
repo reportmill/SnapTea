@@ -79,19 +79,36 @@ public static native int getOffsetTop(HTMLElement anEmt);
 @JSBody(params={ "anEmt" }, script = "return anEmt.offsetLeft;")
 public static native int getOffsetLeft(HTMLElement anEmt);
 
-@JSBody(params={ }, script = "return window.scrollX;")
-public static native int getWindowScrollX();
+/**
+ * Viewport X/Y. 3 options:
+ * 
+ *     - window.pageYOffset (works in S, C, FF)
+ *     - window.scrollY (works in S, C, FF)
+ *     - document.documentElement.scrollTop (works in C. not S. returns value+1 in FF)
+ */
+@JSBody(params={ }, script = "return window.pageYOffset;")
+public static native int getViewportX();
 
-@JSBody(params={ }, script = "return window.scrollY;")
-public static native int getWindowScrollY();
+@JSBody(params={ }, script = "return window.pageYOffset;")
+public static native int getViewportY();
 
-//return window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth
+/**
+ * Viewport width/height.
+ * 
+ * Web suggested: window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth
+ */
 @JSBody(params={ }, script = "return document.documentElement.clientWidth;")
-public static native int getBrowserWindowWidth();
+public static native int getViewportWidth();
 
-//return window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
-@JSBody(params={ }, script = "return document.body.clientHeight;")
-public static native int getBrowserWindowHeight();
+@JSBody(params={ }, script = "return document.documentElement.clientHeight;")
+public static native int getViewportHeight();
+
+public static Rect getViewportBounds()
+{
+    double x = 0, y = 0; //double x = getViewportX(), y = getViewportY();
+    double w = getViewportWidth(), h = getViewportHeight();
+    return new Rect(x,y,w,h);
+}
 
 @JSBody(params={ "aME" }, script = "return aME.pageX;")
 public static native int getPageX(MouseEvent aME);

@@ -113,10 +113,10 @@ protected void setParent(HTMLElement aNode)
     if(aNode==getBody()) {
         
         // Set body and html height so that document covers the whole browser page
-        HTMLHtmlElement html = HTMLDocument.current().getDocumentElement();
-        HTMLBodyElement body = getBody();
-        html.getStyle().setProperty("height", "100%");
-        body.getStyle().setProperty("min-height", "100%");
+        //HTMLHtmlElement html = HTMLDocument.current().getDocumentElement();
+        //HTMLBodyElement body = getBody();
+        //html.getStyle().setProperty("height", "100%");
+        //body.getStyle().setProperty("min-height", "100%");
 
         // Configure WinEmt for body
         _winEmt.getStyle().setProperty("position", _win.isMaximized()? "fixed" : "absolute");
@@ -168,7 +168,7 @@ protected void resetParentAndBounds()
 
     // If window floating in body, set WinEmt bounds from Window
     if(par==getBody()) {
-        if(_win.isMaximized()) _win.setBounds(getMaximizedBounds());
+        if(_win.isMaximized()) _win.setBounds(TV.getViewportBounds());
         snapWindowBoundsChanged(null);
     }
     
@@ -268,7 +268,7 @@ void browserWindowSizeChanged()
     // If Window is child of body, just return
     if(isChildOfBody()) {
         if(_win.isMaximized())
-            _win.setBounds(getMaximizedBounds());
+            _win.setBounds(TV.getViewportBounds());
         return;
     }
         
@@ -371,16 +371,6 @@ void snapWindowActiveCursorChanged()
     if(aCursor==Cursor.SE_RESIZE) cstr = "se-resize";
     if(aCursor==Cursor.SW_RESIZE) cstr = "sw-resize";
     getCanvas().getStyle().setProperty("cursor", cstr);
-}
-
-/**
- * Returns the bounds for a maximized window.
- */
-private Rect getMaximizedBounds()
-{
-    int w = TV.getBrowserWindowWidth();
-    int h = TV.getBrowserWindowHeight();
-    return new Rect(0,0,w,h);
 }
 
 /**

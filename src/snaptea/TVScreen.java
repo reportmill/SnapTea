@@ -364,7 +364,7 @@ public WindowView getWindow(TouchEvent anEvent)
 public WindowView getWindow(int aX, int aY)
 {
     for(int i=_windows.size()-1;i>=0;i--) { WindowView win = _windows.get(i);
-        if(win.contains(aX - win.getX(), aY - win.getY()))
+        if(win.isMaximized() || win.contains(aX - win.getX(), aY - win.getY()))
             return win; }
     return null;
 }
