@@ -114,6 +114,30 @@ public boolean isPopupTrigger()
 /**
  * Returns the event type.
  */
-protected Type getTypeImpl()  { return null; }
+protected Type getTypeImpl()
+{
+    Event event = (Event)getEvent();
+    String type = event.getType();
+    switch(type) {
+        case "dragstart": return Type.DragGesture;
+        case "dragend": return Type.DragSourceEnd;
+        case "dragenter": return Type.DragEnter;
+        case "dragexit": return Type.DragExit;
+        case "dragover": return Type.DragOver;
+        case "drop": return Type.DragDrop;
+        default: return null;
+    }
+}
+
+/**
+ * Returns the drag Clipboard for this event.
+ */
+public Clipboard getClipboard()  { return TVClipboard.getDrag(this); }
+
+/** Called to indicate that drop is accepted. */
+public void acceptDrag()  { TVClipboard.getDrag(this).acceptDrag(); }
+
+/** Called to indicate that drop is complete. */
+public void dropComplete()  { TVClipboard.getDrag(this).dropComplete(); }
 
 }

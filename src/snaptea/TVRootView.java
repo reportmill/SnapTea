@@ -1,4 +1,5 @@
 package snaptea;
+import org.teavm.jso.dom.events.EventListener;
 import org.teavm.jso.dom.html.*;
 import snap.gfx.*;
 import snap.view.*;
@@ -46,10 +47,10 @@ public void setView(RootView aView)
     _pntr = new TVPainter(_canvas);
     
     // Register for drop events
-    //_canvas.setAttribute("draggable", "true");
-    //cjdom.EventListener dragLsnr = e -> handleDragEvent((DragEvent)e);
-    //_canvas.addEventListener("dragenter", dragLsnr); _canvas.addEventListener("dragover", dragLsnr);
-    //_canvas.addEventListener("drop", dragLsnr); _canvas.addEventListener("dragexit", dragLsnr);
+    _canvas.setAttribute("draggable", "true");
+    EventListener dragLsnr = e -> handleDragEvent((DragEvent)e);
+    _canvas.addEventListener("dragenter", dragLsnr); _canvas.addEventListener("dragover", dragLsnr);
+    _canvas.addEventListener("dragexit", dragLsnr); _canvas.addEventListener("drop", dragLsnr);
     // Register for drag start event
     //_canvas.addEventListener("dragstart", e -> handleDragGesture((DragEvent)e));
     //_canvas.addEventListener("dragend", e -> handleDragEnd((DragEvent)e));
@@ -74,10 +75,18 @@ void rootViewSizeChange()
     _canvas.setWidth(w*TVWindow.scale); _canvas.setHeight(h*TVWindow.scale);
 }
 
-/** Called to handle a drag event. */
-/*public void handleDragEvent(DragEvent anEvent) {
-    anEvent.preventDefault(); ViewEvent event = CJViewEnv.get().createEvent(_rview, anEvent, null, null);
-    _rview.dispatchEvent(event); */
+/**
+ * Called to handle a drag event.
+ * Not called on app thread, because drop data must be processed when event is issued.
+ * TVEnv.runOnAppThread(() -> handleDragEvent(anEvent));
+ */
+public void handleDragEvent(DragEvent anEvent)
+{
+    anEvent.preventDefault();
+    ViewEvent event = ViewEvent.createEvent(_rview, anEvent, null, null);
+    _rview.getWindow().dispatchEvent(event);
+}
+
 /** Called to handle a drag event. */
 /*public void handleDragGesture(DragEvent anEvent) {       
     ViewEvent event = CJViewEnv.get().createEvent(_rview, anEvent, null, null);

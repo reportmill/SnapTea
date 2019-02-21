@@ -1,6 +1,6 @@
 package snaptea;
 //import cjdom.Element;
-//import java.util.*;
+import java.util.*;
 import snap.gfx.Image;
 import snap.view.*;
 //import cjdom.DragEvent;
@@ -18,7 +18,7 @@ public class TVClipboard extends Clipboard {
     ViewEvent        _viewEvent;
     
     // The DataTransfer
-    //DataTransfer     _dataTrans;
+    DataTransfer     _dataTrans;
     
     // The shared clipboards for system and drag
     static TVClipboard  _shared;
@@ -27,20 +27,20 @@ public class TVClipboard extends Clipboard {
 /**
  * Returns the clipboard content.
  */
-/*protected boolean hasDataImpl(String aMimeType)
+protected boolean hasDataImpl(String aMimeType)
 {
     // If no DataTransfer, just return normal version
     if(_dataTrans==null) return super.hasDataImpl(aMimeType);
     
     if(aMimeType==FILE_LIST)
-        return _dataTrans.getFiles().length>0;
+        return _dataTrans.getFiles().getLength()>0;
     return _dataTrans.hasType(aMimeType);
-}*/
+}
 
 /**
  * Returns the clipboard content.
  */
-/*protected ClipboardData getDataImpl(String aMimeType)
+protected ClipboardData getDataImpl(String aMimeType)
 {
     // If no DataTransfer, just return normal version
     if(_dataTrans==null) return super.getDataImpl(aMimeType);
@@ -49,12 +49,10 @@ public class TVClipboard extends Clipboard {
     
     // Handle Files
     if(aMimeType==FILE_LIST) {
-        cjdom.File cjfiles[] = _dataTrans.getFiles(); if(cjfiles==null) return null;
-        List <ClipboardData> cfiles = new ArrayList(cjfiles.length);
-        for(cjdom.File cjfile : cjfiles) {
-            String type = cjfile.getType();
-            byte bytes[] = cjfile.getBytes();
-            ClipboardData cbfile = new ClipboardData(cjfile.getType(), cjfile.getBytes());
+        File jsfiles[] = _dataTrans.getFilesArray(); if(jsfiles==null) return null;
+        List <ClipboardData> cfiles = new ArrayList(jsfiles.length);
+        for(File jsfile : jsfiles) {
+            ClipboardData cbfile = new TVClipboardData(jsfile);
             cfiles.add(cbfile);
         }
         data = cfiles;
@@ -65,7 +63,7 @@ public class TVClipboard extends Clipboard {
     
     // Return ClipboardData for data
     return new ClipboardData(aMimeType, data);
-}*/
+}
 
 /**
  * Adds clipboard content.
@@ -122,8 +120,8 @@ public void dropComplete()  { }
 protected void setEvent(ViewEvent anEvent)
 {
     _viewEvent = anEvent;
-    //DragEvent dragEvent = (DragEvent)anEvent.getEvent();
-    //_dataTrans = dragEvent.getDataTransfer();
+    DragEvent dragEvent = (DragEvent)anEvent.getEvent();
+    _dataTrans = dragEvent.getDataTransfer();
 }
 
 /**
@@ -143,6 +141,28 @@ public static TVClipboard getDrag(ViewEvent anEvent)
     if(_sharedDrag==null) _sharedDrag = new TVClipboard();
     if(anEvent!=null) _sharedDrag.setEvent(anEvent);
     return _sharedDrag;
+}
+
+/**
+ * A ClipboardData subclass to read JS File bytes asynchronously.
+ */
+private static class TVClipboardData extends ClipboardData {
+
+    /** Creates ClipboardData for given JS File and starts loading. */
+    public TVClipboardData(File aFile)
+    {
+        super(aFile.getType(), null);
+        setLoaded(false);
+        FileReader fr = new FileReader();
+        fr.readBytesAndRunLater(aFile, () -> fileReaderDidLoad(fr));
+    }
+    
+    /** Called when FileReader finishes reading bytes. */
+    void fileReaderDidLoad(FileReader aFR)
+    {
+        byte bytes[] = aFR.getResultBytes();
+        setBytes(bytes);
+    }
 }
 
 }
