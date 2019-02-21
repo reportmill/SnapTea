@@ -1,6 +1,7 @@
 package snaptea;
 import java.util.*;
 import org.teavm.jso.ajax.XMLHttpRequest;
+import snap.util.SnapUtils;
 import snap.web.*;
 
 /**
@@ -58,7 +59,14 @@ protected void doGetOrHead(WebRequest aReq, WebResponse aResp, boolean isHead)
         
     // If file, just set bytes
     if(aResp.isFile()) {
-        byte bytes[] = getFileBytes(path);
+        
+        // Get Java URL
+        String urls = url.getString().replace("!", "");
+        java.net.URL urlx = null;
+        try { urlx = new java.net.URL(urls); } catch(Exception e) { throw new RuntimeException(e); }
+        
+        // Get bytes
+        byte bytes[] = getBytes(urlx); //getFileBytes(path);
         aResp.setBytes(bytes);
     }
     
@@ -90,20 +98,54 @@ public FileHeader getFileHeader(String aPath)
 /**
  * Returns bytes for file path.
  */
-protected byte[] getFileBytes(String aPath)
-{
-    String urls = ROOT_URL + aPath;  // Was urls = aPath.substring(1);
-    
+/*protected byte[] getFileBytes(String aPath) {
     // Get XMLHttpRequest
+    String urls = ROOT_URL + aPath;  // Was urls = aPath.substring(1);
     XMLHttpRequest req = XMLHttpRequest.create();
-    req.open("GET", urls, false);
-    if(_debug) System.out.println("Get: " + urls);
-    req.send();
-    if(_debug) System.out.println("GetDone: " + urls);
+    req.open("GET", urls, false); if(_debug) System.out.println("Get: " + urls);
+    req.send(); if(_debug) System.out.println("GetDone: " + urls);
     
     // Get bytes
     String text = req.getResponseText();
     byte bytes[] = text.getBytes(); if(bytes==null) System.out.println("No file bytes: " + aPath);
+    return bytes; }*/
+
+/**
+ * Returns bytes for file path.
+ */
+/*protected byte[] getFileBytes2(String aPath) {
+    // Get XMLHttpRequest
+    String urls = ROOT_URL + aPath;  // Was urls = aPath.substring(1);
+    XMLHttpRequest req = XMLHttpRequest.create();
+    req.open("GET", urls, false); if(_debug) System.out.println("Get: " + urls);
+    req.send(); if(_debug) System.out.println("GetDone: " + urls);
+    
+    // Get bytes
+    req.setResponseType("arraybuffer");
+    ArrayBuffer arrayBuf = (ArrayBuffer)req.getResponse();
+    Int8Array array = Int8Array.create(arrayBuf);
+    byte[] bytes = new byte[array.getLength()]; for(int i=0; i<bytes.length; ++i) bytes[i] = array.get(i);
+    return bytes; }*/
+
+/**
+ * Returns bytes for url.
+ */
+private static byte[] getBytes(java.net.URL aURL)
+{
+    try { return getBytesOrThrow(aURL); }
+    catch(Exception e) { throw new RuntimeException(e); }
+}
+
+/**
+ * Returns bytes for url.
+ */
+private static byte[] getBytesOrThrow(java.net.URL aURL) throws java.io.IOException
+{
+    // Get connection, stream, stream bytes, then close stream and return bytes
+    java.net.URLConnection conn = aURL.openConnection();
+    java.io.InputStream stream = conn.getInputStream();  // Get stream for URL
+    byte bytes[] = SnapUtils.getBytesOrThrow(stream);  // Get bytes for stream, close and return bytes
+    stream.close();
     return bytes;
 }
 
