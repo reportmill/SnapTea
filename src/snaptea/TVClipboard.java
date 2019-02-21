@@ -152,6 +152,7 @@ private static class TVClipboardData extends ClipboardData {
     public TVClipboardData(File aFile)
     {
         super(aFile.getType(), null);
+        setName(aFile.getName());
         setLoaded(false);
         FileReader fr = new FileReader();
         fr.readBytesAndRunLater(aFile, () -> fileReaderDidLoad(fr));

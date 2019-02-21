@@ -21,37 +21,19 @@ public interface Blob extends JSObject {
 /**
  * Creates a new Blob from given object.
  */
-/*public Blob(Object anObj, String aType)
-{
-    byte bytes[] = getBytes(anObj);
-    _jso = createBlobJSO(bytes, aType);
-}*/
-
-/**
- * Creates a Blob.
- */
-//static native Object createBlobJSO(Object anObj, String aType);
+/*public Blob(Object anObj, String aType)  { byte bytes[] = getBytes(anObj); _jso = createBlobJSO(bytes, aType); }*/
 
 /**
  * Returns the size, in bytes, of the data contained in the Blob object.
  */
-//public native int getSize();
+@JSProperty
+public int getSize();
 
 /**
  * Returns string indicating MIME type of data contained in Blob. If type is unknown, this string is empty.
  */
 @JSProperty
 public String getType();
-/*{
-    Object typeJSO = getTypeJSO();
-    String type = getString(typeJSO);
-    return type;
-}*/
-
-/**
- * Returns string indicating MIME type of data contained in Blob. If type is unknown, this string is empty.
- */
-//native Object getTypeJSO();
 
 /**
  * Returns the bytes for the Blob.
