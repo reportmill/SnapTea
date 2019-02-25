@@ -181,7 +181,7 @@ public void setShape(Shape aShape)
  */
 public void drawImage(Image anImg, Transform xform)
 {
-    CanvasImageSource img = anImg.getNative() instanceof CanvasImageSource? (CanvasImageSource)anImg.getNative() : null;
+    CanvasImageSource img = (CanvasImageSource)anImg.getNative();
     save();
     transform(xform);
     _cntx.drawImage(img, 0, 0);

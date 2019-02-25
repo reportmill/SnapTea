@@ -7,6 +7,7 @@ import org.teavm.jso.dom.html.HTMLDocument;
 import org.teavm.jso.dom.html.HTMLElement;
 import org.teavm.jso.dom.xml.Node;
 import org.teavm.jso.dom.xml.NodeList;
+import org.teavm.jso.typedarrays.Int8Array;
 import snap.gfx.*;
 import snap.util.SnapUtils;
 
@@ -119,6 +120,38 @@ public static native int getPageY(MouseEvent aME);
 @JSBody(params = { }, script = "return window.devicePixelRatio;")
 public static native double getDevicePixelRatio();
     
+/**
+ * Creates a Blob from given bytes in Java.
+ */
+public static Blob createBlob(byte theBytes[])
+{
+    Int8Array bytesJS = getBytesJS(theBytes);
+    Blob blob = createBlob(bytesJS);
+    return blob;
+}
+
+/**
+ * Creates a Blob from given bytes in JS.
+ */
+@JSBody(params={ "theBytes" }, script = "return new Blob([theBytes], null);")
+static native Blob createBlob(Int8Array theBytes);
+
+/**
+ * Creates a URL from given blob.
+ */
+@JSBody(params={ "theBlob" }, script = "return URL.createObjectURL(theBlob);")
+static native String createURL(Blob theBlob);
+
+/**
+ * Creates an array of bytes in JS from given bytes in Java.
+ */
+public static Int8Array getBytesJS(byte theBytes[])
+{
+    Int8Array bytesJS = Int8Array.create(theBytes.length);
+    for(int i=0; i<theBytes.length; i++) bytesJS.set(i, theBytes[i]);
+    return bytesJS;
+}
+
 /**
  * Sets the TeaVM environment.
  */

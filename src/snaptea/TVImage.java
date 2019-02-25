@@ -6,6 +6,7 @@ import org.teavm.jso.canvas.ImageData;
 import org.teavm.jso.dom.html.*;
 import org.teavm.jso.typedarrays.Uint8ClampedArray;
 import snap.gfx.*;
+import snap.util.SnapUtils;
 import snap.web.WebURL;
 
 /**
@@ -37,22 +38,13 @@ public TVImage(Object aSource)
     _src = getSourceURL(aSource);
     
     // Create image    
-    _img = _img = HTMLDocument.current().createElement("img").cast(); //.withAttr("src", src)
+    _img = HTMLDocument.current().createElement("img").cast();
     _pw = _ph = 20;
     
     // Set src and wait till loaded
     setLoaded(false);
-    _img.listenLoad(e -> TVEnv.runOnAppThread(() -> didFinishLoad()));
+    _img.listenLoad(e -> didFinishLoad());
     _img.setSrc(_src);
-}
-
-/** Called when image has finished load. */
-private synchronized void didFinishLoad()
-{
-    _pw = _img.getWidth(); _ph = _img.getHeight();  //_loaded = true; notifyAll();
-    if(_src.toLowerCase().endsWith(".jpg")) _hasAlpha = false;
-    setLoaded(true);
-    //System.out.println("Waiting done " + _src);
 }
 
 /**
@@ -62,10 +54,11 @@ String getSourceURL(Object aSource)
 {
     // Handle byte[] and InputStream
     if(aSource instanceof byte[] || aSource instanceof InputStream) {
-        //readBasicInfo(SnapUtils.getBytes(aSource));
-        //Blob blob = new Blob(aSource, null);
-        //return URL.createObjectURL(blob);
-        System.out.println("TVImage: Can't read from bytes"); return null;
+        byte bytes[] = SnapUtils.getBytes(aSource);
+        readBasicInfo(bytes);
+        Blob blob = TV.createBlob(bytes);
+        String urls = TV.createURL(blob);
+        return urls;
     }
     
     // Get URL
@@ -78,9 +71,15 @@ String getSourceURL(Object aSource)
         return getSourceURL(url.getBytes());
         
     // Return URL string
-    //return url.getString();
-    setSource(url);
-    return url.getPath().substring(1);
+    return url.getString();
+}
+
+/** Called when image has finished load. */
+void didFinishLoad()
+{
+    _pw = _img.getWidth(); _ph = _img.getHeight();  //_loaded = true; notifyAll();
+    if(_src.toLowerCase().endsWith(".jpg")) _hasAlpha = false;
+    snap.view.ViewUtils.runLater(() -> setLoaded(true));
 }
 
 /**
