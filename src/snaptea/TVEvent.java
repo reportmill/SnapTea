@@ -13,25 +13,12 @@ public class TVEvent extends ViewEvent {
  */
 protected Point getPointImpl()
 {
-    if(getEvent() instanceof Touch) return getTouchPoint();
-    MouseEvent event = (MouseEvent)getEvent(); if(event==null) { return new Point(); }
+    MouseEvent event = (MouseEvent)getEvent();
+    if(event==null) { System.err.println("TVEvent:getPointImp: No Mouse Event"); return new Point(); }
     boolean winMaximized = getView().getWindow().isMaximized();
-    double x = winMaximized? event.getClientX() : TV.getPageX(event);
-    double y = winMaximized? event.getClientY() : TV.getPageY(event);
+    double x = winMaximized? event.getClientX() : TV.getPageX(event); x = Math.round(x);
+    double y = winMaximized? event.getClientY() : TV.getPageY(event); y = Math.round(y);
     Point pt = getView().parentToLocal(x,y, null);
-    return pt;
-}
-
-/**
- * Returns the event point from browser touch event.
- */
-Point getTouchPoint()
-{
-    Touch event = (Touch)getEvent();
-    boolean winMaximized = getView().getWindow().isMaximized();
-    double x = winMaximized? event.getClientX() : event.getPageX();
-    double y = winMaximized? event.getClientY() : event.getPageY();
-    Point pt = getView().parentToLocal(x,y,null);
     return pt;
 }
 
