@@ -71,7 +71,8 @@ String getSourceURL(Object aSource)
         return getSourceURL(url.getBytes());
         
     // Return URL string
-    return url.getString();
+    String urls = url.getString().replace("!", "");
+    return urls;
 }
 
 /** Called when image has finished load. */
@@ -87,8 +88,7 @@ void didFinishLoad()
  */
 boolean isBrowsable(WebURL aURL)
 {
-    String urls = aURL.getString();
-    String scheme = aURL.getScheme(); //if(urls.contains("!")) return false;
+    String scheme = aURL.getScheme();
     return scheme.equals("http") || scheme.equals("https") || scheme.equals("data") || scheme.equals("blob");
 }
 
