@@ -67,16 +67,16 @@ void handleEvent(Event e)
         case "mousedown":
             run = () -> mouseDown((MouseEvent)e);
             _mousePressWin = _mouseDownWin = getWindow((MouseEvent)e);
-            if(_mousePressWin==null) return;
-            stopProp = prevDefault = true; break;
+            if(_mousePressWin==null) return; //stopProp = prevDefault = true;
+            break;
         case "mousemove":
             if(_mouseDownWin!=null) run = () -> mouseDrag((MouseEvent)e);
             else run = () -> mouseMove((MouseEvent)e);
             _mouseMoveWin = getWindow((MouseEvent)e); break;
         case "mouseup":
             run = () -> mouseUp((MouseEvent)e);
-            if(_mousePressWin==null) return;
-            stopProp = prevDefault = true; break;
+            if(_mousePressWin==null) return; //stopProp = prevDefault = true;
+            break;
         case "click":
         case "contextmenu":
             if(_mousePressWin==null) return;

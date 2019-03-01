@@ -51,9 +51,10 @@ public void setView(RootView aView)
     EventListener dragLsnr = e -> handleDragEvent((DragEvent)e);
     _canvas.addEventListener("dragenter", dragLsnr); _canvas.addEventListener("dragover", dragLsnr);
     _canvas.addEventListener("dragexit", dragLsnr); _canvas.addEventListener("drop", dragLsnr);
+    
     // Register for drag start event
-    //_canvas.addEventListener("dragstart", e -> handleDragGesture((DragEvent)e));
-    //_canvas.addEventListener("dragend", e -> handleDragEnd((DragEvent)e));
+    _canvas.addEventListener("dragstart", e -> handleDragGesture((DragEvent)e));
+    _canvas.addEventListener("dragend", e -> handleDragEnd((DragEvent)e));
 }
 
 /**
@@ -88,11 +89,18 @@ public void handleDragEvent(DragEvent anEvent)
 }
 
 /** Called to handle a drag event. */
-/*public void handleDragGesture(DragEvent anEvent) {       
-    ViewEvent event = CJViewEnv.get().createEvent(_rview, anEvent, null, null);
-    _rview.dispatchEvent(event); if(!CJClipboard.isDragging) { anEvent.preventDefault(); anEvent.stopPropagation(); }}*/
+public void handleDragGesture(DragEvent anEvent)
+{
+    ViewEvent event = ViewEvent.createEvent(_rview, anEvent, null, null);
+    _rview.getWindow().dispatchEvent(event);
+    if(!TVClipboard.isDragging) { anEvent.preventDefault(); anEvent.stopPropagation(); }
+}
+
 /** Called to handle dragend event. */
-/*public void handleDragEnd(DragEvent anEvent) {
-    ViewEvent nevent = CJViewEnv.get().createEvent(_rview, anEvent, null, null); _rview.dispatchEvent(nevent); }*/
+public void handleDragEnd(DragEvent anEvent)
+{
+    ViewEvent nevent = ViewEvent.createEvent(_rview, anEvent, null, null);
+    _rview.getWindow().dispatchEvent(nevent);
+}
 
 }

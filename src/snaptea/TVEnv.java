@@ -10,14 +10,14 @@ import snap.web.*;
 public class TVEnv extends GFXEnv {
     
     // The app thread
-    Thread            _appThread;
+    static EventThread         _appThread;
     
     // The runs array and start/end
-    Runnable            _theRuns[] = new Runnable[100];
-    int                 _runStart, _runEnd;
+    static Runnable            _theRuns[] = new Runnable[100];
+    static int                 _runStart, _runEnd;
 
     // The shared AWTEnv
-    static TVEnv             _shared;
+    static TVEnv               _shared;
 
 /**
  * Creates a TVEnv.
@@ -96,38 +96,33 @@ public void openURL(Object aSource)
 public void beep()  { }
 
 /**
- * Runs the event queue.
+ * Starts a new app event thread.
  */
-synchronized void runEventQueue()
+public void startNewAppThread()
 {
-    // Queue runs forever
-    while(true) {
-        
-        // Get next run, if found, just run
-        Runnable run = _runEnd>_runStart? _theRuns[_runStart++] : null; //_theRuns.poll();
-        if(run!=null) {
-             run.run();
-             if(Thread.currentThread()!=_appThread)
-                 break;
-         }
-        
-        // Otherwise, wait till new run added to queue
-        else {
-            _runStart = _runEnd = 0;
-            try { wait(); }
-            catch(Exception e) { throw new RuntimeException(e); }
-        }
-    }
+    _appThread = new EventThread();
+    _appThread.start();
 }
 
 /**
- * Adds to the event queue.
+ * Returns the next run from event queue.
  */
-synchronized void addToEventQueue(Runnable aRun)
+static synchronized Runnable getNextEventQueueRun()
+{
+    // Get next run - if none, reset array start/end vars
+    Runnable run = _runEnd>_runStart? _theRuns[_runStart++] : null;
+    if(run==null) _runStart = _runEnd = 0;
+    return run;
+}
+
+/**
+ * Adds given run to the event queue.
+ */
+public static synchronized void runOnAppThread(Runnable aRun)
 {
     _theRuns[_runEnd++] = aRun;
     if(_runEnd==1)
-        notify();
+        _appThread.wakeUp();
     else if(_runEnd>=_theRuns.length) {
         if(_theRuns.length>500) {
             System.err.println("TVEnv.addToEventQueue: To many events in queue - somthing is broken");
@@ -138,26 +133,43 @@ synchronized void addToEventQueue(Runnable aRun)
 }
 
 /**
- * Starts a new app thread.
- */
-public void startNewAppThread()
-{
-    _appThread = new Thread(() -> runEventQueue());
-    _appThread.start();
-}
-
-/**
- * Runs a runnable on app thread.
- */
-public static void runOnAppThread(Runnable aRun)  { get().addToEventQueue(aRun); }
-
-/**
  * Returns a shared instance.
  */
 public static TVEnv get()
 {
     if(_shared!=null) return _shared;
     return _shared = new TVEnv();
+}
+
+/**
+ * A Thread subclass to run event queue runs.
+ */
+private static class EventThread extends Thread {
+    
+    /** Gets a run from event queue and runs it. */
+    public synchronized void run()
+    {
+        // Queue runs forever
+        while(true) {
+            
+            // Get next run, if found, just run
+            Runnable run = getNextEventQueueRun();
+            if(run!=null) {
+                 run.run();
+                 if(_appThread!=this)
+                     break;
+             }
+            
+            // Otherwise, wait till new run added to queue
+            else {
+                try { wait(); }
+                catch(Exception e) { throw new RuntimeException(e); }
+            }
+        }
+    }
+    
+    /** Wake up called when event is added to empty queue. */
+    public synchronized void wakeUp()  { notify(); }
 }
 
 }

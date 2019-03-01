@@ -25,6 +25,24 @@ public class TScanner {
 public TScanner(InputStream aIS)  { _is = aIS; }
 
 /**
+ * Create new Scanner for InputStream.
+ */
+public TScanner(String aStr)
+{
+    byte bytes[] = aStr.getBytes();
+    _is = new ByteArrayInputStream(bytes);
+}
+
+/**
+ * Returns whether next input is available.
+ */
+public boolean hasNext()
+{
+    String str = peekNext();
+    return str!=null && str.length()>0;
+}
+
+/**
  * Returns the next token.
  */
 public String next()

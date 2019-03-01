@@ -1,10 +1,9 @@
 package snaptea;
-//import cjdom.Element;
 import java.util.*;
+import org.teavm.jso.dom.html.HTMLDocument;
+import org.teavm.jso.dom.html.HTMLElement;
 import snap.gfx.Image;
 import snap.view.*;
-//import cjdom.DragEvent;
-//import cjdom.DataTransfer;
 
 /**
  * A snap Clipboard implementation for TeaVM.
@@ -68,7 +67,7 @@ protected ClipboardData getDataImpl(String aMimeType)
 /**
  * Adds clipboard content.
  */
-/*protected void addDataImpl(String aMimeType, ClipboardData aData)
+protected void addDataImpl(String aMimeType, ClipboardData aData)
 {
     // Do normal implementation to populate ClipboardDatas map
     super.addDataImpl(aMimeType, aData);
@@ -82,7 +81,7 @@ protected ClipboardData getDataImpl(String aMimeType)
         
     // Otherwise complain
     else System.err.println("CJClipboard.addDataImpl: Unsupported data type: " + aMimeType + ", " + aData.getSource());
-}*/
+}
 
 /**
  * Starts the drag.
@@ -90,20 +89,20 @@ protected ClipboardData getDataImpl(String aMimeType)
 public void startDrag()
 {
     // Set Dragging true and consume event
-    //isDragging = true;
+    isDragging = true;
     _viewEvent.consume();
     
     // Get drag image and point and set in DataTransfer
     Image dimg = getDragImage(); if(dimg==null) dimg = Image.get(1,1,true);
-    //Element img = (Element)dimg.getNative();
+    HTMLElement img = (HTMLElement)dimg.getNative();
     double dx = getDragImageOffset().x;
     double dy = getDragImageOffset().y;
-    //_dataTrans.setDragImage(img, dx, dy);
+    _dataTrans.setDragImage(img, dx, dy);
         
     // Add image element to canvas so browsers can generate image (then remove a short time later)
-    //cjdom.Element body = cjdom.Document.current().getBody();
-    //body.appendChild(img);
-    //TVViewEnv.get().runDelayed(() -> { isDragging = false; body.removeChild(img); }, 100, false);
+    HTMLElement body = HTMLDocument.current().getBody();
+    body.appendChild(img);
+    TVViewEnv.get().runDelayed(() -> { isDragging = false; body.removeChild(img); }, 100, false);
 }
 
 public static boolean isDragging;

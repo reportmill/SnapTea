@@ -4,6 +4,7 @@ import org.teavm.jso.JSProperty;
 import org.teavm.jso.core.JSArray;
 import org.teavm.jso.core.JSArrayReader;
 import org.teavm.jso.core.JSString;
+import org.teavm.jso.dom.html.HTMLElement;
 
 /**
  * DataTransfer is used to hold the data that is being dragged during a drag and drop operation. It may hold one or more
@@ -28,7 +29,6 @@ default boolean hasType(String aType)
     //for(String type : getTypes())
     JSArray <JSString> types = getTypes();
     for(int i=0; i<types.getLength(); i++) { JSString jstr = types.get(i); String type = jstr.stringValue();
-        System.out.println("DataTransfer: Checktype: " + type);
         if(type.equals(aType))
             return true;
     }
@@ -40,33 +40,17 @@ default boolean hasType(String aType)
  */
 @JSProperty
 public JSArray <JSString> getTypes();
-/*{
-    if(_types!=null) return _types;
-    int count = getTypeCount();
-    _types = new String[count];
-    for(int i=0;i<count;i++) _types[i] = getString(getType(i));
-    return _types;
-}*/
+/*{ if(_types!=null) return _types; int count = getTypeCount(); _types = new String[count];
+    for(int i=0;i<count;i++) _types[i] = getString(getType(i)); return _types; }*/
 
-/**
- * Returns the number of types.
- */
+/** Returns the number of types. */
 //native int getTypeCount();
 
-/**
- * Returns the number of types.
- */
+/** Returns the number of types. */
 //native Object getType(int anIndex);
 
-/**
- * Returns the data for a given type, or an empty string if data for that type does not exist or the data transfer
- * contains no data.
- */
-/*public String getData(String aType)
-{
-    Object dstr = getDataJSO(aType);
-    return getString(dstr);
-}*/
+/** Returns data for given type, or empty string if data for type does not exist or data transfer contains no data. */
+/*public String getData(String aType)  { Object dstr = getDataJSO(aType); return getString(dstr); }*/
 
 /**
  * Returns the data for a given type.
@@ -78,21 +62,13 @@ public String getData(String aType);
  * in the types list will be the new format. If data for the type already exists, the existing data is replaced in the
  * same position.
  */
-/*public void setData(String aType, String theData)
-{
-    setDataJSO(aType, theData);
-    _types = null; _items = null; _files = null;
-}*/
+public void setData(String aType, String theData);
+/*{ setDataJSO(aType, theData); _types = null; _items = null; _files = null; }*/
 
-/**
- * Set the data for a given type.
- */
+/** Set the data for a given type. */
 //native void setDataJSO(String aType, String theData);
 
-/**
- * Removes the drag operation's drag data for the given type. If data for the given type does not exist, this method
- * does nothing.
- */
+/** Removes drag op's drag data for given type. If data for given type does not exist, this method does nothing. */
 //public native void clearData(String aType);
 
 /**
@@ -106,9 +82,7 @@ default File[] getFilesArray()
 {
     JSArrayReader <File> filesAR = getFiles();
     int len = filesAR.getLength(); System.out.println("DataTransfer: Getting files: " + len);
-    File files[] = new File[len];
-    for(int i=0;i<len;i++)
-        files[i] = filesAR.get(i);
+    File files[] = new File[len]; for(int i=0;i<len;i++) files[i] = filesAR.get(i);
     return files;
 }
 
@@ -119,38 +93,24 @@ default File[] getFilesArray()
 /*public File[] getFiles()
 {
     if(_files!=null) return _files;
-    int count = getFileCount();
-    _files = new File[count];
-    for(int i=0;i<count;i++) {
-        _files[i] = new File();
-        _files[i]._jso = getFileJSO(i);
-    }
+    int count = getFileCount(); _files = new File[count];
+    for(int i=0;i<count;i++) { _files[i] = new File(); _files[i]._jso = getFileJSO(i); }
     return _files;
 }*/
 
-/**
- * Returns an the number of all the local files available on the data transfer.
- */
+/** Returns an the number of all the local files available on the data transfer. */
 //native int getFileCount();
 
-/**
- * Returns an the local files available on the data transfer at given index.
- */
+/** Returns an the local files available on the data transfer at given index. */
 //native Object getFileJSO(int anIndex);
 
-/**
- * Sets the files.
- */
-/*public void setFiles(File ... theFiles)
-{
-    _files = Arrays.copyOf(theFiles, theFiles.length);
-    
-}*/
+/** Sets the files. */
+/*public void setFiles(File ... theFiles)  { _files = Arrays.copyOf(theFiles, theFiles.length); }*/
 
 /**
  * Sets the image Element element to use for the drag feedback image.
  */
-//public native void setDragImage(Element aImg, double xOffset, double yOffset);
+public void setDragImage(HTMLElement aImg, double xOffset, double yOffset);
 
 /**
  * Returns an array of DataTransferItem objects representing drag data.
@@ -158,23 +118,15 @@ default File[] getFilesArray()
 /*public DataTransferItem[] getItems()
 {
     if(_items!=null) return _items;
-    int count = getItemCount();
-    _items = new DataTransferItem[count];
-    for(int i=0;i<count;i++) {
-        _items[i] = new DataTransferItem();
-        _items[i]._jso = getItemJSO(i);
-    }
+    int count = getItemCount(); _items = new DataTransferItem[count];
+    for(int i=0;i<count;i++) { _items[i] = new DataTransferItem(); _items[i]._jso = getItemJSO(i); }
     return _items;
 }*/
 
-/**
- * Returns the number of data transfer items.
- */
+/** Returns the number of data transfer items. */
 //native int getItemCount();
 
-/**
- * Returns the DataTransferItem JSO at index.
- */
+/** Returns the DataTransferItem JSO at index. */
 //native Object getItemJSO(int anIndex);
 
 /**
@@ -184,8 +136,7 @@ default File[] getFilesArray()
 {
     StringBuilder sb = new StringBuilder("DataTransfer { Types:[");
     String types[] = getTypes();
-    for(String type : types) {
-        if(type!=types[0]) sb.append(", "); sb.append(type); }
+    for(String type : types) { if(type!=types[0]) sb.append(", "); sb.append(type); }
     sb.append(" ] }");
     return sb.toString();
 }*/
