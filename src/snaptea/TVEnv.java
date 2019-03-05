@@ -1,7 +1,10 @@
 package snaptea;
 import java.util.*;
 import org.teavm.jso.browser.Window;
+import org.teavm.jso.dom.html.HTMLAnchorElement;
+import org.teavm.jso.dom.html.HTMLDocument;
 import snap.gfx.*;
+import snap.util.FileUtils;
 import snap.web.*;
 
 /**
@@ -77,7 +80,30 @@ public double getScreenResolution()  { return 72; }
 /**
  * Tries to open the given file name with the platform reader.
  */
-public void openFile(Object aSource)  { }
+public void openFile(Object aSource)
+{
+    // Get Java File for source
+    if(aSource instanceof WebFile) aSource = ((WebFile)aSource).getJavaFile();
+    if(aSource instanceof WebURL) aSource = ((WebURL)aSource).getJavaURL();
+    java.io.File file = FileUtils.getFile(aSource);
+    
+    // Get file name, type, bytes
+    String name = file.getName().toLowerCase();
+    String type = name.endsWith("pdf")? "application/pdf" : name.endsWith("html")? "text/html" : null;
+    byte bytes[] = FileUtils.getBytes(file);
+    
+    // Create file and URL string
+    File fileJS = TV.createFile(bytes, name, type);
+    String urls = TV.createURL(fileJS);
+    
+    // Open
+    Window.current().open(urls, "_blank");
+    //HTMLAnchorElement anchor = HTMLDocument.current().createElement("a").cast();
+    //anchor.setHref(urls); setDownload(anchor, name); anchor.click();
+}
+
+//@org.teavm.jso.JSBody(params={ "anAnchor", "aStr" }, script = "anAnchor.download = aStr;")
+//static native int setDownload(HTMLAnchorElement anAnchor, String aStr);
 
 /**
  * Tries to open the given URL with the platform reader.

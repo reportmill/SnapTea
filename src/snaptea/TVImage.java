@@ -56,7 +56,7 @@ String getSourceURL(Object aSource)
     if(aSource instanceof byte[] || aSource instanceof InputStream) {
         byte bytes[] = SnapUtils.getBytes(aSource);
         readBasicInfo(bytes);
-        Blob blob = TV.createBlob(bytes);
+        Blob blob = TV.createBlob(bytes, null);
         String urls = TV.createURL(blob);
         return urls;
     }
