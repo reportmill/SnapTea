@@ -190,10 +190,10 @@ public int getAlphaColorIndex()  { System.err.println("Image.getAlphaColorIndex:
 public byte[] getColorMap()  { System.err.println("Image.getColorMap: Not implemented"); return null; }
 
 /** Returns the ARGB array of this image. */
-public int getBitsPerSample()  { System.err.println("Image.getBitsPerSample: Not implemented"); return 0; }
+public int getBitsPerSample()  { System.err.println("Image.getBitsPerSample: Not implemented"); return 8; }
 
 /** Returns the ARGB array of this image. */
-public int getSamplesPerPixel()  { System.err.println("Image.getSamplesPerPixel: Not implemented"); return 0; }
+public int getSamplesPerPixel()  { System.err.println("Image.getSamplesPerPixel: Not implemented"); return 4; }
 
 /** Returns the JPEG bytes for image. */
 public byte[] getBytesJPEG()  { return null; }

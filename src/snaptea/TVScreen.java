@@ -11,7 +11,7 @@ import snap.view.*;
 public class TVScreen {
 
     // The Window hit by last MouseDown and MouseMove (if mouse still down)
-    WindowView            _mousePressWin, _mouseDownWin, _mouseMoveWin;
+    WindowView            _mousePressWin, _mouseDownWin;
     
     // Time of last mouse release
     long                  _lastReleaseTime;
@@ -72,7 +72,6 @@ void handleEvent(Event e)
         case "mousemove":
             if(_mouseDownWin!=null) run = () -> mouseDrag((MouseEvent)e);
             else run = () -> mouseMove((MouseEvent)e);
-            _mouseMoveWin = getWindow((MouseEvent)e); break;
         case "mouseup":
             run = () -> mouseUp((MouseEvent)e);
             if(_mousePressWin==null) return; //stopProp = prevDefault = true;
@@ -82,7 +81,7 @@ void handleEvent(Event e)
             if(_mousePressWin==null) return;
             stopProp = prevDefault = true; break;
         case "wheel":
-            if(_mouseMoveWin==null) return;
+            if(getWindow((WheelEvent)e)==null) return;
             run = () -> mouseWheel((WheelEvent)e);
             stopProp = prevDefault = true; break;
         case "keydown":
@@ -101,7 +100,6 @@ void handleEvent(Event e)
         case "touchmove":
             if(_mousePressWin==null) return;
             run = () -> touchMove((TouchEvent)e);
-            _mouseMoveWin = getWindow((TouchEvent)e);
             stopProp = prevDefault = true; break;
         case "touchend":
             if(_mousePressWin==null) return;
@@ -215,11 +213,8 @@ public void mouseUp(MouseEvent anEvent)
 /* Only Y Axis Scrolling has been implemented */
 public void mouseWheel(WheelEvent anEvent)
 {
-    // Get window for WheelEvent
-    WindowView win = getWindow(anEvent);
-    if(win==null) return;
-
-    // Dispatch WheelEvent event
+    // Get window for WheelEvent and dispatch WheelEvent event
+    WindowView win = getWindow(anEvent); if(win==null) return;
     ViewEvent event = createEvent(win, anEvent, View.Scroll, null);
     win.dispatchEvent(event); //if(event.isConsumed()) { anEvent.stopPropagation(); anEvent.preventDefault(); }
 }

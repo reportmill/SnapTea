@@ -113,14 +113,21 @@ protected void setParent(HTMLElement aNode)
     if(aNode==getBody()) {
         
         // Set body and html height so that document covers the whole browser page
-        //HTMLHtmlElement html = HTMLDocument.current().getDocumentElement();
-        //HTMLBodyElement body = getBody();
-        //html.getStyle().setProperty("height", "100%");
-        //body.getStyle().setProperty("min-height", "100%");
+        HTMLHtmlElement html = HTMLDocument.current().getDocumentElement();
+        HTMLBodyElement body = getBody();
+        html.getStyle().setProperty("height", "100%");
+        body.getStyle().setProperty("min-height", "100%");
 
         // Configure WinEmt for body
         _winEmt.getStyle().setProperty("position", _win.isMaximized()? "fixed" : "absolute");
         _winEmt.getStyle().setProperty("z-index", String.valueOf(_topWin++));
+        
+        // If not maximized, attach WindowBar
+        if(!_win.isMaximized()) {
+            WindowBar.attachWindowBar(_rview);
+            _winEmt.getStyle().setProperty("background", null);
+            _winEmt.getStyle().setProperty("box-shadow", "1px 1px 8px grey");
+        }
     }
     
     // If arbitrary element
