@@ -23,6 +23,12 @@ public class TVWindow {
     // The native RootView
     TVRootView            _rviewNtv;
     
+    // The HTML document element
+    HTMLDocument          _doc;
+    
+    // The HTML body element
+    HTMLBodyElement       _body;
+    
     // The parent element
     HTMLElement           _parent;
     
@@ -53,8 +59,12 @@ public void setWindow(WindowView aWin)
         View.Width_Prop, View.Height_Prop);
     _win.addPropChangeListener(pc -> snapWindowActiveCursorChanged(), WindowView.ActiveCursor_Prop);
     
+    // Get Doc and body elements
+    _doc = HTMLDocument.current();
+    _body = _doc.getBody();
+    
     // Create/configure WinEmt, the HTMLElement to hold window and canvas
-    _winEmt = HTMLDocument.current().createElement("div");
+    _winEmt = _doc.createElement("div");
     _winEmt.getStyle().setProperty("box-sizing", "border-box");
     _winEmt.getStyle().setProperty("background", "#F4F4F4CC");
     
@@ -75,11 +85,6 @@ public void initWindow()
     if(_rview.getFill()==null) _rview.setFill(ViewUtils.getBackFill());
     if(_rview.getBorder()==null) _rview.setBorder(Color.GRAY, 1);
 }
-
-/**
- * Returns the body element.
- */
-HTMLBodyElement getBody()  { return HTMLDocument.current().getBody(); }
 
 /**
  * Returns the canvas for the window.
@@ -110,13 +115,12 @@ protected void setParent(HTMLElement aNode)
     aNode.appendChild(_winEmt);
     
     // If body, configure special
-    if(aNode==getBody()) {
+    if(aNode==_body) {
         
         // Set body and html height so that document covers the whole browser page
-        HTMLHtmlElement html = HTMLDocument.current().getDocumentElement();
-        HTMLBodyElement body = getBody();
+        HTMLHtmlElement html = _doc.getDocumentElement();
         html.getStyle().setProperty("height", "100%");
-        body.getStyle().setProperty("min-height", "100%");
+        _body.getStyle().setProperty("min-height", "100%");
 
         // Configure WinEmt for body
         _winEmt.getStyle().setProperty("position", _win.isMaximized()? "fixed" : "absolute");
@@ -144,25 +148,24 @@ protected void setParent(HTMLElement aNode)
 private HTMLElement getParentForWin()
 {
     // If window is maximized, parent should always be body
-    if(_win.isMaximized()) return getBody();
+    if(_win.isMaximized()) return _body;
     
     // If window has named element, return that
     String pname = _win.getName();
     if(pname!=null) {
-        HTMLDocument doc = HTMLDocument.current();
-        HTMLElement par = doc.getElementById(pname);
+        HTMLElement par = _doc.getElementById(pname);
         if(par!=null)
             return par;
     }
     
     // Default to body
-    return getBody();
+    return _body;
 }
 
 /**
  * Returns whether window is child of body.
  */
-private boolean isChildOfBody()  { return getParent()==getBody(); }
+private boolean isChildOfBody()  { return getParent()==_body; }
 
 /**
  * Resets the parent DOM element and Window/WinEmt bounds.
@@ -174,7 +177,7 @@ protected void resetParentAndBounds()
     setParent(par);
 
     // If window floating in body, set WinEmt bounds from Window
-    if(par==getBody()) {
+    if(par==_body) {
         if(_win.isMaximized()) _win.setBounds(TV.getViewportBounds());
         snapWindowBoundsChanged(null);
     }
@@ -319,16 +322,15 @@ void snapWindowBoundsChanged(PropChange aPC)
  */
 void snapWindowMaximizedChanged()
 {
-    // Get body and canvas
-    HTMLBodyElement body = getBody();
+    // Get canvas
     HTMLCanvasElement canvas = getCanvas();
 
     // Handle Maximized on
     if(_win.isMaximized()) {
         
         // Set body overflow to hidden (to get rid of scrollbars)
-        _bodyOverflow = body.getStyle().getPropertyValue("overflow");
-        body.getStyle().setProperty("overflow", "hidden");
+        _bodyOverflow = _body.getStyle().getPropertyValue("overflow");
+        _body.getStyle().setProperty("overflow", "hidden");
         
         // Set Window/WinEmt padding
         _win.setPadding(5,5,5,5);
@@ -342,7 +344,7 @@ void snapWindowMaximizedChanged()
     else {
         
         // Restore body overflow
-        body.getStyle().setProperty("overflow", _bodyOverflow);
+        _body.getStyle().setProperty("overflow", _bodyOverflow);
         
         // Clear Window/WinEmt padding
         _win.setPadding(0,0,0,0);

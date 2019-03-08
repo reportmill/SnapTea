@@ -1,8 +1,6 @@
 package snaptea;
 import java.util.*;
 import org.teavm.jso.browser.Window;
-import org.teavm.jso.dom.html.HTMLAnchorElement;
-import org.teavm.jso.dom.html.HTMLDocument;
 import snap.gfx.*;
 import snap.util.FileUtils;
 import snap.web.*;
