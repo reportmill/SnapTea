@@ -241,7 +241,7 @@ public void setPremultiplied(boolean aValue)  { _pm = aValue; }
 /**
  * Blurs the image by mixing pixels with those around it to given radius.
  */
-public void blur(int aRad)
+public void blur(int aRad, Color aColor)
 {
     // If HTMLImageElement, convert to canvas
     if(_img!=null) convertToCanvas();
@@ -252,12 +252,14 @@ public void blur(int aRad)
     canvas.getStyle().setProperty("width", (_pw/TVWindow.scale) + "px");
     canvas.getStyle().setProperty("height", (_ph/TVWindow.scale) + "px");
     
-    // Paint image into new canvas with ShadowBlur
+    // Paint image into new canvas with ShadowBlur, offset so that only shadow appears
     TVPainter pntr = new TVPainter(canvas);
     pntr._cntx.setShadowBlur(aRad);
-    pntr._cntx.setShadowColor("black");
-    pntr.drawImage(this, 0, 0);
-    pntr._cntx.setShadowBlur(0);
+    if(aColor!=null) pntr._cntx.setShadowColor(TV.get(aColor));
+    pntr._cntx.setShadowOffsetX(-_pw);
+    pntr._cntx.setShadowOffsetY(-_ph);
+    pntr.drawImage(this, getWidth(), getHeight());
+   
     _canvas = canvas;
 }
 
