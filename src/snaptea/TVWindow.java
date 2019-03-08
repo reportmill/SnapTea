@@ -39,7 +39,7 @@ public class TVWindow {
     EventListener         _resizeLsnr = null;
     
     // The body overflow value
-    String                _bodyOverflow;
+    String                _bodyMargin = "undefined", _bodyOverflow;
     
     // The last top window
     static int            _topWin;
@@ -121,6 +121,8 @@ protected void setParent(HTMLElement aNode)
         HTMLHtmlElement html = _doc.getDocumentElement();
         html.getStyle().setProperty("height", "100%");
         _body.getStyle().setProperty("min-height", "100%");
+        _bodyMargin = _body.getStyle().getPropertyValue("margin");
+        _body.getStyle().setProperty("margin", "0");
 
         // Configure WinEmt for body
         _winEmt.getStyle().setProperty("position", _win.isMaximized()? "fixed" : "absolute");
@@ -136,6 +138,7 @@ protected void setParent(HTMLElement aNode)
     
     // If arbitrary element
     else {
+        if(_bodyMargin!="undefined") _body.getStyle().setProperty("margin", _bodyMargin);
         _winEmt.getStyle().setProperty("position", "static");
         _winEmt.getStyle().setProperty("width", "100%");
         _winEmt.getStyle().setProperty("height", "100%");
