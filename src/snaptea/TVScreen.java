@@ -72,6 +72,7 @@ void handleEvent(Event e)
         case "mousemove":
             if(_mouseDownWin!=null) run = () -> mouseDrag((MouseEvent)e);
             else run = () -> mouseMove((MouseEvent)e);
+            break;
         case "mouseup":
             run = () -> mouseUp((MouseEvent)e);
             if(_mousePressWin==null) return; //stopProp = prevDefault = true;

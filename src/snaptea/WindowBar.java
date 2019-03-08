@@ -26,18 +26,20 @@ public class WindowBar extends ParentView {
     Point          _mpt;
     
     // Colors
-    static final Color CLOSE_COLOR = new Color("#ED6B5F"), CLOSE_COLOR2 = CLOSE_COLOR.darker();
-    static final Color MIN_COLOR = new Color("#F5BF4F"), MIN_COLOR2 = MIN_COLOR.darker();
-    static final Color MAX_COLOR = new Color("#62C654"), MAX_COLOR2 = MAX_COLOR.darker();
+    static final Color CLOSE_COLOR = new Color("#ED6B5F"), CLOSE_COLOR2 = CLOSE_COLOR.blend(Color.BLACK,.2);
+    static final Color MIN_COLOR = new Color("#F5BF4F"), MIN_COLOR2 = MIN_COLOR.blend(Color.BLACK,.2);
+    static final Color MAX_COLOR = new Color("#62C654"), MAX_COLOR2 = MAX_COLOR.blend(Color.BLACK,.2);
     
 /**
  * Creates a WindowBar.
  */
 public WindowBar(View aView)
 {
+    WindowView win = aView.getWindow();
+    double tth = win.getType()==WindowView.TYPE_MAIN? 24 : 18;
+    setTitlebarHeight(tth);
     enableEvents(MousePress, MouseDrag, MouseRelease);
     setContent(aView);
-    setTitlebarHeight(24);
 }
 
 /**
@@ -67,11 +69,12 @@ void setTitlebarHeight(double aValue)
     _bpntr.setPosition(Pos.TOP_CENTER);
     
     // Create buttons
-    double y = (_titlebarHeight - 12)/2;
-    _closeButton = new Arc(10,y,12,12,0,360);
-    _minButton = new Arc(30,y,12,12,0,360);
-    _maxButton = new Arc(50,y,12,12,0,360);
-    _font = Font.Arial10.deriveFont(_titlebarHeight-10);
+    double y = 6, w = 12; if(_titlebarHeight!=24) { y = 4; w = 10; }
+    _closeButton = new Arc(10,y,w,w,0,360);
+    _minButton = new Arc(30,y,w,w,0,360);
+    _maxButton = new Arc(50,y,w,w,0,360);
+    double fontSize = _titlebarHeight==24? 14 : 11;
+    _font = Font.Arial10.deriveFont(fontSize);
 }
 
 /**
@@ -98,8 +101,9 @@ protected void paintFront(Painter aPntr)
     // Paint title
     String title = getWindow().getTitle();
     if(title!=null) {
+        double y = _titlebarHeight==24? 4 : 3;
         Rect bnds = _font.getStringBounds(title); double x = Math.round((getWidth() - bnds.width)/2);
-        aPntr.setColor(Color.DARKGRAY); aPntr.setFont(_font); aPntr.drawString(title, x, 4 + _font.getAscent());
+        aPntr.setColor(Color.DARKGRAY); aPntr.setFont(_font); aPntr.drawString(title, x, y + _font.getAscent());
     }
 }
 

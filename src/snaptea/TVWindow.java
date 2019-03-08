@@ -124,7 +124,7 @@ protected void setParent(HTMLElement aNode)
         
         // If not maximized, attach WindowBar
         if(!_win.isMaximized()) {
-            WindowBar.attachWindowBar(_rview);
+            if(_win.getType()!=WindowView.TYPE_PLAIN) WindowBar.attachWindowBar(_rview);
             _winEmt.getStyle().setProperty("background", null);
             _winEmt.getStyle().setProperty("box-shadow", "1px 1px 8px grey");
         }
