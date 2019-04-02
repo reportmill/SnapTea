@@ -4,9 +4,9 @@ import org.teavm.jso.canvas.CanvasImageSource;
 import org.teavm.jso.canvas.CanvasRenderingContext2D;
 import org.teavm.jso.canvas.ImageData;
 import org.teavm.jso.dom.html.*;
+import org.teavm.jso.typedarrays.Int8Array;
 import org.teavm.jso.typedarrays.Uint8ClampedArray;
 import snap.gfx.*;
-import snap.util.SnapUtils;
 import snap.web.WebURL;
 
 /**
@@ -29,11 +29,31 @@ public class TVImage extends Image {
     // Whether image has transparency
     boolean                  _hasAlpha = true;
     
+    // The bytes RGBA
+    byte                     _bytesRGBA[];
+    
 /**
- * Creates a new TVImage from source.
+ * Creates a TVImage for given size.
+ */
+public TVImage(double aWidth, double aHeight, boolean hasAlpha)
+{
+    int w = (int)aWidth, h = (int)aHeight;
+    _pw = w*TVWindow.scale; _ph = h*TVWindow.scale;
+    _canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
+    _canvas.setWidth(_pw); _canvas.setHeight(_ph);
+    _canvas.getStyle().setProperty("width", w + "px");
+    _canvas.getStyle().setProperty("height", h + "px");
+    _hasAlpha = hasAlpha;
+}
+
+/**
+ * Creates a TVImage from given source.
  */
 public TVImage(Object aSource)
 {
+    // Set source
+    setSource(aSource);
+    
     // Get Src URL string
     _src = getSourceURL(aSource);
     
@@ -54,8 +74,7 @@ String getSourceURL(Object aSource)
 {
     // Handle byte[] and InputStream
     if(aSource instanceof byte[] || aSource instanceof InputStream) {
-        byte bytes[] = SnapUtils.getBytes(aSource);
-        readBasicInfo(bytes);
+        byte bytes[] = getBytes();
         Blob blob = TV.createBlob(bytes, null);
         String urls = TV.createURL(blob);
         return urls;
@@ -75,7 +94,7 @@ String getSourceURL(Object aSource)
     return urls;
 }
 
-/** Called when image has finished load. */
+/** Called when image has finished load. */ 
 void didFinishLoad()
 {
     _pw = _img.getWidth(); _ph = _img.getHeight();  //_loaded = true; notifyAll();
@@ -83,39 +102,11 @@ void didFinishLoad()
     snap.view.ViewUtils.runLater(() -> setLoaded(true));
 }
 
-/**
- * Returns whether URL can be fetched by browser.
- */
+/** Returns whether URL can be fetched by browser. */
 boolean isBrowsable(WebURL aURL)
 {
     String scheme = aURL.getScheme();
     return scheme.equals("http") || scheme.equals("https") || scheme.equals("data") || scheme.equals("blob");
-}
-
-/**
- * Read basic info if bytes.
- */
-void readBasicInfo(byte theBytes[])
-{
-    String type = ImageUtils.getImageType(theBytes);
-    if(type.equals("jpg")) {
-        ImageUtils.ImageInfo info = ImageUtils.getInfoJPG(theBytes);
-        _pw = info.width; _ph = info.height;
-    }
-}
-
-/**
- * Creates a new TVImage for size.
- */
-public TVImage(double aWidth, double aHeight, boolean hasAlpha)
-{
-    int w = (int)aWidth, h = (int)aHeight;
-    _pw = w*TVWindow.scale; _ph = h*TVWindow.scale;
-    _canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
-    _canvas.setWidth(_pw); _canvas.setHeight(_ph);
-    _canvas.getStyle().setProperty("width", w + "px");
-    _canvas.getStyle().setProperty("height", h + "px");
-    _hasAlpha = hasAlpha;
 }
 
 /**
@@ -178,28 +169,43 @@ public int getRGB(int aX, int aY)
 }
 
 /** Returns the ARGB array of this image. */
-public int[] getArrayARGB()  { System.err.println("Image.getArrayARGB: Not implemented"); return null; }
+public int[] getArrayARGB()  { System.err.println("Image.getArrayARGB: Not impl"); return null; }
 
 /** Returns the ARGB array of this image. */
-public byte[] getBytesRGBA()  { System.err.println("Image.getBytesRGBA: Not implemented"); return null; }
+public byte[] getBytesRGBA()
+{
+    // If already set, just return
+    if(_bytesRGBA!=null) return _bytesRGBA;
+    
+    // If HTMLImageElement, convert to canvas
+    if(_img!=null) convertToCanvas();
+    
+    // Get image data and convert to bytes
+    CanvasRenderingContext2D cntx = (CanvasRenderingContext2D)_canvas.getContext("2d");
+    ImageData idata = cntx.getImageData(0, 0, getPixWidth(), getPixHeight());
+    Uint8ClampedArray ary8C = idata.getData();
+    Int8Array ary8 = Int8Array.create(ary8C.getBuffer());
+    byte bytes[] = new byte[ary8.getLength()]; for(int i=0; i<bytes.length; i++) bytes[i] = ary8.get(i);
+    return _bytesRGBA = bytes;
+}
 
 /** Returns the ARGB array of this image. */
-public int getAlphaColorIndex()  { System.err.println("Image.getAlphaColorIndex: Not implemented"); return 0; }
+public int getAlphaColorIndex()  { System.err.println("Image.getAlphaColorIndex: Not impl"); return 0; }
 
 /** Returns the ARGB array of this image. */
-public byte[] getColorMap()  { System.err.println("Image.getColorMap: Not implemented"); return null; }
+public byte[] getColorMap()  { System.err.println("Image.getColorMap: Not impl"); return null; }
 
 /** Returns the ARGB array of this image. */
-public int getBitsPerSample()  { System.err.println("Image.getBitsPerSample: Not implemented"); return 8; }
+public int getBitsPerSample()  { System.err.println("Image.getBitsPerSample: Not impl"); return 8; }
 
 /** Returns the ARGB array of this image. */
-public int getSamplesPerPixel()  { System.err.println("Image.getSamplesPerPixel: Not implemented"); return 4; }
+public int getSamplesPerPixel()  { System.err.println("Image.getSamplesPerPixel: Not impl"); return hasAlpha()? 4 : 3; }
 
 /** Returns the JPEG bytes for image. */
-public byte[] getBytesJPEG()  { return null; }
+public byte[] getBytesJPEG()  { System.err.println("Image.getBytesJPEG: Not impl"); return null; }
 
 /** Returns the PNG bytes for image. */
-public byte[] getBytesPNG()  { return null; }
+public byte[] getBytesPNG()  { System.err.println("Image.getBytesPNG: Not impl"); return null; }
 
 /**
  * Returns a painter to mark up image.
