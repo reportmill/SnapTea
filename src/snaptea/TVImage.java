@@ -139,16 +139,6 @@ protected double getDPIYImpl() { System.err.println("TVImage.getDPIYImpl: WTF");
 protected boolean hasAlphaImpl() { System.err.println("TVImage.hasAlphaImpl: WTF"); return false; }
 
 /**
- * Returns number of components.
- */
-public int getComponentCount()  { return hasAlpha()? 4 : 3; }
-
-/**
- * Returns whether index color model.
- */
-public boolean isIndexedColor()  { return false; }
-
-/**
  * Returns an RGB integer for given x, y.
  */
 public int getRGB(int aX, int aY)
