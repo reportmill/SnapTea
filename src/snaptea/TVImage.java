@@ -29,9 +29,6 @@ public class TVImage extends Image {
     // Whether image has transparency
     boolean                  _hasAlpha = true;
     
-    // The bytes RGBA
-    byte                     _bytesRGBA[];
-    
 /**
  * Creates a TVImage for given size.
  */
@@ -112,35 +109,34 @@ boolean isBrowsable(WebURL aURL)
 /**
  * Returns the width of given image in pixels.
  */
-public int getPixWidth()
-{
-    if(_pw>=0) return _pw;
-    return _pw = _img.getWidth();
-}
+public int getPixWidth()  { return _pw; }
 
 /**
  * Returns the height of given image in pixels.
  */
-public int getPixHeight()
-{
-    if(_ph>=0) return _ph;
-    return _ph = _img.getHeight();
-}
+public int getPixHeight()  { return _ph; }
 
 /**
  * Returns the width of given image.
  */
-public double getWidthDPI()  { return _img!=null? 72 : 72*TVWindow.scale; }
+public double getDPIX()  { return _img!=null? 72 : 72*TVWindow.scale; }
 
 /**
  * Returns the height of given image.
  */
-public double getHeightDPI()  { return _img!=null? 72 : 72*TVWindow.scale; }
+public double getDPIY()  { return _img!=null? 72 : 72*TVWindow.scale; }
 
 /**
  * Returns whether image has alpha.
  */
 public boolean hasAlpha()  { return _hasAlpha; }
+
+/** Implement to avoid errors. */
+protected int getPixWidthImpl() { System.err.println("TVImage.getPixWidthImpl: WTF"); return 0; }
+protected int getPixHeightImpl() { System.err.println("TVImage.getPixHeightImpl: WTF"); return 0; }
+protected double getDPIXImpl() { System.err.println("TVImage.getDPIXImpl: WTF"); return 0; }
+protected double getDPIYImpl() { System.err.println("TVImage.getDPIYImpl: WTF"); return 0; }
+protected boolean hasAlphaImpl() { System.err.println("TVImage.hasAlphaImpl: WTF"); return false; }
 
 /**
  * Returns number of components.
@@ -168,15 +164,31 @@ public int getRGB(int aX, int aY)
     return d4<<24 | d1<<16 | d2<<8 | d3;
 }
 
-/** Returns the ARGB array of this image. */
-public int[] getArrayARGB()  { System.err.println("Image.getArrayARGB: Not impl"); return null; }
-
-/** Returns the ARGB array of this image. */
-public byte[] getBytesRGBA()
+/**
+ * Returns the decoded RGB bytes of this image.
+ */
+protected byte[] getBytesRGBImpl()
 {
-    // If already set, just return
-    if(_bytesRGBA!=null) return _bytesRGBA;
+    // If HTMLImageElement, convert to canvas
+    if(_img!=null) convertToCanvas();
     
+    // Get image data and convert to bytes
+    CanvasRenderingContext2D cntx = (CanvasRenderingContext2D)_canvas.getContext("2d");
+    ImageData idata = cntx.getImageData(0, 0, getPixWidth(), getPixHeight());
+    Uint8ClampedArray ary8C = idata.getData();
+    Int8Array ary8 = Int8Array.create(ary8C.getBuffer());
+    int len0 = ary8.getLength(), plen = len0/4, len2 = plen*3;
+    byte bytes[] = new byte[len2];
+    for(int i=0; i<plen; i++) { int x0 = i*3, x1 = i*4;
+        bytes[x0] = ary8.get(x1); bytes[x0+1] = ary8.get(x1+1); bytes[x0+2] = ary8.get(x1+2); }
+    return bytes;
+}
+
+/**
+ * Returns the decoded RGBA bytes of this image.
+ */
+protected byte[] getBytesRGBAImpl()
+{
     // If HTMLImageElement, convert to canvas
     if(_img!=null) convertToCanvas();
     
@@ -186,20 +198,8 @@ public byte[] getBytesRGBA()
     Uint8ClampedArray ary8C = idata.getData();
     Int8Array ary8 = Int8Array.create(ary8C.getBuffer());
     byte bytes[] = new byte[ary8.getLength()]; for(int i=0; i<bytes.length; i++) bytes[i] = ary8.get(i);
-    return _bytesRGBA = bytes;
+    return bytes;
 }
-
-/** Returns the ARGB array of this image. */
-public int getAlphaColorIndex()  { System.err.println("Image.getAlphaColorIndex: Not impl"); return 0; }
-
-/** Returns the ARGB array of this image. */
-public byte[] getColorMap()  { System.err.println("Image.getColorMap: Not impl"); return null; }
-
-/** Returns the ARGB array of this image. */
-public int getBitsPerSample()  { System.err.println("Image.getBitsPerSample: Not impl"); return 8; }
-
-/** Returns the ARGB array of this image. */
-public int getSamplesPerPixel()  { System.err.println("Image.getSamplesPerPixel: Not impl"); return hasAlpha()? 4 : 3; }
 
 /** Returns the JPEG bytes for image. */
 public byte[] getBytesJPEG()  { System.err.println("Image.getBytesJPEG: Not impl"); return null; }

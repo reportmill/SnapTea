@@ -194,7 +194,7 @@ public void drawImage(Image anImg, Transform xform)
 public void drawImage(Image anImg, double sx, double sy, double sw, double sh, double dx,double dy,double dw,double dh)
 {
     // Correct source width/height for image dpi
-    double isw = anImg.getWidthDPI()/72, ish = anImg.getHeightDPI()/72;
+    double isw = anImg.getDPIX()/72, ish = anImg.getDPIY()/72;
     if(isw!=1) { sx *= isw; sw *= isw; }
     if(ish!=1) { sy *= ish; sh *= ish; }
     
