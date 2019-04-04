@@ -4,13 +4,12 @@ import org.teavm.jso.canvas.CanvasImageSource;
 import org.teavm.jso.canvas.CanvasRenderingContext2D;
 import org.teavm.jso.canvas.ImageData;
 import org.teavm.jso.dom.html.*;
-import org.teavm.jso.typedarrays.Int8Array;
 import org.teavm.jso.typedarrays.Uint8ClampedArray;
 import snap.gfx.*;
 import snap.web.WebURL;
 
 /**
- * A custom class.
+ * An Image subclass for TeaVM.
  */
 public class TVImage extends Image {
     
@@ -166,11 +165,10 @@ protected byte[] getBytesRGBImpl()
     CanvasRenderingContext2D cntx = (CanvasRenderingContext2D)_canvas.getContext("2d");
     ImageData idata = cntx.getImageData(0, 0, getPixWidth(), getPixHeight());
     Uint8ClampedArray ary8C = idata.getData();
-    Int8Array ary8 = Int8Array.create(ary8C.getBuffer());
-    int len0 = ary8.getLength(), plen = len0/4, len2 = plen*3;
+    int len0 = ary8C.getLength(), plen = len0/4, len2 = plen*3;
     byte bytes[] = new byte[len2];
     for(int i=0; i<plen; i++) { int x0 = i*3, x1 = i*4;
-        bytes[x0] = ary8.get(x1); bytes[x0+1] = ary8.get(x1+1); bytes[x0+2] = ary8.get(x1+2); }
+        bytes[x0] = (byte)ary8C.get(x1); bytes[x0+1] = (byte)ary8C.get(x1+1); bytes[x0+2] = (byte)ary8C.get(x1+2); }
     return bytes;
 }
 
@@ -186,8 +184,7 @@ protected byte[] getBytesRGBAImpl()
     CanvasRenderingContext2D cntx = (CanvasRenderingContext2D)_canvas.getContext("2d");
     ImageData idata = cntx.getImageData(0, 0, getPixWidth(), getPixHeight());
     Uint8ClampedArray ary8C = idata.getData();
-    Int8Array ary8 = Int8Array.create(ary8C.getBuffer());
-    byte bytes[] = new byte[ary8.getLength()]; for(int i=0; i<bytes.length; i++) bytes[i] = ary8.get(i);
+    byte bytes[] = new byte[ary8C.getLength()]; for(int i=0; i<bytes.length; i++) bytes[i] = (byte)ary8C.get(i);
     return bytes;
 }
 
@@ -225,16 +222,6 @@ protected void convertToCanvas()
 }
 
 /**
- * Returns whether image data is premultiplied.
- */
-public boolean isPremultiplied()  { return _pm; } boolean _pm;
-
-/**
- * Sets whether image data is premultiplied.
- */
-public void setPremultiplied(boolean aValue)  { _pm = aValue; }
-
-/**
  * Blurs the image by mixing pixels with those around it to given radius.
  */
 public void blur(int aRad, Color aColor)
@@ -250,13 +237,39 @@ public void blur(int aRad, Color aColor)
     
     // Paint image into new canvas with ShadowBlur, offset so that only shadow appears
     TVPainter pntr = new TVPainter(canvas);
-    pntr._cntx.setShadowBlur(aRad);
+    pntr._cntx.setShadowBlur(aRad*TVWindow.scale);
     if(aColor!=null) pntr._cntx.setShadowColor(TV.get(aColor));
+    else pntr._cntx.setShadowColor("gray");
     pntr._cntx.setShadowOffsetX(-_pw);
     pntr._cntx.setShadowOffsetY(-_ph);
     pntr.drawImage(this, getWidth(), getHeight());
    
     _canvas = canvas;
+}
+
+/**
+ * Embosses the image by mixing pixels with those around it to given radius.
+ */
+public void emboss(double aRadius, double anAzi, double anAlt)
+{
+    // Get basic info
+    int w = (int)getWidth(), h = (int)getHeight();
+    int pw = getPixWidth(), ph = getPixHeight();
+    int radius = (int)Math.round(aRadius), rad = Math.abs(radius);
+    
+    // Create bump map: original graphics offset by radius, blurred. Color doesn't matter - only alpha channel used.
+    TVImage bumpImg = (TVImage)Image.get(w+rad*2, h+rad*2, true);
+    Painter ipntr = bumpImg.getPainter(); //ipntr.setImageQuality(1); ipntr.clipRect(0, 0, width, height);
+    ipntr.drawImage(this, rad, rad, w, h);
+    bumpImg.blur(rad, null);
+
+    // Get source and bump pixels as short arrays
+    short spix[] = TVImageUtils.getShortsRGBA(this);
+    short bpix[] = TVImageUtils.getShortsAlpha(bumpImg);
+
+    // Call emboss method and reset pix
+    TVImageUtils.emboss(spix, bpix, pw, ph, radius*TVWindow.scale, anAzi*Math.PI/180, anAlt*Math.PI/180);
+    TVImageUtils.putShortsRGBA(this, spix);
 }
 
 /**
