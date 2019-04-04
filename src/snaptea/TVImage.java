@@ -6,6 +6,7 @@ import org.teavm.jso.canvas.ImageData;
 import org.teavm.jso.dom.html.*;
 import org.teavm.jso.typedarrays.Uint8ClampedArray;
 import snap.gfx.*;
+import snap.util.ASCIICodec;
 import snap.web.WebURL;
 
 /**
@@ -189,10 +190,32 @@ protected byte[] getBytesRGBAImpl()
 }
 
 /** Returns the JPEG bytes for image. */
-public byte[] getBytesJPEG()  { System.err.println("Image.getBytesJPEG: Not impl"); return null; }
+public byte[] getBytesJPEG()
+{
+    // If HTMLImageElement, convert to canvas
+    if(_img!=null) convertToCanvas();
+    
+    // Get image bytes
+    String url = _canvas.toDataURL("image/jpeg");
+    int index = url.indexOf("base64,") + "base64,".length();
+    String base64 = url.substring(index);
+    byte bytes[] = ASCIICodec.decodeBase64(base64);
+    return bytes;
+}
 
 /** Returns the PNG bytes for image. */
-public byte[] getBytesPNG()  { System.err.println("Image.getBytesPNG: Not impl"); return null; }
+public byte[] getBytesPNG()
+{
+    // If HTMLImageElement, convert to canvas
+    if(_img!=null) convertToCanvas();
+    
+    // Get image bytes
+    String url = _canvas.toDataURL("image/png");
+    int index = url.indexOf("base64,") + "base64,".length();
+    String base64 = url.substring(index);
+    byte bytes[] = ASCIICodec.decodeBase64(base64);
+    return bytes;
+}
 
 /**
  * Returns a painter to mark up image.
