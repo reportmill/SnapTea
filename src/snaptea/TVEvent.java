@@ -48,7 +48,7 @@ public int getKeyCode()
 public String getKeyString()
 {
     KeyboardEvent kev = (KeyboardEvent)getEvent();
-    String str = kev.getKey();
+    String str = kev.getKey(); if(str.length()>1) str = "";
     return str;
 }
 
