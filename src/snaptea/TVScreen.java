@@ -136,7 +136,7 @@ public void addWindow(WindowView aWin)
     
     // If not Popup, make window main window
     if(!(aWin instanceof PopupWindow))
-        _win = aWin;
+        _win = _mousePressWin = aWin;
 }
 
 /**

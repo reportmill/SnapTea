@@ -59,7 +59,7 @@ public void setStroke(Stroke aStroke)
         JSArray jsa = JSArray.create(); for(double d : da) jsa.push(JSNumber.valueOf(d));
         _cntx.setLineDash(jsa);
     }
-    _cntx.setLineDashOffset((float)aStroke.getDashOffset());
+    _cntx.setLineDashOffset(aStroke.getDashOffset());
     
     // Set cap
     switch(aStroke.getCap()) {
