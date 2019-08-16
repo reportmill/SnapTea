@@ -15,6 +15,9 @@ public class TVRootView {
     // The HTMLCanvas
     HTMLCanvasElement     _canvas;
     
+    // The image dpi scale (1 = normal, 2 for retina/hidpi)
+    int                   _scale = TVWindow.scale;
+    
     // Painter
     Painter               _pntr;
     
@@ -44,7 +47,7 @@ public void setView(RootView aView)
     _canvas.addEventListener("touchend", e -> e.preventDefault());
     
     // Create painer
-    _pntr = new TVPainter(_canvas);
+    _pntr = new TVPainter(_canvas, _scale);
     
     // Register for drop events
     _canvas.setAttribute("draggable", "true");
@@ -73,7 +76,7 @@ public void repaint(Rect aRect)
 void rootViewSizeChange()
 {
     int w = (int)Math.ceil(_rview.getWidth()), h = (int)Math.ceil(_rview.getHeight());
-    _canvas.setWidth(w*TVWindow.scale); _canvas.setHeight(h*TVWindow.scale);
+    _canvas.setWidth(w*_scale); _canvas.setHeight(h*_scale);
 }
 
 /**

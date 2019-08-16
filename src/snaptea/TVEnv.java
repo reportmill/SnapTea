@@ -51,14 +51,18 @@ public String[] getFontNames(String aFamilyName)  { return _fontNames; }
 public FontFile getFontFile(String aName)  { return new TVFontFile(aName); }
 
 /**
- * Creates a new image from source.
+ * Creates image from source.
  */
 public Image getImage(Object aSource)  { return new TVImage(aSource); }
 
 /**
- * Creates a new image for width, height and alpha.
+ * Creates image for width, height and alpha and dpi scale (0 = screen dpi, 1 = 72 dpi, 2 = 144 dpi).
  */
-public Image getImage(int aWidth, int aHeight, boolean hasAlpha)  { return new TVImage(aWidth,aHeight,hasAlpha); }
+public Image getImageForSizeAndScale(double aWidth, double aHeight, boolean hasAlpha, double aScale)
+{
+    double scale = aScale<=0? getScreenScale() : aScale;
+    return new TVImage(aWidth, aHeight, hasAlpha, scale);
+}
 
 /**
  * Returns a sound for given source.
@@ -74,6 +78,11 @@ public SoundClip createSound()  { return null; }
  * Returns the screen resolution.
  */
 public double getScreenResolution()  { return 72; }
+
+/**
+ * Returns the screen scale. Usually 1, but could be 2 for HiDPI/Retina displays.
+ */
+public double getScreenScale()  { return TV.getDevicePixelRatio(); }
 
 /**
  * Tries to open the given file name with the platform reader.

@@ -26,16 +26,28 @@ public class TVImage extends Image {
     // The size
     int                      _pw = -1, _ph = -1;
     
+    // The dpi scale (1 = normal, 2 = retina/hidpi)
+    int                      _scale = 1;        
+    
     // Whether image has transparency
     boolean                  _hasAlpha = true;
     
 /**
  * Creates a TVImage for given size.
  */
-public TVImage(double aWidth, double aHeight, boolean hasAlpha)
+public TVImage(double aWidth, double aHeight, boolean hasAlpha, double aScale)
 {
-    int w = (int)aWidth, h = (int)aHeight;
-    _pw = w*TVWindow.scale; _ph = h*TVWindow.scale;
+    // Get scale (complain if not 1 or 2)
+    _scale = (int)Math.round(aScale);
+    if(_scale!=1 || _scale!=2) System.out.println("TVImage.init: Odd scale" + _scale);
+    
+    // Get image size, pixel size
+    int w = (int)Math.round(aWidth);
+    int h = (int)Math.round(aHeight);
+    _pw = w*_scale;
+    _ph = h*_scale;
+    
+    // Create canvas for pixel width/height, image width/height
     _canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
     _canvas.setWidth(_pw); _canvas.setHeight(_ph);
     _canvas.getStyle().setProperty("width", w + "px");
@@ -119,12 +131,12 @@ public int getPixHeight()  { return _ph; }
 /**
  * Returns the width of given image.
  */
-public double getDPIX()  { return _img!=null? 72 : 72*TVWindow.scale; }
+public double getDPIX()  { return 72*_scale; }
 
 /**
  * Returns the height of given image.
  */
-public double getDPIY()  { return _img!=null? 72 : 72*TVWindow.scale; }
+public double getDPIY()  { return 72*_scale; }
 
 /**
  * Returns whether image has alpha.
@@ -148,7 +160,7 @@ public int getRGB(int aX, int aY)
     
     // Get image data and return rgb at point
     CanvasRenderingContext2D cntx = (CanvasRenderingContext2D)_canvas.getContext("2d");
-    ImageData idata = cntx.getImageData(aX*TVWindow.scale, aY*TVWindow.scale, 1, 1);
+    ImageData idata = cntx.getImageData(aX*_scale, aY*_scale, 1, 1);
     Uint8ClampedArray data = idata.getData();
     int d1 = data.get(0), d2 = data.get(1), d3 = data.get(2), d4 = data.get(3);
     return d4<<24 | d1<<16 | d2<<8 | d3;
@@ -226,7 +238,7 @@ public Painter getPainter()
     if(_img!=null) convertToCanvas();
     
     // Return painter for canvas
-    return new TVPainter(_canvas);
+    return new TVPainter(_canvas, _scale);
 }
 
 /**
@@ -234,12 +246,19 @@ public Painter getPainter()
  */
 protected void convertToCanvas()
 {
-    int w = getPixWidth(), h = getPixHeight(); _pw *= TVWindow.scale; _ph *= TVWindow.scale;
+    // Get image size and pixel size
+    int w = getPixWidth(), h = getPixHeight();
+    _scale = TVWindow.scale;
+    _pw *= _scale; _ph *= _scale;
+    
+    // Create new canvas for image size and pixel size
     _canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
     _canvas.setWidth(_pw); _canvas.setHeight(_ph);
     _canvas.getStyle().setProperty("width", w + "px");
     _canvas.getStyle().setProperty("height", h + "px");
-    Painter pntr = new TVPainter(_canvas);
+    
+    // Copy ImageElement to Canvas
+    Painter pntr = new TVPainter(_canvas, _scale);
     pntr.drawImage(this, 0, 0); _img = null;
     //CanvasRenderingContext2D cntx = (CanvasRenderingContext2D)_canvas.getContext("2d"); cntx.drawImage(_img, 0, 0);
 }
@@ -255,12 +274,12 @@ public void blur(int aRad, Color aColor)
     // Create new canvas to do blur
     HTMLCanvasElement canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
     canvas.setWidth(_pw); canvas.setHeight(_ph);
-    canvas.getStyle().setProperty("width", (_pw/TVWindow.scale) + "px");
-    canvas.getStyle().setProperty("height", (_ph/TVWindow.scale) + "px");
+    canvas.getStyle().setProperty("width", (_pw/_scale) + "px");
+    canvas.getStyle().setProperty("height", (_ph/_scale) + "px");
     
     // Paint image into new canvas with ShadowBlur, offset so that only shadow appears
-    TVPainter pntr = new TVPainter(canvas);
-    pntr._cntx.setShadowBlur(aRad*TVWindow.scale);
+    TVPainter pntr = new TVPainter(canvas, _scale);
+    pntr._cntx.setShadowBlur(aRad*_scale);
     if(aColor!=null) pntr._cntx.setShadowColor(TV.get(aColor));
     else pntr._cntx.setShadowColor("gray");
     pntr._cntx.setShadowOffsetX(-_pw);
@@ -291,7 +310,7 @@ public void emboss(double aRadius, double anAzi, double anAlt)
     short bpix[] = TVImageUtils.getShortsAlpha(bumpImg);
 
     // Call emboss method and reset pix
-    TVImageUtils.emboss(spix, bpix, pw, ph, radius*TVWindow.scale, anAzi*Math.PI/180, anAlt*Math.PI/180);
+    TVImageUtils.emboss(spix, bpix, pw, ph, radius*_scale, anAzi*Math.PI/180, anAlt*Math.PI/180);
     TVImageUtils.putShortsRGBA(this, spix);
 }
 

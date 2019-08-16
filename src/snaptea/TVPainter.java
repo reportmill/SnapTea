@@ -10,25 +10,28 @@ import snap.gfx.*;
 public class TVPainter extends PainterImpl {
     
     // The canvas
-    HTMLCanvasElement _canvas;
+    HTMLCanvasElement         _canvas;
+    
+    // The image dpi scale (1 = normal, 2 for retina/hidpi)
+    int                       _scale = 1;
     
     // The RenderContext2D
-    CanvasRenderingContext2D _cntx;
+    CanvasRenderingContext2D  _cntx;
 
 /**
  * Creates a new painter for given canvas.
  */
-public TVPainter(HTMLCanvasElement aCnvs)
+public TVPainter(HTMLCanvasElement aCnvs, int aScale)
 {
     // Set canvas and context
-    _canvas = aCnvs;
+    _canvas = aCnvs; _scale = aScale;
     _cntx = (CanvasRenderingContext2D)_canvas.getContext("2d");
     
     // Clip to canvas bounds
     clip(new Rect(0,0,_canvas.getWidth(),_canvas.getHeight()));
     
     // If hidpi, scale default transform
-    if(TVWindow.scale>1) _cntx.transform(TVWindow.scale,0,0,TVWindow.scale,0,0);
+    if(_scale>1) _cntx.transform(_scale, 0, 0, _scale, 0, 0);
 }
 
 /**
@@ -105,8 +108,8 @@ public void setTransform(Transform aTrans)
     super.setTransform(aTrans);
     double m[] = aTrans.getMatrix();
     
-    // Set transform with CJWindow.scale (in case hidpi)
-    _cntx.setTransform(m[0]*TVWindow.scale, m[1], m[2], m[3]*TVWindow.scale, m[4], m[5]);
+    // Set transform with dpi scale (in case retina/hidpi)
+    _cntx.setTransform(m[0]*_scale, m[1], m[2], m[3]*_scale, m[4], m[5]);
 }
 
 /**
