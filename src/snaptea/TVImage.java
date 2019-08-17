@@ -39,7 +39,7 @@ public TVImage(double aWidth, double aHeight, boolean hasAlpha, double aScale)
 {
     // Get scale (complain if not 1 or 2)
     _scale = (int)Math.round(aScale);
-    if(_scale!=1 || _scale!=2) System.out.println("TVImage.init: Odd scale" + _scale);
+    if(_scale!=1 && _scale!=2) System.out.println("TVImage.init: Odd scale" + _scale);
     
     // Get image size, pixel size
     int w = (int)Math.round(aWidth);
