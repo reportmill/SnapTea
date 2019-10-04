@@ -74,7 +74,6 @@ public static void emboss(short spix[], short bpix[], int sw, int sh, int radius
     // Get basic info
     int rad = Math.abs(radius);
     int bw = sw + 2*rad, bh = sh + 2*rad;
-        System.out.println("BW2: " + bw);
         
     // Normalized light source vector
     double pixScale = 255.9;
