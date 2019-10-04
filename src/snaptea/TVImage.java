@@ -246,21 +246,26 @@ public Painter getPainter()
  */
 protected void convertToCanvas()
 {
-    // Get image size and pixel size
-    int w = getPixWidth(), h = getPixHeight();
-    _scale = TVWindow.scale;
-    _pw *= _scale; _ph *= _scale;
+    // Get canvas size and pixel size (might be 2x if HiDpi display)
+    int w = getPixWidth();
+    int h = getPixHeight();
+    int scale = TVWindow.scale;
+    int pw = w*scale, ph = h*scale;
     
     // Create new canvas for image size and pixel size
-    _canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
-    _canvas.setWidth(_pw); _canvas.setHeight(_ph);
-    _canvas.getStyle().setProperty("width", w + "px");
-    _canvas.getStyle().setProperty("height", h + "px");
+    HTMLCanvasElement canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
+    canvas.setWidth(pw);
+    canvas.setHeight(ph);
+    canvas.getStyle().setProperty("width", w + "px");
+    canvas.getStyle().setProperty("height", h + "px");
     
     // Copy ImageElement to Canvas
-    Painter pntr = new TVPainter(_canvas, _scale);
-    pntr.drawImage(this, 0, 0); _img = null;
-    //CanvasRenderingContext2D cntx = (CanvasRenderingContext2D)_canvas.getContext("2d"); cntx.drawImage(_img, 0, 0);
+    Painter pntr = new TVPainter(canvas, scale);
+    pntr.drawImage(this, 0, 0);
+    
+    // Swap in canvas for image element
+    _canvas = canvas; _img = null;
+    _pw = pw; _ph = ph; _scale = scale;
 }
 
 /**
