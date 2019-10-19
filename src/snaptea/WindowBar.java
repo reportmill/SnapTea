@@ -13,8 +13,8 @@ public class WindowBar extends ParentView {
     // The title bar height
     double         _titlebarHeight;
     
-    // The ButtonPainter
-    ButtonPainter  _bpntr;
+    // The ButtonArea
+    ButtonArea     _btnArea;
     
     // The buttons
     Shape          _closeButton, _minButton, _maxButton;
@@ -64,9 +64,11 @@ void setTitlebarHeight(double aValue)
     _titlebarHeight = aValue;
     setPadding(_titlebarHeight,0,0,0);
     
-    // Create ButtonPainter for title bar
-    _bpntr = new ButtonPainter(); _bpntr.setHeight(_titlebarHeight); _bpntr.setRadius(4);
-    _bpntr.setPosition(Pos.TOP_CENTER);
+    // Create ButtonArea to paint title bar
+    _btnArea = new ButtonArea();
+    _btnArea.setHeight(_titlebarHeight);
+    _btnArea.setRadius(4);
+    _btnArea.setPosition(Pos.TOP_CENTER);
     
     // Create buttons
     double y = 6, w = 12; if(_titlebarHeight!=24) { y = 4; w = 10; }
@@ -85,8 +87,8 @@ protected void paintFront(Painter aPntr)
     if(_titlebarHeight==0) return;
     
     // Paint titlebar
-    _bpntr.setWidth(getWidth());
-    _bpntr.paint(aPntr);
+    _btnArea.setWidth(getWidth());
+    _btnArea.paint(aPntr);
     
     // Paint buttons
     aPntr.setStroke(Stroke.getStroke(.5));
