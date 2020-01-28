@@ -1,4 +1,5 @@
 package snaptea;
+import java.net.URL;
 import java.util.*;
 import org.teavm.jso.browser.Window;
 import snap.gfx.*;
@@ -20,6 +21,10 @@ public class TVEnv extends GFXEnv {
     // The shared AWTEnv
     static TVEnv               _shared;
 
+    // Font names, Family names
+    private static String _fontNames[] = { "Arial", "Arial Bold" };
+    private static String _famNames[] = { "Arial" };
+
 /**
  * Creates a TVEnv.
  */
@@ -29,16 +34,23 @@ public TVEnv()
 }
 
 /**
+ * Returns resource for class and path.
+ */
+public URL getResource(Class aClass, String aPath)
+{
+    TVWebSite site = TVWebSite.get();
+    return site.getURL(aClass, aPath);
+}
+
+/**
  * Returns a list of all system fontnames (excludes any that don't start with capital A-Z).
  */
 public String[] getFontNames()  { return _fontNames; }
-private static String _fontNames[] = { "Arial", "Arial Bold" };
 
 /**
  * Returns a list of all system family names.
  */
 public String[] getFamilyNames()  { return _famNames; }
-private static String _famNames[] = { "Arial" };
 
 /**
  * Returns a list of all font names for a given family name.

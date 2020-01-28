@@ -9,7 +9,6 @@ import org.teavm.jso.dom.xml.Element;
 import org.teavm.jso.dom.xml.NodeList;
 import snap.gfx.*;
 import snap.view.*;
-import snap.web.WebGetter;
 
 /**
  * A ViewEnv implementation for TeaVM.
@@ -117,7 +116,7 @@ public static String[] getScriptRoots()
     }
 
     // Return urls
-    return _scriptURLs = urls.toArray(new String[urls.size()]);
+    return _scriptURLs = urls.toArray(new String[0]);
 }
 
 /**
@@ -163,10 +162,6 @@ public static void set()
     // Set TV adapter classes for GFXEnv and ViewEnv
     snap.gfx.GFXEnv.setEnv(TVEnv.get());
     ViewEnv.setEnv(get());
-    
-    // Create TVWebSite to handle localhost requests and evaluate Class.getResource() URLs using index.txt
-    TVWebSite site = TVWebSite.get();
-    WebGetter._hpr = (c,p) -> { return site.getURL(c,p); };
 }
 
 }

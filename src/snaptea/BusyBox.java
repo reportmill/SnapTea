@@ -250,7 +250,7 @@ protected void respondUI(ViewEvent anEvent)
         Scroller scroller = (Scroller)vbox.getParent();
         double sv = child.getMaxY() - scroller.getHeight() + Math.round((scroller.getHeight()-child.getHeight())/2);
         sv = Math.max(sv,0);
-        scroller.getAnimCleared(500).setValue(Scroller.ScrollV_Prop, sv).play();
+        scroller.getAnimCleared(500).setValue(Scroller.ScrollY_Prop, sv).play();
     }
 }
 
