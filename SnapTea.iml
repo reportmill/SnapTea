@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="teavm-js" name="TeaVM (JS)">
+      <configuration>
+        <option name="mainClass" value="tvmapps.Client" />
+        <option name="skipped" value="true" />
+        <option name="targetDirectory" value="$MODULE_DIR$/target/generated/js/teavm" />
+      </configuration>
+    </facet>
+  </component>
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
+    <output url="file://$MODULE_DIR$/target/classes" />
+    <output-test url="file://$MODULE_DIR$/target/test-classes" />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/target" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="SnapKit" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.teavm:teavm-classlib:0.6.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.teavm:teavm-platform:0.6.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.teavm:teavm-jso:0.6.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.teavm:teavm-jso-impl:0.6.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.teavm:teavm-metaprogramming-api:0.6.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.teavm:teavm-metaprogramming-impl:0.6.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: com.google.code.gson:gson:2.2.4" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: com.jcraft:jzlib:1.1.3" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: joda-time:joda-time:2.7" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.teavm:teavm-jso-apis:0.6.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.teavm:teavm-interop:0.6.1" level="project" />
+  </component>
+</module>
