@@ -39,7 +39,7 @@ public TVEnv()
 public URL getResource(Class aClass, String aPath)
 {
     TVWebSite site = TVWebSite.get();
-    return site.getURL(aClass, aPath);
+    return site.getJavaURL(aClass, aPath);
 }
 
 /**

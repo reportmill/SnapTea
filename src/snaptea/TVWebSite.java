@@ -1,11 +1,12 @@
 package snaptea;
+import java.net.URL;
 import java.util.*;
 import org.teavm.jso.ajax.XMLHttpRequest;
 import snap.util.SnapUtils;
 import snap.web.*;
 
 /**
- * A custom class.
+ * A SnapSite subclass for the TeaVM root that uses an index.txt file to determine if app files exist.
  */
 public class TVWebSite extends WebSite {
     
@@ -62,8 +63,9 @@ protected void doGetOrHead(WebRequest aReq, WebResponse aResp, boolean isHead)
         
         // Get Java URL
         String urls = url.getString().replace("!", "");
-        java.net.URL urlx = null;
-        try { urlx = new java.net.URL(urls); } catch(Exception e) { throw new RuntimeException(e); }
+        java.net.URL urlx;
+        try { urlx = new java.net.URL(urls); }
+        catch(Exception e) { throw new RuntimeException(e); }
         
         // Get bytes
         byte bytes[] = getBytes(urlx); //getFileBytes(path);
@@ -196,15 +198,18 @@ protected void doPost(WebRequest aReq, WebResponse aResp)
  */
 public List <String> getPaths()
 {
+    // If already set, just return
     if(_paths!=null) return _paths;
-    
+
+    // Get index.txt file
     String urls = ROOT_URL + "/index.txt";
     XMLHttpRequest req = XMLHttpRequest.create();
     req.open("GET", urls, false);
     req.send();
-    
+
+    // Split
     String text = req.getResponseText();
-    String pathStrings[] = text.split("\n");
+    String pathStrings[] = text.split("\\s*\n\\s*");
     return _paths = new ArrayList(Arrays.asList(pathStrings));
 }
 
@@ -213,8 +218,15 @@ public List <String> getPaths()
  */
 public boolean isPath(String aPath)
 {
-    List <String> paths = getPaths(); if(paths==Collections.EMPTY_LIST) return true;
-    return paths.contains(aPath) || isDirPath(aPath);
+    // Get paths
+    List <String> paths = getPaths();
+
+    // Return true if path in list, or prefix in list
+    if (paths.contains(aPath))
+        return true;
+    else if (isDirPath(aPath))
+        return true;
+    return false;
 }
 
 /**
@@ -222,8 +234,14 @@ public boolean isPath(String aPath)
  */
 public boolean isDirPath(String aPath)
 {
-    String path = aPath; if(!aPath.endsWith("/")) path += '/';
-    for(String p : getPaths()) if(p.startsWith(path)) return true;
+    // Get path (strip trailing separator)
+    String path = aPath;
+    if(!aPath.endsWith("/")) path += '/';
+
+    // Iterate over paths and return true if prefix found
+    for(String p : getPaths())
+        if(p.startsWith(path))
+            return true;
     return false;
 }
 
@@ -232,36 +250,57 @@ public boolean isDirPath(String aPath)
  */
 public List <String> getDirPaths(String aPath)
 {
-    List <String> paths = new ArrayList();
+    // Get path (strip trailing separator)
     String path = aPath; if(!path.endsWith("/")) path += '/';
-    for(String p : getPaths()) if(p.startsWith(path)) {
+
+    // Iterate over paths and add to list if has prefix
+    List <String> paths = new ArrayList();
+    for(String p : getPaths()) {
+        if (!p.startsWith(path)) continue;
         int ind = p.indexOf('/', path.length());
-        if(ind>0) p = p.substring(0, ind);
-        if(!paths.contains(p)) paths.add(p);
+        if (ind > 0)
+            p = p.substring(0, ind);
+        if (!paths.contains(p))
+            paths.add(p);
     }
+
+    // Return paths
     return paths;
 }
 
 /**
  * Return URL for class and path.
  */
-java.net.URL getURL(Class c, String p)
+public URL getJavaURL(Class aClass, String aPath)
 {
-    if(!isPath(p)) return null;
-    String urls = _rootHasPath? (ROOT_URL + '!' + p) : (ROOT_URL + p);
-    try { return new java.net.URL(urls); } // was "http://localhost"
+    // If not known path, return null
+    if(!isPath(aPath))
+        return null;
+
+    String urls = _rootHasPath? (ROOT_URL + '!' + aPath) : (ROOT_URL + aPath);
+    try {
+        URL url = new java.net.URL(urls); // was "http://localhost"
+        System.out.println("TVWebSite.getURL: Returning url: " + url);
+        return url;
+    }
     catch(java.net.MalformedURLException e) { throw new RuntimeException(e); }
 }
 
 /**
  * Standard toString implementation.
  */
-public String toString()  { return "TVWebSite " + getURLString(); }
+public String toString()
+{
+    return "TVWebSite " + getURLString();
+}
 
 /**
  * Adds a known path.
  */
-public static void addKnownPath(String aPath)  { _shared.getPaths().add(aPath); }
+public static void addKnownPath(String aPath)
+{
+    _shared.getPaths().add(aPath);
+}
 
 /**
  * Returns a shared instance.
