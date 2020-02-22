@@ -128,7 +128,7 @@ public void transform(Transform aTrans)
 public void draw(Shape aShape)
 {
     if(getPaint() instanceof GradientPaint) { GradientPaint gpnt = (GradientPaint)getPaint();
-        GradientPaint gpnt2 = gpnt.copyFor(aShape.getBounds());
+        GradientPaint gpnt2 = gpnt.copyForRect(aShape.getBounds());
         CanvasGradient cg = TV.get(gpnt2, _cntx);
         _cntx.setStrokeStyle(cg);
     }
@@ -144,7 +144,7 @@ public void fill(Shape aShape)
 {
     // Handle GradientPaint
     if(getPaint() instanceof GradientPaint) { GradientPaint gpnt = (GradientPaint)getPaint();
-        GradientPaint gpnt2 = gpnt.copyFor(aShape.getBounds());
+        GradientPaint gpnt2 = gpnt.copyForRect(aShape.getBounds());
         CanvasGradient cg = TV.get(gpnt2, _cntx);
         _cntx.setFillStyle(cg);
     }
