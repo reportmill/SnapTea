@@ -1,6 +1,7 @@
 package snaptea;
 import org.teavm.jso.dom.events.EventListener;
 import org.teavm.jso.dom.html.*;
+import snap.geom.Rect;
 import snap.gfx.*;
 import snap.view.*;
 

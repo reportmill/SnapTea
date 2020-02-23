@@ -1,6 +1,6 @@
 package snaptea;
 import org.teavm.jso.dom.events.*;
-import snap.gfx.Point;
+import snap.geom.Point;
 import snap.view.*;
 
 /**

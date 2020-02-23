@@ -8,6 +8,8 @@ import org.teavm.jso.dom.html.HTMLElement;
 import org.teavm.jso.dom.xml.Node;
 import org.teavm.jso.dom.xml.NodeList;
 import org.teavm.jso.typedarrays.Int8Array;
+import snap.geom.Point;
+import snap.geom.Rect;
 import snap.gfx.*;
 import snap.util.SnapUtils;
 

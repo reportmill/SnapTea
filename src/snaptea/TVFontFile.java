@@ -1,4 +1,6 @@
 package snaptea;
+import snap.geom.Rect;
+import snap.geom.Shape;
 import snap.gfx.*;
 
 /**

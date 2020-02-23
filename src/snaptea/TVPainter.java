@@ -2,6 +2,10 @@ package snaptea;
 import org.teavm.jso.canvas.*;
 import org.teavm.jso.core.*;
 import org.teavm.jso.dom.html.HTMLCanvasElement;
+import snap.geom.PathIter;
+import snap.geom.Rect;
+import snap.geom.Shape;
+import snap.geom.Transform;
 import snap.gfx.*;
 
 /**

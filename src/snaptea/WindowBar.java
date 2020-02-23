@@ -1,4 +1,5 @@
 package snaptea;
+import snap.geom.*;
 import snap.gfx.*;
 import snap.view.*;
 
@@ -17,13 +18,13 @@ public class WindowBar extends ParentView {
     ButtonArea     _btnArea;
     
     // The buttons
-    Shape          _closeButton, _minButton, _maxButton;
+    Shape _closeButton, _minButton, _maxButton;
     
     // The titlebar font
     Font           _font;
     
     // For dragging
-    Point          _mpt;
+    Point _mpt;
     
     // Colors
     static final Color CLOSE_COLOR = new Color("#ED6B5F"), CLOSE_COLOR2 = CLOSE_COLOR.blend(Color.BLACK,.2);

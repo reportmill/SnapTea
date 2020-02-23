@@ -7,6 +7,7 @@ import org.teavm.jso.dom.html.HTMLDocument;
 import org.teavm.jso.dom.html.HTMLSourceElement;
 import org.teavm.jso.dom.xml.Element;
 import org.teavm.jso.dom.xml.NodeList;
+import snap.geom.Rect;
 import snap.gfx.*;
 import snap.view.*;
 

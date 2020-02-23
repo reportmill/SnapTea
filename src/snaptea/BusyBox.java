@@ -1,6 +1,8 @@
 package snaptea;
 import java.text.DecimalFormat;
 import java.util.*;
+
+import snap.geom.Pos;
 import snap.gfx.*;
 import snap.view.*;
 
