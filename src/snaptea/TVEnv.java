@@ -1,4 +1,5 @@
 package snaptea;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
 import org.teavm.jso.browser.Window;
@@ -30,7 +31,10 @@ public class TVEnv extends GFXEnv {
      */
     public TVEnv()
     {
-        startNewAppThread();
+        if (_env==null) {
+            _env = _shared = this;
+            startNewAppThread();
+        }
     }
 
     /**
@@ -147,6 +151,20 @@ public class TVEnv extends GFXEnv {
      * Plays a beep.
      */
     public void beep()  { }
+
+    /**
+     * This is really just here to help with TeaVM.
+     */
+    public Method getMethod(Class aClass, String aName, Class ... theClasses) throws NoSuchMethodException
+    {
+        System.err.println("TVEnv.getMethod: Trying to call: " + aClass.getName() + " " + aName);
+        return null;
+    }
+
+    /**
+     * This is really just here to help with TeaVM.
+     */
+    public void exit(int aValue)  { }
 
     /**
      * Starts a new app event thread.
