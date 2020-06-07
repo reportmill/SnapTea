@@ -16,16 +16,16 @@ import snap.view.*;
 public class TVViewEnv extends ViewEnv {
     
     // The clipboard
-    TVClipboard               _clipboard;
+    private TVClipboard  _clipboard;
     
     // A map of window.setIntervals() return ids
-    Map <Runnable,Integer>    _intervalIds = new HashMap();
+    private Map <Runnable,Integer>  _intervalIds = new HashMap();
     
     // The URLs 
-    static String             _scriptURL, _scriptURLs[];
+    private static String  _scriptURL, _scriptURLs[];
     
     // A shared instance.
-    static TVViewEnv          _shared;
+    private static TVViewEnv  _shared;
 
     /**
      * Constructor.
@@ -73,14 +73,18 @@ public class TVViewEnv extends ViewEnv {
     public void stopIntervals(Runnable aRun)
     {
         Integer id = _intervalIds.get(aRun);
-        if(id!=null)
+        if (id!=null)
             Window.clearInterval(id);
     }
 
     /**
      * Returns the system clipboard.
      */
-    public Clipboard getClipboard()  { return _clipboard!=null? _clipboard : (_clipboard=TVClipboard.get()); }
+    public Clipboard getClipboard()
+    {
+        if (_clipboard!=null) return _clipboard;
+        return _clipboard = TVClipboard.get();
+    }
 
     /**
      * Returns a new ViewHelper for given native component.
@@ -93,11 +97,14 @@ public class TVViewEnv extends ViewEnv {
     public ViewEvent createEvent(View aView, Object anEvent, ViewEvent.Type aType, String aName)
     {
         Event eobj = (Event)anEvent;
-        if(eobj==null && aType==null) aType = View.Action; //eobj=new ActionEvent(this,ACTION_PERFORMED,"DefAct")
+        if (eobj==null && aType==null) aType = View.Action; //eobj=new ActionEvent(this,ACTION_PERFORMED,"DefAct")
 
         // Create event, configure and send
-        ViewEvent event = new TVEvent(); event.setView(aView); event.setEvent(eobj); event.setType(aType);
-        event.setName(aName!=null? aName : aView!=null? aView.getName() : null);
+        ViewEvent event = new TVEvent();
+        event.setView(aView);
+        event.setEvent(eobj);
+        event.setType(aType);
+        event.setName(aName!=null ? aName : aView!=null? aView.getName() : null);
         return event;
     }
 
@@ -118,11 +125,12 @@ public class TVViewEnv extends ViewEnv {
         HTMLDocument doc = HTMLDocument.current();
         NodeList <Element> scripts = doc.getElementsByTagName("script");
         List <String> urls = new ArrayList();
-        for(int i=0; i<scripts.getLength(); i++ ) { HTMLSourceElement s = (HTMLSourceElement)scripts.get(i);
-            String urlAll = s.getSrc(); if(urlAll==null || urlAll.length()==0) continue;
-            int ind = urlAll.lastIndexOf('/'); if(ind<0) continue;
-            String url = urlAll.substring(0, ind); if(url.length()<10) continue;
-            if(!urls.contains(url)) urls.add(url);
+        for (int i=0; i<scripts.getLength(); i++ ) { HTMLSourceElement s = (HTMLSourceElement)scripts.get(i);
+            String urlAll = s.getSrc(); if (urlAll==null || urlAll.length()==0) continue;
+            int ind = urlAll.lastIndexOf('/'); if (ind<0) continue;
+            String url = urlAll.substring(0, ind); if (url.length()<10) continue;
+            if (!urls.contains(url))
+                urls.add(url);
         }
 
         // Return urls
@@ -135,15 +143,15 @@ public class TVViewEnv extends ViewEnv {
     public static String getScriptRoot()
     {
         // If already set, just return
-        if(_scriptURL!=null) return _scriptURL;
+        if (_scriptURL!=null) return _scriptURL;
 
         // Iterate over script roots
         String roots[] = getScriptRoots();
-        for(String root : roots) { String url = root + "/index.txt";
+        for (String root : roots) { String url = root + "/index.txt";
             XMLHttpRequest req = XMLHttpRequest.create();
             req.open("GET", url, false);
             req.send();
-            if(req.getStatus()==200)
+            if (req.getStatus()==200)
                 return _scriptURL = root;
         }
 
@@ -157,7 +165,7 @@ public class TVViewEnv extends ViewEnv {
      */
     public static TVViewEnv get()
     {
-        if(_shared!=null) return _shared;
+        if (_shared!=null) return _shared;
         return _shared = new TVViewEnv();
     }
 
