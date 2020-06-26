@@ -23,8 +23,11 @@ public class TVEnv extends GFXEnv {
     static TVEnv               _shared;
 
     // Font names, Family names
-    private static String _fontNames[] = { "Arial", "Arial Bold" };
-    private static String _famNames[] = { "Arial" };
+    private static String _fontNames[] = {
+        "Arial", "Arial Bold", "Arial Italic", "Arial Bold Italic",
+        "Times New Roman", "Times New Roman Bold", "Times New Roman Italic", "Times New Roman Bold Italic",
+    };
+    private static String _famNames[] = { "Arial", "Times New Roman" };
 
     /**
      * Creates a TVEnv.
@@ -67,24 +70,48 @@ public class TVEnv extends GFXEnv {
     /**
      * Returns a list of all font names for a given family name.
      */
-    public String[] getFontNames(String aFamilyName)  { return _fontNames; }
+    public String[] getFontNames(String aFamilyName)
+    {
+        // Get system fonts and create new list for font family
+        String fonts[] = getFontNames();
+        List family = new ArrayList();
+
+        // Iterate over fonts
+        for(String name : fonts) {
+
+            // If family name is equal to given family name, add font name
+            if(name.contains(aFamilyName) && !family.contains(name))
+                family.add(name);
+        }
+
+        // Get font names as array and sort
+        String familyArray[] = (String[])family.toArray(new String[0]);
+        Arrays.sort(familyArray);
+        return familyArray;
+    }
 
     /**
      * Returns a font file for given name.
      */
-    public FontFile getFontFile(String aName)  { return new TVFontFile(aName); }
+    public FontFile getFontFile(String aName)
+    {
+        return new TVFontFile(aName);
+    }
 
     /**
      * Creates image from source.
      */
-    public Image getImage(Object aSource)  { return new TVImage(aSource); }
+    public Image getImage(Object aSource)
+    {
+        return new TVImage(aSource);
+    }
 
     /**
      * Creates image for width, height and alpha and dpi scale (0 = screen dpi, 1 = 72 dpi, 2 = 144 dpi).
      */
     public Image getImageForSizeAndScale(double aWidth, double aHeight, boolean hasAlpha, double aScale)
     {
-        double scale = aScale<=0? getScreenScale() : aScale;
+        double scale = aScale<=0 ? getScreenScale() : aScale;
         return new TVImage(aWidth, aHeight, hasAlpha, scale);
     }
 
@@ -114,13 +141,13 @@ public class TVEnv extends GFXEnv {
     public void openFile(Object aSource)
     {
         // Get Java File for source
-        if(aSource instanceof WebFile) aSource = ((WebFile)aSource).getJavaFile();
-        if(aSource instanceof WebURL) aSource = ((WebURL)aSource).getJavaURL();
+        if (aSource instanceof WebFile) aSource = ((WebFile)aSource).getJavaFile();
+        if (aSource instanceof WebURL) aSource = ((WebURL)aSource).getJavaURL();
         java.io.File file = FileUtils.getFile(aSource);
 
         // Get file name, type, bytes
         String name = file.getName().toLowerCase();
-        String type = name.endsWith("pdf")? "application/pdf" : name.endsWith("html")? "text/html" : null;
+        String type = name.endsWith("pdf") ? "application/pdf" : name.endsWith("html") ? "text/html" : null;
         byte bytes[] = FileUtils.getBytes(file);
 
         // Create file and URL string
@@ -142,7 +169,8 @@ public class TVEnv extends GFXEnv {
     public void openURL(Object aSource)
     {
         WebURL url = WebURL.getURL(aSource);
-        String urls = url!=null? url.getString() : null; if(urls!=null) urls = urls.replace("!", "");
+        String urls = url!=null ? url.getString() : null;
+        if (urls!=null) urls = urls.replace("!", "");
         System.out.println("Open URL: " + urls);
         Window.current().open(urls, "_blank", "menubar=no");
     }
@@ -181,8 +209,8 @@ public class TVEnv extends GFXEnv {
     static synchronized Runnable getNextEventQueueRun()
     {
         // Get next run - if none, reset array start/end vars
-        Runnable run = _runEnd>_runStart? _theRuns[_runStart++] : null;
-        if(run==null) _runStart = _runEnd = 0;
+        Runnable run = _runEnd>_runStart ? _theRuns[_runStart++] : null;
+        if (run==null) _runStart = _runEnd = 0;
         return run;
     }
 
@@ -192,10 +220,10 @@ public class TVEnv extends GFXEnv {
     public static synchronized void runOnAppThread(Runnable aRun)
     {
         _theRuns[_runEnd++] = aRun;
-        if(_runEnd==1)
+        if (_runEnd==1)
             _appThread.wakeUp();
-        else if(_runEnd>=_theRuns.length) {
-            if(_theRuns.length>500) {
+        else if (_runEnd>=_theRuns.length) {
+            if (_theRuns.length>500) {
                 System.err.println("TVEnv.addToEventQueue: To many events in queue - somthing is broken");
                 _runStart = _runEnd = 0; return; }
             System.out.println("TVEnv.addToEventQueue: Increasing runs array to len " + _theRuns.length*2);
@@ -208,7 +236,7 @@ public class TVEnv extends GFXEnv {
      */
     public static TVEnv get()
     {
-        if(_shared!=null) return _shared;
+        if (_shared!=null) return _shared;
         return _shared = new TVEnv();
     }
 
@@ -221,13 +249,13 @@ public class TVEnv extends GFXEnv {
         public synchronized void run()
         {
             // Queue runs forever
-            while(true) {
+            while (true) {
 
                 // Get next run, if found, just run
                 Runnable run = getNextEventQueueRun();
-                if(run!=null) {
+                if (run!=null) {
                     run.run();
-                    if(_appThread!=this)
+                    if (_appThread!=this)
                         break;
                 }
 
@@ -242,5 +270,4 @@ public class TVEnv extends GFXEnv {
         /** Wake up called when event is added to empty queue. */
         public synchronized void wakeUp()  { notify(); }
     }
-
 }
