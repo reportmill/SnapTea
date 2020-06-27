@@ -1,4 +1,5 @@
 package snaptea;
+import org.teavm.jso.JSObject;
 import org.teavm.jso.canvas.*;
 import org.teavm.jso.core.*;
 import org.teavm.jso.dom.html.HTMLCanvasElement;
@@ -17,21 +18,22 @@ public class TVPainter extends PainterImpl {
     private HTMLCanvasElement  _canvas;
     
     // The image dpi scale (1 = normal, 2 for retina/hidpi)
-    private int _scale = 1;
+    private int _scale;
     
     // The RenderContext2D
-    private CanvasRenderingContext2D  _cntx;
+    protected CanvasRenderingContext2D  _cntx;
 
     // Constants
-    private JSArray EMPTY_DASH_ARRAY = JSArray.create();
+    private JSArray<JSObject> EMPTY_DASH_ARRAY = JSArray.create();
 
     /**
      * Creates a new painter for given canvas.
      */
     public TVPainter(HTMLCanvasElement aCnvs, int aScale)
     {
-        // Set canvas and context
-        _canvas = aCnvs; _scale = aScale;
+        // Set canvas, scale and context
+        _canvas = aCnvs;
+        _scale = aScale;
         _cntx = (CanvasRenderingContext2D)_canvas.getContext("2d");
 
         // Clip to canvas bounds
@@ -59,31 +61,39 @@ public class TVPainter extends PainterImpl {
      */
     public void setStroke(Stroke aStroke)
     {
+        // Let's be nice and map null to reasonable default
+        if (aStroke==null) aStroke = Stroke.Stroke1;
+
         // Do normal version
         super.setStroke(aStroke);
 
         // Set LineWidth
-        _cntx.setLineWidth(aStroke!=null ? aStroke.getWidth() : 1);
+        _cntx.setLineWidth(aStroke.getWidth());
 
-        // Set DashArray, DashOffset
+        // Set DashArray null:, DashOffset
         if (aStroke.getDashArray()==null)
             _cntx.setLineDash(EMPTY_DASH_ARRAY);
+
+        // Set DashArray
         else {
             double da[] = aStroke.getDashArray();
-            JSArray jsa = JSArray.create(); for(double d : da) jsa.push(JSNumber.valueOf(d));
+            JSArray<JSObject> jsa = JSArray.create();
+            for (double d : da) jsa.push(JSNumber.valueOf(d));
             _cntx.setLineDash(jsa);
         }
+
+        // Set DashOffset
         _cntx.setLineDashOffset(aStroke.getDashOffset());
 
         // Set cap
-        switch(aStroke.getCap()) {
+        switch (aStroke.getCap()) {
             case Round: _cntx.setLineCap("round"); break;
             case Butt: _cntx.setLineCap("butt"); break;
             case Square: _cntx.setLineCap("square"); break;
         }
 
         // Set join
-        switch(aStroke.getJoin()) {
+        switch (aStroke.getJoin()) {
             case Miter: _cntx.setLineJoin("miter"); _cntx.setMiterLimit(aStroke.getMiterLimit()); break;
             case Round: _cntx.setLineJoin("round"); break;
             case Bevel: _cntx.setLineJoin("bevel"); break;
@@ -196,8 +206,8 @@ public class TVPainter extends PainterImpl {
         double pnts[] = new double[6];
         PathIter piter = aShape.getPathIter(null);
         _cntx.beginPath();
-        while(piter.hasNext()) {
-            switch(piter.getNext(pnts)) {
+        while (piter.hasNext()) {
+            switch (piter.getNext(pnts)) {
                 case MoveTo: _cntx.moveTo(pnts[0], pnts[1]); break;
                 case LineTo: _cntx.lineTo(pnts[0], pnts[1]); break;
                 case CubicTo: _cntx.bezierCurveTo(pnts[0], pnts[1], pnts[2], pnts[3], pnts[4], pnts[5]); break;
@@ -288,7 +298,7 @@ public class TVPainter extends PainterImpl {
     public void setComposite(Composite aComp)
     {
         super.setComposite(aComp);
-        switch(aComp) {
+        switch (aComp) {
             case SRC_OVER: _cntx.setGlobalCompositeOperation("source-over"); break;
             case SRC_IN: _cntx.setGlobalCompositeOperation("source-in"); break;
             case DST_IN: _cntx.setGlobalCompositeOperation("destination-in"); break;
