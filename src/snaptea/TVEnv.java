@@ -5,6 +5,7 @@ import java.util.*;
 import org.teavm.jso.browser.Window;
 import snap.gfx.*;
 import snap.util.FileUtils;
+import snap.util.Prefs;
 import snap.web.*;
 
 /**
@@ -124,6 +125,15 @@ public class TVEnv extends GFXEnv {
      * Creates a sound for given source.
      */
     public SoundClip createSound()  { return null; }
+
+    /**
+     * Returns TV prefs.
+     */
+    @Override
+    public Prefs getPrefs(String aName)
+    {
+        return TVPrefs.get();
+    }
 
     /**
      * Returns the screen resolution.
