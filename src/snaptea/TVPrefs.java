@@ -73,7 +73,7 @@ public class TVPrefs extends Prefs {
         return keys.toArray(new String[0]);
     }
 
-    @JSBody(params={ "anIndex" }, script = "return window.localStorage.keys(anIndex);")
+    @JSBody(params={ "anIndex" }, script = "return window.localStorage.key(anIndex);")
     public static native String getKey(int anIndex);
 
     /**
