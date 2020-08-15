@@ -12,19 +12,6 @@ import org.teavm.jso.dom.html.HTMLElement;
  */
 public interface JSDataTransfer extends JSObject {
 
-    /**
-     * Returns whether DataTransfer has given type.
-     */
-    default boolean hasType(String aType)
-    {
-        JSArray <JSString> types = getTypes();
-        for(int i=0; i<types.getLength(); i++) { JSString jstr = types.get(i); String type = jstr.stringValue();
-            if(type.equals(aType))
-                return true;
-        }
-        return false;
-    }
-
     @JSProperty
     public JSArray <JSString> getTypes();
 
@@ -34,26 +21,18 @@ public interface JSDataTransfer extends JSObject {
     public String getData(String aType);
 
     /**
-     * Returns an array of all the local files available on the data transfer. If the drag operation doesn't involve
-     * dragging files, this property is an empty list.
-     */
-    @JSProperty
-    public JSArrayReader <File> getFiles();
-
-    default File[] getFilesArray()
-    {
-        JSArrayReader <File> filesAR = getFiles();
-        int len = filesAR.getLength(); System.out.println("DataTransfer: Getting files: " + len);
-        File files[] = new File[len]; for(int i=0;i<len;i++) files[i] = filesAR.get(i);
-        return files;
-    }
-
-    /**
      * Set the data for a given type. If data for the type does not exist, it is added at the end, such that the last item
      * in the types list will be the new format. If data for the type already exists, the existing data is replaced in the
      * same position.
      */
     public void setData(String aType, String theData);
+
+    /**
+     * Returns an array of all the local files available on the data transfer. If the drag operation doesn't involve
+     * dragging files, this property is an empty list.
+     */
+    @JSProperty
+    public JSArrayReader<File> getFiles();
 
     /**
      * Sets the image Element element to use for the drag feedback image.
@@ -76,8 +55,8 @@ public interface JSDataTransfer extends JSObject {
      */
     //public boolean hasType(String aType)
     //{
-    //    for(String type : getTypes())
-    //        if(type.equals(aType))
+    //    for (String type : getTypes())
+    //        if (type.equals(aType))
     //            return true;
     //    return false;
     //}
@@ -87,10 +66,10 @@ public interface JSDataTransfer extends JSObject {
      */
     //public String[] getTypes()
     //{
-    //    if(_types!=null) return _types;
+    //    if (_types!=null) return _types;
     //    int count = getTypeCount();
     //    _types = new String[count];
-    //    for(int i=0;i<count;i++) _types[i] = getString(getType(i));
+    //    for (int i=0;i<count;i++) _types[i] = getString(getType(i));
     //    return _types;
     //}
 
@@ -130,9 +109,9 @@ public interface JSDataTransfer extends JSObject {
      */
     /*public File[] getFiles()
     {
-        if(_files!=null) return _files;
+        if (_files!=null) return _files;
         int count = getFileCount(); _files = new File[count];
-        for(int i=0;i<count;i++) { _files[i] = new File(); _files[i]._jso = getFileJSO(i); }
+        for (int i=0;i<count;i++) { _files[i] = new File(); _files[i]._jso = getFileJSO(i); }
         return _files;
     }*/
 
@@ -155,9 +134,9 @@ public interface JSDataTransfer extends JSObject {
      */
     /*public DataTransferItem[] getItems()
     {
-        if(_items!=null) return _items;
+        if (_items!=null) return _items;
         int count = getItemCount(); _items = new DataTransferItem[count];
-        for(int i=0;i<count;i++) { _items[i] = new DataTransferItem(); _items[i]._jso = getItemJSO(i); }
+        for (int i=0;i<count;i++) { _items[i] = new DataTransferItem(); _items[i]._jso = getItemJSO(i); }
         return _items;
     }*/
 
@@ -174,7 +153,7 @@ public interface JSDataTransfer extends JSObject {
     {
         StringBuilder sb = new StringBuilder("DataTransfer { Types:[");
         String types[] = getTypes();
-        for(String type : types) { if(type!=types[0]) sb.append(", "); sb.append(type); }
+        for (String type : types) { if (type!=types[0]) sb.append(", "); sb.append(type); }
         sb.append(" ] }");
         return sb.toString();
     }*/

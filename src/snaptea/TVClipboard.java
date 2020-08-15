@@ -1,9 +1,9 @@
 package snaptea;
 import java.util.*;
 import java.util.function.Consumer;
-
 import org.teavm.jso.JSBody;
 import org.teavm.jso.JSObject;
+import org.teavm.jso.core.JSString;
 import org.teavm.jso.dom.html.HTMLDocument;
 import org.teavm.jso.dom.html.HTMLElement;
 import snap.gfx.Image;
@@ -15,14 +15,14 @@ import snap.view.*;
 public class TVClipboard extends Clipboard {
     
     // The view event
-    ViewEvent        _viewEvent;
+    private ViewEvent  _viewEvent;
     
     // The DataTransfer
-    JSDataTransfer _dataTrans;
+    private DataTransfer  _dataTrans;
     
     // The shared clipboards for system and drag
-    static TVClipboard  _shared;
-    static TVClipboard  _sharedDrag;
+    private static TVClipboard  _shared;
+    private static TVClipboard  _sharedDrag;
 
     /**
      * Returns the clipboard content.
@@ -34,7 +34,7 @@ public class TVClipboard extends Clipboard {
             return super.hasDataImpl(aMimeType);
 
         if (aMimeType==FILE_LIST)
-            return _dataTrans.getFiles().getLength()>0;
+            return _dataTrans.getFileCount()>0;
         return _dataTrans.hasType(aMimeType);
     }
 
@@ -47,11 +47,11 @@ public class TVClipboard extends Clipboard {
         if (_dataTrans==null)
             return super.getDataImpl(aMimeType);
 
-        Object data = null;
+        Object data;
 
         // Handle Files
         if (aMimeType==FILE_LIST) {
-            File jsfiles[] = _dataTrans.getFilesArray(); if (jsfiles==null) return null;
+            File jsfiles[] = _dataTrans.getFiles(); if (jsfiles==null) return null;
             List <ClipboardData> cfiles = new ArrayList(jsfiles.length);
             for (File jsfile : jsfiles) {
                 ClipboardData cbfile = new TVClipboardData(jsfile);
@@ -124,7 +124,8 @@ public class TVClipboard extends Clipboard {
     {
         _viewEvent = anEvent;
         DragEvent dragEvent = (DragEvent)anEvent.getEvent();
-        _dataTrans = dragEvent.getDataTransfer();
+        JSDataTransfer jsdt = dragEvent.getDataTransfer();
+        _dataTrans = DataTransfer.getDataTrasferForJSDataTransfer(jsdt);
     }
 
     /**
@@ -141,10 +142,11 @@ public class TVClipboard extends Clipboard {
      */
     public void getApprovedClipboardAndRun(Consumer<Clipboard> aConsumer)
     {
-        System.out.println("TVClipboard.getApprovedClipboardAndRun()");
         _clipboardConsumer = aConsumer;
         JSPromise<JSObject> rval = getReadPermissionsPromise();
-        rval.then(perm -> didGetPermissions(perm));
+        if (rval!=null)
+            rval.then(perm -> didGetPermissions(perm));
+        else didGetPermissions(null);
     }
 
     private static Consumer<Clipboard>  _clipboardConsumer;
@@ -152,32 +154,41 @@ public class TVClipboard extends Clipboard {
     /**
      * Returns a Promise for read permissions.
      */
-    @JSBody(params={ }, script = "return navigator.permissions.query({name: 'clipboard-read'});")
+    @JSBody(params={ }, script = "return navigator.permissions ? navigator.permissions.query({name: 'clipboard-read'}) : null;")
     public static native JSPromise<JSObject> getReadPermissionsPromise();
 
     private static JSPromise didGetPermissions(JSObject aPermResult)
     {
-        getState(aPermResult);
+        //getState(aPermResult);
         //System.out.println("Got Read Permissions: " + aPermResult!=null ? getState(aPermResult) : "null");
-        JSPromise<JSDataTransfer> rval = getClipboardReadPromise();
-        rval.then(dataTransfer -> didGetClipboardReadDataTransfer(dataTransfer));
+        JSPromise<JSString> rval = getClipboardReadTextPromise();
+        rval.then(str -> didGetClipboardReadText(str));
         return rval;
     }
 
-    @JSBody(params={ }, script = "return navigator.clipboard.read();")
-    public static native JSPromise<JSDataTransfer> getClipboardReadPromise();
+    @JSBody(params={ }, script = "return navigator.clipboard.readText();")
+    public static native JSPromise<JSString> getClipboardReadTextPromise();
 
     /**
      * Returns the system DataTransfer.
      */
-    private static JSPromise didGetClipboardReadDataTransfer(JSDataTransfer aDataTransfer)
+    private static JSPromise didGetClipboardReadText(JSString aStr)
     {
-        System.out.println("Got DataTransfer: " + (aDataTransfer!=null ? "Yes" : "Failed!"));
-        TV.log(aDataTransfer);
-        _shared._dataTrans = aDataTransfer;
+        System.out.println("Got DataTransfer: " + (aStr!=null ? "Yes" : "Failed!"));
+        String str = aStr.stringValue();
+        _shared._dataTrans = DataTransfer.getDataTrasferForString(str);
         ViewUtils.runLater(() -> _clipboardConsumer.accept(_shared));
         return null;
     }
+
+    //JSPromise<JSArray<JSDataTransferItem>> rval = getClipboardReadPromise();
+    //rval.then(dataTransfer -> didGetClipboardReadDataTransfer(dataTransfer));
+    //@JSBody(params={ }, script = "return navigator.clipboard.read();")
+    //public static native JSPromise<JSArray<JSDataTransferItem>> getClipboardReadPromise();
+    /*private static JSPromise didGetClipboardReadDataTransfer(JSArray<JSDataTransferItem> theDTIs) {
+        System.out.println("Got DataTransfers: " + (theDTIs!=null ? theDTIs.getLength() : "Failed!"));TV.log(theDTIs);
+        _shared._dataTrans = DataTransfer.getDataTrasferForDataTransferItemArray(theDTIs);
+        ViewUtils.runLater(() -> _clipboardConsumer.accept(_shared)); return null; } */
 
     @JSBody(params={ "aPermResult" }, script = "console.log(aPermResult); return aPermResult.state;")
     static native String getState(JSObject aPermResult);

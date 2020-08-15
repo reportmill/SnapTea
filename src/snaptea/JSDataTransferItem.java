@@ -17,6 +17,16 @@ public class JSDataTransferItem implements JSObject {
     @JSProperty
     public native String getType();
 
+    /**
+     * Invokes the specified callback with the drag data item string as its argument.
+     */
+    public native String getAsString();
+
+    /**
+     * Returns the File object associated with the drag data item (or null if the drag item is not a file).
+     */
+    public native File getAsFile();
+
 
 
 
