@@ -1,5 +1,6 @@
 package snaptea;
 import org.teavm.jso.JSBody;
+import org.teavm.jso.JSObject;
 import org.teavm.jso.canvas.CanvasGradient;
 import org.teavm.jso.canvas.CanvasRenderingContext2D;
 import org.teavm.jso.dom.events.MouseEvent;
@@ -169,6 +170,12 @@ public class TV {
      */
     @JSBody(params={ "theBlob" }, script = "return URL.createObjectURL(theBlob);")
     static native String createURL(Blob theBlob);
+
+    /**
+     * Log given object.
+     */
+    @JSBody(params={ "anObj" }, script = "console.log(anObj);")
+    public static native void log(JSObject anObj);
 
     /**
      * Creates an array of bytes in JS from given bytes in Java.
