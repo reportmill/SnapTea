@@ -114,8 +114,8 @@ public class WindowBar extends ParentView {
         String title = getWindow().getTitle();
         if (title!=null) {
             double y = _titlebarHeight==24? 4 : 3;
-            Rect bnds = _font.getStringBounds(title);
-            double x = Math.round((getWidth() - bnds.width)/2);
+            double strW = _font.getStringAdvance(title);
+            double x = Math.round((getWidth() - strW)/2);
             aPntr.setColor(Color.DARKGRAY); aPntr.setFont(_font);
             aPntr.drawString(title, x, y + _font.getAscent());
         }

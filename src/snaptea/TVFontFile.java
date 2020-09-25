@@ -116,6 +116,20 @@ public class TVFontFile extends FontFile {
     }
 
     /**
+     * Returns the bounds rect for glyphs in given string.
+     */
+    public Rect getGlyphBounds(String aString)
+    {
+        _cntx.setFont(getJSName());
+        TextMetrics metrics = _cntx.measureText(aString);
+        double glyphW = metrics.getWidth()/1000d;
+        double glyphAsc = getMetricsActualAscent(metrics)/1000d;
+        double glyphDesc = getMetricsActualDescent(metrics)/1000d;
+        double glyphH = glyphAsc + glyphDesc;
+        return new Rect(0, -glyphAsc, glyphW, glyphH);
+    }
+
+    /**
      * Returns the path for a given char (does the real work, but doesn't cache).
      */
     protected Shape getCharPathImpl(char c)
@@ -138,12 +152,9 @@ public class TVFontFile extends FontFile {
     {
         _cntx.setFont(getJSName());
         TextMetrics metrics = _cntx.measureText("H");
-        double ascent = getMetricsAscent(metrics)/1000;
+        double ascent = getMetricsFontAscent(metrics)/1000;
         return ascent>0 ? ascent : .906;
     }
-
-    @JSBody(params = { "aTM" }, script = "return aTM.fontBoundingBoxAscent || 906;")
-    public static native double getMetricsAscent(TextMetrics aTM);
 
     /**
      * Returns the max distance below the baseline that this font goes.
@@ -152,12 +163,21 @@ public class TVFontFile extends FontFile {
     {
         _cntx.setFont(getJSName());
         TextMetrics metrics = _cntx.measureText("H");
-        double desc = getMetricsDescent(metrics)/1000;
+        double desc = getMetricsFontDescent(metrics)/1000;
         return desc>0 ? desc : .212;
     }
 
+    @JSBody(params = { "aTM" }, script = "return aTM.fontBoundingBoxAscent || 906;")
+    public static native double getMetricsFontAscent(TextMetrics aTM);
+
+    @JSBody(params = { "aTM" }, script = "return aTM.actualBoundingBoxAscent || 906;")
+    public static native double getMetricsActualAscent(TextMetrics aTM);
+
     @JSBody(params = { "aTM" }, script = "return aTM.fontBoundingBoxDescent || 212;")
-    public static native double getMetricsDescent(TextMetrics aTM);
+    public static native double getMetricsFontDescent(TextMetrics aTM);
+
+    @JSBody(params = { "aTM" }, script = "return aTM.actualBoundingBoxDescent || 212;")
+    public static native double getMetricsActualDescent(TextMetrics aTM);
 
     /**
      * Returns the default distance between lines for this font.
