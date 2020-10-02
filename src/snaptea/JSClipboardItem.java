@@ -1,5 +1,6 @@
 package snaptea;
 
+import org.teavm.jso.JSObject;
 import org.teavm.jso.JSProperty;
 import org.teavm.jso.core.JSArray;
 import org.teavm.jso.core.JSString;
@@ -7,7 +8,7 @@ import org.teavm.jso.core.JSString;
 /**
  * JSClipboardItem.
  */
-public interface JSClipboardItem {
+public interface JSClipboardItem extends JSObject {
 
     @JSProperty
     JSArray<JSString> getTypes();

@@ -3,6 +3,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import org.teavm.jso.JSBody;
 import org.teavm.jso.JSObject;
+import org.teavm.jso.core.JSArray;
 import org.teavm.jso.core.JSString;
 import org.teavm.jso.dom.html.HTMLDocument;
 import org.teavm.jso.dom.html.HTMLElement;
@@ -19,6 +20,9 @@ public class TVClipboard extends Clipboard {
     
     // The DataTransfer
     private DataTransfer  _dataTrans;
+
+    // The runnable to call addAllDatas()
+    private Runnable  _addAllDatasRun, ADD_ALL_DATAS_RUN = () -> addAllDataToClipboard();
     
     // The shared clipboards for system and drag
     private static TVClipboard  _shared;
@@ -52,7 +56,7 @@ public class TVClipboard extends Clipboard {
         // Handle Files
         if (aMimeType==FILE_LIST) {
             File jsfiles[] = _dataTrans.getFiles(); if (jsfiles==null) return null;
-            List <ClipboardData> cfiles = new ArrayList(jsfiles.length);
+            List <ClipboardData> cfiles = new ArrayList<>(jsfiles.length);
             for (File jsfile : jsfiles) {
                 ClipboardData cbfile = new TVClipboardData(jsfile);
                 cfiles.add(cbfile);
@@ -75,16 +79,93 @@ public class TVClipboard extends Clipboard {
         // Do normal implementation to populate ClipboardDatas map
         super.addDataImpl(aMimeType, aData);
 
-        // If no DataTransfer, just return
-        if (_dataTrans==null) return;
+        // Handle DragDrop case
+        if (_dataTrans!=null) {
 
-        // Handle string data
-        if (aData.isString())
-            _dataTrans.setData(aMimeType, aData.getString());
+            // Handle string data
+            if (aData.isString())
+                _dataTrans.setData(aMimeType, aData.getString());
 
-        // Otherwise complain
-        else System.err.println("CJClipboard.addDataImpl: Unsupported data type: " + aMimeType + ", " + aData.getSource());
+                // Otherwise complain
+            else System.err.println("TVClipboard.addDataImpl: Unsupported data type: " + aMimeType + ", " + aData.getSource());
+        }
+
+        // Handle system clipboard copy: Wait till all types added, then update clipboard
+        else {
+            if (_addAllDatasRun==null)
+                ViewUtils.runLater(_addAllDatasRun=ADD_ALL_DATAS_RUN);
+        }
     }
+
+    /**
+     * Load datas into system clipboard
+     */
+    private void addAllDataToClipboard()
+    {
+        // Clear run
+        _addAllDatasRun = null;
+
+        // Get list of ClipbardData
+        Map<String,ClipboardData> clipDataMap = getClipboardDatas();
+        Collection<ClipboardData> clipDataList = clipDataMap.values();
+
+        // Convert to list of JSClipboardItem
+        List<JSClipboardItem> clipItemsList = new ArrayList<>();
+        for (ClipboardData cdata : clipDataList) {
+            JSClipboardItem clipboardItem = getJSClipboardItemForClipboardData(cdata);
+            if (clipboardItem!=null)
+                clipItemsList.add(clipboardItem);
+        }
+
+        // Convert to JSArray of JSClipboardItem
+        JSClipboardItem clipItems[] = clipItemsList.toArray(new JSClipboardItem[0]);
+        JSArray<JSClipboardItem> cbitems = JSArray.of(clipItems);
+
+        // Write to system clipboard
+        JSPromise writePromise = getClipboardWriteItemsPromise(cbitems);
+        if (writePromise!=null)
+            writePromise.catch_(JSObject -> { System.err.println("TVClipboard.addAllDataToClipboard failed"); return null; });
+
+        // Clear datas
+        clearData();
+    }
+
+    /**
+     * Returns a JSClipboardItem for given ClipboardData.
+     */
+    private JSClipboardItem getJSClipboardItemForClipboardData(ClipboardData aData)
+    {
+        // Handle image
+        if (aData.isImage()) {
+
+            // Get image as PNG blob
+            TVImage img = (TVImage) aData.getImage();
+            byte bytes[] = img.getBytesPNG();
+            Blob blob = TV.createBlob(bytes, "image/png");
+
+            // Get ClipboardItem array for blob
+            return getJSClipboardItem(blob);
+        }
+
+        else {
+
+            // Get type and bytes
+            String type = aData.getMIMEType();
+            byte bytes[] = aData.getBytes();
+
+            // If valid, just wrap in JSClipboardItem
+            if (type!=null && bytes!=null && bytes.length>0) {
+                Blob blob = TV.createBlob(bytes, type);
+                return getJSClipboardItem(blob);
+            }
+        }
+
+        // Complain and return null
+        System.err.println("TVClipboard.getJSClipboardItemForClipboardData: Had problem with " + aData);
+        return null;
+    }
+
+
 
     /**
      * Starts the drag.
@@ -168,6 +249,12 @@ public class TVClipboard extends Clipboard {
 
     @JSBody(params={ }, script = "return navigator.clipboard.readText();")
     public static native JSPromise<JSString> getClipboardReadTextPromise();
+
+    @JSBody(params={ "theItems" }, script = "return navigator.clipboard.write(theItems);")
+    public static native JSPromise<JSString> getClipboardWriteItemsPromise(JSArray<JSClipboardItem> theItems);
+
+    @JSBody(params={ "blob" }, script = "var param = {}; param[blob.type] = blob; return new ClipboardItem(param);")
+    public static native JSClipboardItem getJSClipboardItem(JSObject aBlobObj);
 
     /**
      * Returns the system DataTransfer.
