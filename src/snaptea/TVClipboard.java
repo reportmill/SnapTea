@@ -254,7 +254,7 @@ public class TVClipboard extends Clipboard {
     public static native JSPromise<JSString> getClipboardWriteItemsPromise(JSArray<JSClipboardItem> theItems);
 
     @JSBody(params={ "blob" }, script = "var param = {}; param[blob.type] = blob; return new ClipboardItem(param);")
-    public static native JSClipboardItem getJSClipboardItem(JSObject aBlobObj);
+    public static native JSClipboardItem getJSClipboardItem(JSObject blob);
 
     /**
      * Returns the system DataTransfer.
