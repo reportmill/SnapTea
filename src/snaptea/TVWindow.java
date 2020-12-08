@@ -8,9 +8,6 @@ import snap.gfx.*;
 import snap.util.*;
 import snap.view.*;
 
-import javax.swing.*;
-import java.awt.event.WindowEvent;
-
 /**
  * A class to represent the WindowView in the browser page.
  */
@@ -50,7 +47,7 @@ public class TVWindow {
     static int            _topWin;
     
     // The paint scale
-    public static int     scale = TV.getDevicePixelRatio()==2? 2 : 1;
+    public static int     scale = TV.getDevicePixelRatio()==2 ? 2 : 1;
 
     /**
      * Sets the snap window.
@@ -393,20 +390,20 @@ public class TVWindow {
     {
         Cursor aCursor = _win.getActiveCursor();
         String cstr = "default";
-        if(aCursor==Cursor.DEFAULT) cstr = "default";
-        if(aCursor==Cursor.CROSSHAIR) cstr = "crosshair";
-        if(aCursor==Cursor.HAND) cstr = "pointer";
-        if(aCursor==Cursor.MOVE) cstr = "move";
-        if(aCursor==Cursor.TEXT) cstr = "text";
-        if(aCursor==Cursor.NONE) cstr = "none";
-        if(aCursor==Cursor.N_RESIZE) cstr = "n-resize";
-        if(aCursor==Cursor.S_RESIZE) cstr = "s-resize";
-        if(aCursor==Cursor.E_RESIZE) cstr = "e-resize";
-        if(aCursor==Cursor.W_RESIZE) cstr = "w-resize";
-        if(aCursor==Cursor.NE_RESIZE) cstr = "ne-resize";
-        if(aCursor==Cursor.NW_RESIZE) cstr = "nw-resize";
-        if(aCursor==Cursor.SE_RESIZE) cstr = "se-resize";
-        if(aCursor==Cursor.SW_RESIZE) cstr = "sw-resize";
+        if (aCursor==Cursor.DEFAULT) cstr = "default";
+        if (aCursor==Cursor.CROSSHAIR) cstr = "crosshair";
+        if (aCursor==Cursor.HAND) cstr = "pointer";
+        if (aCursor==Cursor.MOVE) cstr = "move";
+        if (aCursor==Cursor.TEXT) cstr = "text";
+        if (aCursor==Cursor.NONE) cstr = "none";
+        if (aCursor==Cursor.N_RESIZE) cstr = "n-resize";
+        if (aCursor==Cursor.S_RESIZE) cstr = "s-resize";
+        if (aCursor==Cursor.E_RESIZE) cstr = "e-resize";
+        if (aCursor==Cursor.W_RESIZE) cstr = "w-resize";
+        if (aCursor==Cursor.NE_RESIZE) cstr = "ne-resize";
+        if (aCursor==Cursor.NW_RESIZE) cstr = "nw-resize";
+        if (aCursor==Cursor.SE_RESIZE) cstr = "se-resize";
+        if (aCursor==Cursor.SW_RESIZE) cstr = "sw-resize";
         getCanvas().getStyle().setProperty("cursor", cstr);
     }
 
@@ -455,6 +452,9 @@ public class TVWindow {
         public void toFront()  { _winNtv.toFront(); }
 
         /** Registers a view for repaint. */
-        public void requestPaint(Rect aRect)  { _winNtv._rviewNtv.repaint(aRect); }
+        public void requestPaint(Rect aRect)
+        {
+            _winNtv._rviewNtv.paintViews(aRect);
+        }
     }
 }
