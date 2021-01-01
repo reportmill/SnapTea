@@ -122,9 +122,9 @@ public class TVFontFile extends FontFile {
     {
         _cntx.setFont(getJSName());
         TextMetrics metrics = _cntx.measureText(aString);
-        double glyphW = metrics.getWidth()/1000d;
-        double glyphAsc = getMetricsActualAscent(metrics)/1000d;
-        double glyphDesc = getMetricsActualDescent(metrics)/1000d;
+        double glyphW = metrics.getWidth();
+        double glyphAsc = getMetricsActualAscent(metrics);
+        double glyphDesc = getMetricsActualDescent(metrics);
         double glyphH = glyphAsc + glyphDesc;
         return new Rect(0, -glyphAsc, glyphW, glyphH);
     }
