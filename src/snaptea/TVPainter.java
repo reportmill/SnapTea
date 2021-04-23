@@ -4,7 +4,6 @@ import org.teavm.jso.canvas.*;
 import org.teavm.jso.core.*;
 import org.teavm.jso.dom.html.HTMLCanvasElement;
 import snap.geom.PathIter;
-import snap.geom.Rect;
 import snap.geom.Shape;
 import snap.geom.Transform;
 import snap.gfx.*;
@@ -34,14 +33,17 @@ public class TVPainter extends PainterImpl {
         // Set canvas, scale and context
         _canvas = aCnvs;
         _scale = aScale;
-        _cntx = (CanvasRenderingContext2D)_canvas.getContext("2d");
+        _cntx = (CanvasRenderingContext2D) _canvas.getContext("2d");
+        _cntx.setTransform(1, 0, 0, 1, 0, 0);
 
         // Clip to canvas bounds
-        clip(new Rect(0,0,_canvas.getWidth(),_canvas.getHeight()));
+        int canvasW = _canvas.getWidth();
+        int canvasH = _canvas.getHeight();
+        clipRect(0,0, canvasW, canvasH);
 
         // If hidpi, scale default transform
-        if (_scale>1)
-            _cntx.transform(_scale, 0, 0, _scale, 0, 0);
+        if (_scale > 1)
+            _cntx.scale(_scale, _scale);
     }
 
     /**
@@ -76,7 +78,7 @@ public class TVPainter extends PainterImpl {
 
         // Set DashArray
         else {
-            double da[] = aStroke.getDashArray();
+            double[] da = aStroke.getDashArray();
             JSArray<JSObject> jsa = JSArray.create();
             for (double d : da) jsa.push(JSNumber.valueOf(d));
             _cntx.setLineDash(jsa);
@@ -124,7 +126,7 @@ public class TVPainter extends PainterImpl {
     public void setTransform(Transform aTrans)
     {
         super.setTransform(aTrans);
-        double m[] = aTrans.getMatrix();
+        double[] m = aTrans.getMatrix();
 
         // Set transform with dpi scale (in case retina/hidpi)
         _cntx.setTransform(m[0]*_scale, m[1], m[2], m[3]*_scale, m[4], m[5]);
@@ -136,7 +138,7 @@ public class TVPainter extends PainterImpl {
     public void transform(Transform aTrans)
     {
         super.transform(aTrans);
-        double m[] = aTrans.getMatrix();
+        double[] m = aTrans.getMatrix();
         _cntx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
     }
 
@@ -203,7 +205,7 @@ public class TVPainter extends PainterImpl {
      */
     public void setShape(Shape aShape)
     {
-        double pnts[] = new double[6];
+        double[] pnts = new double[6];
         PathIter piter = aShape.getPathIter(null);
         _cntx.beginPath();
         while (piter.hasNext()) {
@@ -302,6 +304,7 @@ public class TVPainter extends PainterImpl {
             case SRC_OVER: _cntx.setGlobalCompositeOperation("source-over"); break;
             case SRC_IN: _cntx.setGlobalCompositeOperation("source-in"); break;
             case DST_IN: _cntx.setGlobalCompositeOperation("destination-in"); break;
+            case DST_OUT: _cntx.setGlobalCompositeOperation("destination-out"); break;
         }
     }
 }
