@@ -14,12 +14,8 @@ import snap.web.*;
 public class TVEnv extends GFXEnv {
     
     // The app thread
-    static EventThread         _appThread;
+    static TVEventThread  _appThread;
     
-    // The runs array and start/end
-    static Runnable            _theRuns[] = new Runnable[100];
-    static int                 _runStart, _runEnd;
-
     // The shared AWTEnv
     static TVEnv               _shared;
 
@@ -209,36 +205,16 @@ public class TVEnv extends GFXEnv {
      */
     public void startNewAppThread()
     {
-        _appThread = new EventThread();
+        _appThread = new TVEventThread();
         _appThread.start();
-    }
-
-    /**
-     * Returns the next run from event queue.
-     */
-    static synchronized Runnable getNextEventQueueRun()
-    {
-        // Get next run - if none, reset array start/end vars
-        Runnable run = _runEnd>_runStart ? _theRuns[_runStart++] : null;
-        if (run==null) _runStart = _runEnd = 0;
-        return run;
     }
 
     /**
      * Adds given run to the event queue.
      */
-    public static synchronized void runOnAppThread(Runnable aRun)
+    public static final void runOnAppThread(Runnable aRun)
     {
-        _theRuns[_runEnd++] = aRun;
-        if (_runEnd==1)
-            _appThread.wakeUp();
-        else if (_runEnd>=_theRuns.length) {
-            if (_theRuns.length>500) {
-                System.err.println("TVEnv.addToEventQueue: To many events in queue - somthing is broken");
-                _runStart = _runEnd = 0; return; }
-            System.out.println("TVEnv.addToEventQueue: Increasing runs array to len " + _theRuns.length*2);
-            _theRuns = Arrays.copyOf(_theRuns, _theRuns.length*2);
-        }
+        TVEventThread.runOnAppThread(aRun);
     }
 
     /**
@@ -248,36 +224,5 @@ public class TVEnv extends GFXEnv {
     {
         if (_shared!=null) return _shared;
         return _shared = new TVEnv();
-    }
-
-    /**
-     * A Thread subclass to run event queue runs.
-     */
-    private static class EventThread extends Thread {
-
-        /** Gets a run from event queue and runs it. */
-        public synchronized void run()
-        {
-            // Queue runs forever
-            while (true) {
-
-                // Get next run, if found, just run
-                Runnable run = getNextEventQueueRun();
-                if (run!=null) {
-                    run.run();
-                    if (_appThread!=this)
-                        break;
-                }
-
-                // Otherwise, wait till new run added to queue
-                else {
-                    try { wait(); }
-                    catch(Exception e) { throw new RuntimeException(e); }
-                }
-            }
-        }
-
-        /** Wake up called when event is added to empty queue. */
-        public synchronized void wakeUp()  { notify(); }
     }
 }
