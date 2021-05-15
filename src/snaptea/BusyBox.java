@@ -92,9 +92,9 @@ public View createButtonsView()
 public View createToggleButtonsView()
 {
     Label label = new Label("Toggle Buttons");
-    ToggleButton btn1 = new ToggleButton("Align Left"); btn1.setGroup("TG1"); btn1.setPrefWidth(100);
-    ToggleButton btn2 = new ToggleButton("Align Center"); btn2.setGroup("TG1"); btn2.setPrefWidth(100);
-    ToggleButton btn3 = new ToggleButton("Align Right"); btn3.setGroup("TG1"); btn3.setPrefWidth(100);
+    ToggleButton btn1 = new ToggleButton("Align Left"); btn1.setGroupName("TG1"); btn1.setPrefWidth(100);
+    ToggleButton btn2 = new ToggleButton("Align Center"); btn2.setGroupName("TG1"); btn2.setPrefWidth(100);
+    ToggleButton btn3 = new ToggleButton("Align Right"); btn3.setGroupName("TG1"); btn3.setPrefWidth(100);
     ColView vbox = new ColView(); vbox.setAlign(Pos.CENTER); vbox.setSpacing(20); vbox.setPadding(2,2,2,2);
     vbox.setChildren(label, btn1, btn2, btn3); //vbox.setBorder(VIEW_BORDER); vbox.setFont(VIEW_FONT);
     vbox.setPrefWidth(360);
@@ -105,7 +105,7 @@ public View createToggleButtonsView()
     ToggleButton btn1a = new ToggleButton("1"); btn1a.setPadding(2,12,2,12); btn1a.setPosition(Pos.CENTER_LEFT);
     ToggleButton btn2a = new ToggleButton("2"); btn2a.setPadding(2,12,2,12);  btn2a.setPosition(Pos.CENTER);
     ToggleButton btn3a = new ToggleButton("3"); btn3a.setPadding(2,12,2,12);  btn3a.setPosition(Pos.CENTER_RIGHT);
-    btn1a.setGroup("g1"); btn2a.setGroup("g1"); btn3a.setGroup("g1");
+    btn1a.setGroupName("g1"); btn2a.setGroupName("g1"); btn3a.setGroupName("g1");
     btn1a.setPrefWidth(50); btn2a.setPrefWidth(50); btn3a.setPrefWidth(50); btn1a.setSelected(true);
     RowView hbox3 = new RowView(); hbox3.setAlign(Pos.CENTER); //hbox.setSpacing(20);
     hbox3.setChildren(btn1a, btn2a, btn3a);
@@ -137,9 +137,9 @@ public View createCheckBoxsView()
 public View createRadioButtonsView()
 {
     Label label = new Label("RadioButtons");
-    RadioButton btn1 = new RadioButton("RadioButton One"); btn1.setGroup("TG2");
-    RadioButton btn2 = new RadioButton("RadioButton Two"); btn2.setGroup("TG2");
-    RadioButton btn3 = new RadioButton("RadioButton Three"); btn3.setGroup("TG2");
+    RadioButton btn1 = new RadioButton("RadioButton One"); btn1.setGroupName("TG2");
+    RadioButton btn2 = new RadioButton("RadioButton Two"); btn2.setGroupName("TG2");
+    RadioButton btn3 = new RadioButton("RadioButton Three"); btn3.setGroupName("TG2");
     ColView vbox = new ColView(); vbox.setAlign(Pos.CENTER); vbox.setPadding(20,20,20,20); vbox.setSpacing(20);
     vbox.setChildren(label, btn1, btn2, btn3); vbox.setBorder(VIEW_BORDER); vbox.setFont(VIEW_FONT);
     return vbox;
