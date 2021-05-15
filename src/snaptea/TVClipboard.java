@@ -214,6 +214,16 @@ public class TVClipboard extends Clipboard {
     public void dropComplete()  { }
 
     /**
+     * Override to clear DataTrans.
+     */
+    @Override
+    public void clearData()
+    {
+        super.clearData();
+        _dataTrans = null;
+    }
+
+    /**
      * Sets the current event.
      */
     protected void setEvent(ViewEvent anEvent)
