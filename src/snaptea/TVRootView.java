@@ -98,7 +98,7 @@ public class TVRootView {
     {
         ViewEvent event = ViewEvent.createEvent(_rview, anEvent, null, null);
         _rview.getWindow().dispatchEvent(event);
-        if (!TVClipboard.isDragging) {
+        if (!TVDragboard.isDragging) {
             anEvent.preventDefault();
             anEvent.stopPropagation();
         }

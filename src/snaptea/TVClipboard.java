@@ -15,11 +15,8 @@ import snap.view.*;
  */
 public class TVClipboard extends Clipboard {
     
-    // The view event
-    private ViewEvent  _viewEvent;
-    
     // The DataTransfer
-    private DataTransfer  _dataTrans;
+    protected DataTransfer  _dataTrans;
 
     // The runnable to call addAllDatas()
     private Runnable  _addAllDatasRun, ADD_ALL_DATAS_RUN = () -> addAllDataToClipboard();
@@ -30,9 +27,8 @@ public class TVClipboard extends Clipboard {
     // A LoadListener to handle async browser clipboard
     private static Runnable  _loadListener;
 
-    // The shared clipboards for system and drag
+    // The shared clipboard for system copy/paste
     private static TVClipboard  _shared;
-    private static TVClipboard  _sharedDrag;
 
     /**
      * Returns the clipboard content.
@@ -182,36 +178,13 @@ public class TVClipboard extends Clipboard {
     /**
      * Starts the drag.
      */
-    public void startDrag()
-    {
-        // Set Dragging true and consume event
-        isDragging = true;
-        _viewEvent.consume();
-
-        // Get drag image and point and set in DataTransfer
-        Image dimg = getDragImage();
-        if (dimg == null) dimg = Image.get(1,1,true);
-        HTMLElement img = (HTMLElement) dimg.getNative();
-        double dx = getDragImageOffset().x;
-        double dy = getDragImageOffset().y;
-        _dataTrans.setDragImage(img, dx, dy);
-
-        // Add image element to canvas so browsers can generate image (then remove a short time later)
-        HTMLElement body = HTMLDocument.current().getBody();
-        body.appendChild(img);
-        TVViewEnv.get().runDelayed(() -> {
-            isDragging = false;
-            body.removeChild(img);
-        }, 100, false);
-    }
-
-    public static boolean isDragging;
+    public void startDrag()  { System.err.println("TVClipboard.startDrag: Not implemented"); }
 
     /** Called to indicate that drop is accepted. */
-    public void acceptDrag()  { }
+    public void acceptDrag()  { System.err.println("TVClipboard.startDrag: Not implemented"); }
 
     /** Called to indicate that drop is complete. */
-    public void dropComplete()  { }
+    public void dropComplete()  { System.err.println("TVClipboard.startDrag: Not implemented");  }
 
     /**
      * Override to clear DataTrans.
@@ -221,17 +194,6 @@ public class TVClipboard extends Clipboard {
     {
         super.clearData();
         _dataTrans = null;
-    }
-
-    /**
-     * Sets the current event.
-     */
-    protected void setEvent(ViewEvent anEvent)
-    {
-        _viewEvent = anEvent;
-        DragEvent dragEvent = (DragEvent) anEvent.getEvent();
-        JSDataTransfer jsdt = dragEvent.getDataTransfer();
-        _dataTrans = DataTransfer.getDataTrasferForJSDataTransfer(jsdt);
     }
 
     /**
@@ -262,7 +224,7 @@ public class TVClipboard extends Clipboard {
         if (rval != null) {
             rval.then(perm -> didGetPermissions(perm));
             rval.catch_(anObjJS -> {
-                System.err.println("TVClipboard.getReadPermissionsPromise: failed:");
+                System.err.println("TVClipboard.addLoadListener: failed:");
                 TV.log(anObjJS);
                 return null;
             });
@@ -270,7 +232,7 @@ public class TVClipboard extends Clipboard {
 
         // Otherwise, return
         else {
-            System.out.println("TVClipboard.getApprovedClipboardAndRun: No read permissions promise?");
+            System.out.println("TVClipboard.addLoadListener: No read permissions promise?");
             didGetPermissions(null);
         }
     }
@@ -319,10 +281,14 @@ public class TVClipboard extends Clipboard {
     {
         // Get string. Null check? This probably can't happen
         String str = aStr != null ? aStr.stringValue() : null;
-        if (str == null)  { System.err.println("TVClipboard.didGetClipboardReadText: null string"); return null; }
+        if (str == null)  {
+            System.err.println("TVClipboard.didGetClipboardReadText: null string");
+            return null;
+        }
 
         // Log string
-        String msg = str; if (str.length() > 50) msg = str.substring(0, 50) + "..."; msg = msg.replace("\n", "\\n");
+        String msg = str.replace("\n", "\\n");
+        if (str.length() > 50) msg = str.substring(0, 50) + "...";
         System.out.println("TVClipboard.didGetClipboardReadText: Read clipboard string: " + msg);
 
         // Create/set DataTransfer for string
@@ -380,14 +346,4 @@ public class TVClipboard extends Clipboard {
      */
     @JSBody(params={ "aPermResult" }, script = "console.log(aPermResult); return aPermResult.state;")
     static native String getPermissionStatusState(JSObject aPermResult);
-
-    /**
-     * Returns the shared TVClipboard for drag and drop.
-     */
-    public static TVClipboard getDrag(ViewEvent anEvent)
-    {
-        if (_sharedDrag==null) _sharedDrag = new TVClipboard();
-        if (anEvent!=null) _sharedDrag.setEvent(anEvent);
-        return _sharedDrag;
-    }
 }

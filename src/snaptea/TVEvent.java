@@ -141,14 +141,17 @@ public class TVEvent extends ViewEvent {
     /**
      * Returns the drag Clipboard for this event.
      */
-    public Clipboard getClipboard()  { return TVClipboard.getDrag(this); }
+    public Clipboard getClipboard()
+    {
+        return TVDragboard.getDrag(this);
+    }
 
     /**
      * Called to indicate that drop is accepted.
      */
     public void acceptDrag()
     {
-        TVClipboard.getDrag(this).acceptDrag();
+        TVDragboard.getDrag(this).acceptDrag();
     }
 
     /**
@@ -156,6 +159,6 @@ public class TVEvent extends ViewEvent {
      */
     public void dropComplete()
     {
-        TVClipboard.getDrag(this).dropComplete();
+        TVDragboard.getDrag(this).dropComplete();
     }
 }
