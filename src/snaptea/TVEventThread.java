@@ -11,7 +11,7 @@ import java.util.Arrays;
 class TVEventThread extends Thread {
 
     // The runs array and start/end
-    private static Runnable  _theRuns[] = new Runnable[100];
+    private static Runnable[]  _theRuns = new Runnable[100];
 
     // The start/end index of scheduled runs
     private static int  _runStart, _runEnd;
@@ -56,10 +56,14 @@ class TVEventThread extends Thread {
 
         // If exception is thrown, send to dev console
         catch (Exception e) {
+
+            // Print exception
+            e.printStackTrace();
+
+            // Get all windows
             WindowView[] winViews = TVScreen.get().getWindows().toArray(new WindowView[0]);
             if (winViews.length < 1) {
                 System.err.println("TVEventThread: Uncaught exception, no windows");
-                e.printStackTrace();
                 return;
             }
 
