@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<classpath>
-  <classpathentry kind="src" path="/SnapKit" />
-  <classpathentry kind="lib" path="lib/teavm-cli.jar" />
-</classpath>
