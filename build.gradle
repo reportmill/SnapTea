@@ -12,15 +12,24 @@ sourceSets.main.resources.srcDirs = ['src']
 
 repositories {
     mavenLocal()
-    maven {
-        url = 'http://repo.maven.apache.org/maven2'
-    }
+
+    // TeaVM from MavenCentral
+    //maven { url = 'http://repo.maven.apache.org/maven2' }
+
+    // Maven package repository for latest TeaVM
+    maven { url 'https://teavm.org/maven/repository' }
 }
 
+// TeaVM version
+project.ext.teavmVersion = "0.7.0-dev-1196"
+
 dependencies {
+
+    // SnapKit (assumed to be peer module)
     compile project(':SnapKit')
-    compileOnly 'org.teavm:teavm-classlib:0.6.1'
-    compileOnly 'org.teavm:teavm-jso-apis:0.6.1'
+
+    // TeaVM (might also want 'teavm-devserver', 'jso', 'jso-apis', 'classlib')
+    implementation group: 'org.teavm', name: 'teavm-cli', version: "$teavmVersion"
 }
 
 group = 'com.reportmill'

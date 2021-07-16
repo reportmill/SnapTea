@@ -1,4 +1,6 @@
 package snaptea;
+import org.teavm.jso.JSBody;
+import org.teavm.jso.JSObject;
 import org.teavm.jso.dom.events.*;
 import snap.geom.Point;
 import snap.view.*;
@@ -13,12 +15,17 @@ public class TVEvent extends ViewEvent {
      */
     protected Point getPointImpl()
     {
-        MouseEvent event = (MouseEvent)getEvent();
-        if (event==null) { System.err.println("TVEvent:getPointImp: No Mouse Event"); return new Point(); }
-        boolean winMaximized = getView().getWindow().isMaximized();
-        double x = winMaximized ? event.getClientX() : TV.getPageX(event); x = Math.round(x);
-        double y = winMaximized ? event.getClientY() : TV.getPageY(event); y = Math.round(y);
-        Point pt = getView().parentToLocal(x,y, null);
+        // Get MouseEvent (if no MouseEvent, just return null)
+        MouseEvent mouseEvent = getMouseEvent();
+        if (mouseEvent == null)
+            return new Point();
+
+        // Get event X/Y and convert to view
+        View view = getView();
+        boolean winMaximized = view.getWindow().isMaximized();
+        double x = winMaximized ? mouseEvent.getClientX() : TV.getPageX(mouseEvent); x = Math.round(x);
+        double y = winMaximized ? mouseEvent.getClientY() : TV.getPageY(mouseEvent); y = Math.round(y);
+        Point pt = view.parentToLocal(x,y, null);
         return pt;
     }
 
@@ -27,8 +34,9 @@ public class TVEvent extends ViewEvent {
      */
     public double getScrollX()
     {
-        WheelEvent event = (WheelEvent)getEvent();
-        return event.getDeltaX();
+        MouseEvent mouseEvent = getMouseEvent();
+        WheelEvent wheelEvent = (WheelEvent) mouseEvent;
+        return wheelEvent.getDeltaX();
     }
 
     /**
@@ -36,8 +44,9 @@ public class TVEvent extends ViewEvent {
      */
     public double getScrollY()
     {
-        WheelEvent event = (WheelEvent)getEvent();
-        return event.getDeltaY();
+        MouseEvent mouseEvent = getMouseEvent();
+        WheelEvent wheelEvent = (WheelEvent) mouseEvent;
+        return wheelEvent.getDeltaY();
     }
 
     /**
@@ -45,8 +54,8 @@ public class TVEvent extends ViewEvent {
      */
     public int getKeyCode()
     {
-        KeyboardEvent kev = (KeyboardEvent)getEvent();
-        int kcode = kev.getKeyCode();
+        KeyboardEvent keyboardEvent = getKeyEvent();
+        int kcode = keyboardEvent.getKeyCode();
         if (kcode==13) kcode = 10;
         return kcode;
     }
@@ -56,8 +65,8 @@ public class TVEvent extends ViewEvent {
      */
     public String getKeyString()
     {
-        KeyboardEvent kev = (KeyboardEvent)getEvent();
-        String str = kev.getKey();
+        KeyboardEvent keyboardEvent = getKeyEvent();
+        String str = keyboardEvent.getKey();
         if (str.length()>1) str = "";
         return str;
     }
@@ -67,8 +76,10 @@ public class TVEvent extends ViewEvent {
      */
     public boolean isShiftDown()
     {
-        if (isKeyEvent()) return ((KeyboardEvent)getEvent()).isShiftKey();
-        if (isMouseEvent()) return ((MouseEvent)getEvent()).getShiftKey();
+        if (isKeyEvent())
+            return getKeyEvent().isShiftKey();
+        if (isMouseEvent())
+            return getMouseEvent().getShiftKey();
         return false;
     }
 
@@ -77,8 +88,10 @@ public class TVEvent extends ViewEvent {
      */
     public boolean isControlDown()
     {
-        if (isKeyEvent()) return ((KeyboardEvent)getEvent()).isCtrlKey();
-        if (isMouseEvent()) return ((MouseEvent)getEvent()).getCtrlKey();
+        if (isKeyEvent())
+            return getKeyEvent().isCtrlKey();
+        if (isMouseEvent())
+            return getMouseEvent().getCtrlKey();
         return false;
     }
 
@@ -87,8 +100,10 @@ public class TVEvent extends ViewEvent {
      */
     public boolean isAltDown()
     {
-        if (isKeyEvent()) return ((KeyboardEvent)getEvent()).isAltKey();
-        if (isMouseEvent()) return ((MouseEvent)getEvent()).getAltKey();
+        if (isKeyEvent())
+            return getKeyEvent().isAltKey();
+        if (isMouseEvent())
+            return getMouseEvent().getAltKey();
         return false;
     }
 
@@ -97,8 +112,10 @@ public class TVEvent extends ViewEvent {
      */
     public boolean isMetaDown()
     {
-        if (isKeyEvent()) return ((KeyboardEvent)getEvent()).isMetaKey();
-        if (isMouseEvent()) return ((MouseEvent)getEvent()).getMetaKey();
+        if (isKeyEvent())
+            return getKeyEvent().isMetaKey();
+        if (isMouseEvent())
+            return getMouseEvent().getMetaKey();
         return false;
     }
 
@@ -107,8 +124,10 @@ public class TVEvent extends ViewEvent {
      */
     public boolean isShortcutDown()
     {
-        if (isKeyEvent()) return ((KeyboardEvent)getEvent()).isMetaKey();
-        if (isMouseEvent()) return isMetaDown() || isControlDown();
+        if (isKeyEvent())
+            return getKeyEvent().isMetaKey();
+        if (isMouseEvent())
+            return isMetaDown() || isControlDown();
         return false;
     }
 
@@ -117,8 +136,37 @@ public class TVEvent extends ViewEvent {
      */
     public boolean isPopupTrigger()
     {
-        return isMouseEvent() && ((MouseEvent)getEvent()).getButton()==MouseEvent.RIGHT_BUTTON;
+        MouseEvent mouseEvent = getMouseEvent();
+        return mouseEvent != null && mouseEvent.getButton() == MouseEvent.RIGHT_BUTTON;
     }
+
+    /**
+     * Returns the JSO MouseEvent (or null, if not available).
+     */
+    private MouseEvent getMouseEvent()
+    {
+        JSObject eventObj = (JSObject) getEvent();
+        if (isMouseEvent(eventObj))
+            return (MouseEvent) eventObj;
+        return null;
+    }
+
+    /**
+     * Returns the JSO KeyEvent (or null, if not available).
+     */
+    private KeyboardEvent getKeyEvent()
+    {
+        JSObject eventObj = (JSObject) getEvent();
+        if (isKeyEvent())
+            return (KeyboardEvent) eventObj;
+        return null;
+    }
+
+    /**
+     * Returns whether given object is MouseEvent.
+     */
+    @JSBody(params={ "anObj" }, script = "return anObj instanceof MouseEvent;")
+    private static native boolean isMouseEvent(JSObject anObj);
 
     /**
      * Returns the event type.
