@@ -7,23 +7,22 @@ import org.teavm.jso.JSProperty;
  */
 public interface Touch extends Event {
 
-@JSProperty
-int getScreenX();
+    @JSProperty
+    int getScreenX();
 
-@JSProperty
-int getScreenY();
+    @JSProperty
+    int getScreenY();
 
-@JSProperty
-int getClientX();
+    @JSProperty
+    int getClientX();
 
-@JSProperty
-int getClientY();
+    @JSProperty
+    int getClientY();
 
-@JSProperty
-int getPageX();
+    @JSProperty
+    int getPageX();
 
-@JSProperty
-int getPageY();
-
+    @JSProperty
+    int getPageY();
 
 }

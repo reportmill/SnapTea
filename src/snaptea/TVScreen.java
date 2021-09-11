@@ -71,59 +71,83 @@ public class TVScreen {
     {
         // Vars
         Runnable run = null;
-        boolean stopProp = false, prevDefault = false;
+        boolean stopProp = false;
+        boolean prevDefault = false;
 
         // Handle event types
         switch(e.getType()) {
+
+            // Handle MouseDown
             case "mousedown":
-                run = () -> mouseDown((MouseEvent)e);
-                _mousePressWin = _mouseDownWin = getWindow((MouseEvent)e);
-                if (_mousePressWin==null) return; //stopProp = prevDefault = true;
+                run = () -> mouseDown((MouseEvent) e);
+                _mousePressWin = _mouseDownWin = getWindow((MouseEvent) e);
+                if (_mousePressWin == null) return; //stopProp = prevDefault = true;
                 break;
+
+            // Handle MouseMove
             case "mousemove":
-                if (_mouseDownWin!=null) run = () -> mouseDrag((MouseEvent)e);
-                else run = () -> mouseMove((MouseEvent)e);
+                if (_mouseDownWin != null)
+                    run = () -> mouseDrag((MouseEvent) e);
+                else run = () -> mouseMove((MouseEvent) e);
                 break;
+
+            // Handle MouseUp
             case "mouseup":
-                run = () -> mouseUp((MouseEvent)e);
-                if (_mousePressWin==null) return; //stopProp = prevDefault = true;
+                run = () -> mouseUp((MouseEvent) e);
+                if (_mousePressWin == null) return; //stopProp = prevDefault = true;
                 break;
+
+            // Handle click, contextmenu
             case "click":
             case "contextmenu":
-                if (_mousePressWin==null) return;
+                if (_mousePressWin == null) return;
                 stopProp = prevDefault = true;
                 break;
+
+            // Handle Wheel
             case "wheel":
-                if (getWindow((WheelEvent)e)==null) return;
-                run = () -> mouseWheel((WheelEvent)e);
+                if (getWindow((WheelEvent) e) == null) return;
+                run = () -> mouseWheel((WheelEvent) e);
                 stopProp = prevDefault = true;
                 break;
+
+            // Handle KeyDown
             case "keydown":
-                if (_mousePressWin==null) return;
-                run = () -> keyDown((KeyboardEvent)e);
+                if (_mousePressWin == null) return;
+                run = () -> keyDown((KeyboardEvent) e);
                 stopProp = prevDefault = true;
                 break;
+
+            // Handle KeyUp
             case "keyup":
-                if (_mousePressWin==null) return;
-                run = () -> keyUp((KeyboardEvent)e);
+                if (_mousePressWin == null) return;
+                run = () -> keyUp((KeyboardEvent) e);
                 stopProp = prevDefault = true;
                 break;
+
+            // Handle TouchStart
             case "touchstart":
-                run = () -> touchStart((TouchEvent)e);
-                _mousePressWin = _mouseDownWin = getWindow((TouchEvent)e);
-                if (_mousePressWin==null) return;
+                run = () -> touchStart((TouchEvent) e);
+                _mousePressWin = _mouseDownWin = getWindow((TouchEvent) e);
+                if (_mousePressWin == null) return;
                 stopProp = prevDefault = true;
                 break;
+
+            // Handle TouchMove
             case "touchmove":
-                if (_mousePressWin==null) return;
-                run = () -> touchMove((TouchEvent)e);
+                if (_mousePressWin == null) return;
+                run = () -> touchMove((TouchEvent) e);
                 stopProp = prevDefault = true;
                 break;
+
+            // Handle TouchEnd
             case "touchend":
-                if (_mousePressWin==null) return;
-                run = () -> touchEnd((TouchEvent)e);
+                if (_mousePressWin == null) return;
+                run = () -> touchEnd((TouchEvent) e);
                 stopProp = prevDefault = true;
                 break;
+
+            // Handle pointerDown
             case "pointerdown":
                 setPointerCapture(e);
                 break;
@@ -139,7 +163,7 @@ public class TVScreen {
             e.preventDefault();
 
         // Run event
-        if (run!=null)
+        if (run != null)
             TVEnv.runOnAppThread(run);
     }
 
@@ -177,9 +201,13 @@ public class TVScreen {
 
         // Make next window in list main window
         _win = null;
-        for (int i=_windows.size()-1;i>=0;i--) { WindowView win = _windows.get(i);
+        for (int i = _windows.size() - 1; i >= 0; i--) {
+            WindowView win = _windows.get(i);
             if (!(win instanceof PopupWindow)) {
-                _win = win; break; }}
+                _win = win;
+                break;
+            }
+        }
     }
 
     /**
@@ -189,8 +217,8 @@ public class TVScreen {
     {
         // Get window for MouseEvent
         WindowView win = getWindow(anEvent);
-        if (win==null) win = _win;
-        if (win==null) return;
+        if (win == null) win = _win;
+        if (win == null) return;
 
         // Dispatch MouseMove event
         ViewEvent event = createEvent(win, anEvent, View.MouseMove, null);
@@ -205,12 +233,12 @@ public class TVScreen {
     {
         // Get Click count and set MouseDown
         long time = System.currentTimeMillis();
-        _clicks = time - _lastReleaseTime<400 ? (_clicks+1) : 1;
+        _clicks = time - _lastReleaseTime < 400 ? (_clicks + 1) : 1;
         _lastReleaseTime = time;
 
         // Get MouseDownWin for event
         _mouseDownWin = getWindow(anEvent);
-        if (_mouseDownWin==null) return;
+        if (_mouseDownWin == null) return;
 
         // Dispatch MousePress event
         ViewEvent event = createEvent(_mouseDownWin, anEvent, View.MousePress, null);
@@ -223,7 +251,9 @@ public class TVScreen {
      */
     public void mouseDrag(MouseEvent anEvent)
     {
-        if (_mouseDownWin==null) return;
+        if (_mouseDownWin == null) return;
+
+        // Create and dispatch MouseDrag event
         ViewEvent event = createEvent(_mouseDownWin, anEvent, View.MouseDrag, null);
         event.setClickCount(_clicks);
         _mouseDownWin.dispatchEvent(event);
@@ -234,8 +264,11 @@ public class TVScreen {
      */
     public void mouseUp(MouseEvent anEvent)
     {
-        if (_mouseDownWin==null) return;
-        WindowView mouseDownWin = _mouseDownWin; _mouseDownWin = null;
+        if (_mouseDownWin == null) return;
+        WindowView mouseDownWin = _mouseDownWin;
+        _mouseDownWin = null;
+
+        // Create and dispatch MouseRelease event
         ViewEvent event = createEvent(mouseDownWin, anEvent, View.MouseRelease, null);
         event.setClickCount(_clicks);
         mouseDownWin.dispatchEvent(event);
@@ -245,9 +278,11 @@ public class TVScreen {
     public void mouseWheel(WheelEvent anEvent)
     {
         // Get window for WheelEvent and dispatch WheelEvent event
-        WindowView win = getWindow(anEvent); if (win==null) return;
+        WindowView win = getWindow(anEvent); if (win == null) return;
         ViewEvent event = createEvent(win, anEvent, View.Scroll, null);
-        win.dispatchEvent(event); //if (event.isConsumed()) { anEvent.stopPropagation(); anEvent.preventDefault(); }
+        win.dispatchEvent(event);
+
+        // if (event.isConsumed()) { anEvent.stopPropagation(); anEvent.preventDefault(); }
     }
 
     /**
@@ -259,7 +294,7 @@ public class TVScreen {
         _win.dispatchEvent(event); //anEvent.stopPropagation();
 
         String str = anEvent.getKey();
-        if (str==null || str.length()==0) return;
+        if (str == null || str.length() == 0) return;
         if (str.equals("Control") || str.equals("Alt") || str.equals("Meta") || str.equals("Shift")) return;
         if (str.equals("ArrowUp") || str.equals("ArrowDown") || str.equals("ArrowLeft") || str.equals("ArrowRight")) return;
         if (str.equals("Enter") || str.equals("Backspace") || str.equals("Escape")) return;
@@ -289,19 +324,20 @@ public class TVScreen {
      */
     public void touchStart(TouchEvent anEvent)
     {
-        Touch touches[] = anEvent.getTouches(); if (touches==null || touches.length==0) return;
-        Touch touch = touches[0];
+        // Don't think this can happen
+        if (anEvent.getTouch() == null) return;
 
         // Get Click count and set MouseDown
         long time = System.currentTimeMillis();
-        _clicks = time - _lastReleaseTime<400 ? (_clicks+1) : 1; _lastReleaseTime = time;
+        _clicks = time - _lastReleaseTime < 400 ? (_clicks + 1) : 1; _lastReleaseTime = time;
 
         // Get MouseDownWin for event
-        _mouseDownWin = getWindow(touch);
-        if (_mouseDownWin==null) return; //anEvent.preventDefault();
+        _mouseDownWin = getWindow(anEvent);
+        if (_mouseDownWin == null) return;
+        anEvent.preventDefault();
 
-        // Dispatch MousePress event
-        ViewEvent event = createEvent(_mouseDownWin, touch, View.MousePress, null);
+        // Create and dispatch MousePress event
+        ViewEvent event = createEvent(_mouseDownWin, anEvent, View.MousePress, null);
         event.setClickCount(_clicks);
         _mouseDownWin.dispatchEvent(event);
     }
@@ -311,12 +347,14 @@ public class TVScreen {
      */
     public void touchMove(TouchEvent anEvent)
     {
-        if (_mouseDownWin==null) return; //anEvent.preventDefault();
+        // Don't think this can happen
+        if (anEvent.getTouch() == null) return;
 
-        Touch touches[] = anEvent.getTouches(); if (touches==null || touches.length==0) return;
-        Touch touch = touches[0];
+        if (_mouseDownWin == null) return;
+        anEvent.preventDefault();
 
-        ViewEvent event = createEvent(_mouseDownWin, touch, View.MouseDrag, null);
+        // Create and dispatch MouseDrag event
+        ViewEvent event = createEvent(_mouseDownWin, anEvent, View.MouseDrag, null);
         event.setClickCount(_clicks);
         _mouseDownWin.dispatchEvent(event);
     }
@@ -326,13 +364,17 @@ public class TVScreen {
      */
     public void touchEnd(TouchEvent anEvent)
     {
-        if (_mouseDownWin==null) return; //anEvent.preventDefault();
+        // Don't think this can happen
+        if (anEvent.getTouch() == null) return;
 
-        Touch touches[] = anEvent.getChangedTouches(); if (touches==null || touches.length==0) return;
-        Touch touch = touches[0];
+        if (_mouseDownWin == null) return;
+        anEvent.preventDefault();
 
-        WindowView mouseDownWin = _mouseDownWin; _mouseDownWin = null;
-        ViewEvent event = createEvent(mouseDownWin, touch, View.MouseRelease, null);
+        WindowView mouseDownWin = _mouseDownWin;
+        _mouseDownWin = null;
+
+        // Create and dispatch MouseDrag event
+        ViewEvent event = createEvent(mouseDownWin, anEvent, View.MouseRelease, null);
         event.setClickCount(_clicks);
         mouseDownWin.dispatchEvent(event);
     }
@@ -368,20 +410,21 @@ public class TVScreen {
     /**
      * Returns the WindowView for an event.
      */
-    public WindowView getWindow(MouseEvent anEvent)  { return getWindow(TV.getPageX(anEvent), TV.getPageY(anEvent)); }
-
-    /**
-     * Returns the WindowView for an event.
-     */
-    public WindowView getWindow(Touch anEvent)  { return getWindow(anEvent.getPageX(), anEvent.getPageY()); }
+    public WindowView getWindow(MouseEvent anEvent)
+    {
+        int x = anEvent.getPageX();
+        int y = anEvent.getPageY();
+        return getWindow(x, y);
+    }
 
     /**
      * Returns the WindowView for an event.
      */
     public WindowView getWindow(TouchEvent anEvent)
     {
-        Touch touches[] = anEvent.getTouches(); if (touches==null || touches.length==0) return null;
-        return getWindow(touches[0]);
+        int x = anEvent.getPageX();
+        int y = anEvent.getPageY();
+        return getWindow(x, y);
     }
 
     /**
@@ -389,9 +432,11 @@ public class TVScreen {
      */
     public WindowView getWindow(int aX, int aY)
     {
-        for (int i=_windows.size()-1;i>=0;i--) { WindowView win = _windows.get(i);
+        for (int i = _windows.size() - 1; i >= 0; i--) {
+            WindowView win = _windows.get(i);
             if (win.isMaximized() || win.contains(aX - win.getX(), aY - win.getY()))
-                return win; }
+                return win;
+        }
         return null;
     }
 
@@ -410,7 +455,7 @@ public class TVScreen {
      */
     public static TVScreen get()
     {
-        if (_screen!=null) return _screen;
+        if (_screen != null) return _screen;
         return _screen = new TVScreen();
     }
 }

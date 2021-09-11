@@ -119,16 +119,12 @@ public class TV {
 
     public static Rect getViewportBounds()
     {
-        double x = 0, y = 0; //double x = getViewportX(), y = getViewportY();
-        double w = getViewportWidth(), h = getViewportHeight();
-        return new Rect(x,y,w,h);
+        double x = 0; // double x = getViewportX();
+        double y = 0; // double y = getViewportY();
+        double w = getViewportWidth();
+        double h = getViewportHeight();
+        return new Rect(x, y, w, h);
     }
-
-    @JSBody(params={ "aME" }, script = "return aME.pageX;")
-    public static native int getPageX(MouseEvent aME);
-
-    @JSBody(params={ "aME" }, script = "return aME.pageY;")
-    public static native int getPageY(MouseEvent aME);
 
     @JSBody(params = { }, script = "return window.devicePixelRatio;")
     public static native double getDevicePixelRatio();

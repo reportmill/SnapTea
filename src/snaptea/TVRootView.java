@@ -46,6 +46,7 @@ public class TVRootView {
         _canvas.addEventListener("touchstart", e -> e.preventDefault());
         _canvas.addEventListener("touchmove", e -> e.preventDefault());
         _canvas.addEventListener("touchend", e -> e.preventDefault());
+        _canvas.addEventListener("wheel", e -> e.preventDefault());
 
         // Create painer
         _pntr = new TVPainter(_canvas, _scale);
@@ -53,8 +54,10 @@ public class TVRootView {
         // Register for drop events
         _canvas.setAttribute("draggable", "true");
         EventListener dragLsnr = e -> handleDragEvent((DragEvent)e);
-        _canvas.addEventListener("dragenter", dragLsnr); _canvas.addEventListener("dragover", dragLsnr);
-        _canvas.addEventListener("dragexit", dragLsnr); _canvas.addEventListener("drop", dragLsnr);
+        _canvas.addEventListener("dragenter", dragLsnr);
+        _canvas.addEventListener("dragover", dragLsnr);
+        _canvas.addEventListener("dragexit", dragLsnr);
+        _canvas.addEventListener("drop", dragLsnr);
 
         // Register for drag start event
         _canvas.addEventListener("dragstart", e -> handleDragGesture((DragEvent)e));

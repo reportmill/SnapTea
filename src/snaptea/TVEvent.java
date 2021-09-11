@@ -15,18 +15,46 @@ public class TVEvent extends ViewEvent {
      */
     protected Point getPointImpl()
     {
-        // Get MouseEvent (if no MouseEvent, just return null)
-        MouseEvent mouseEvent = getMouseEvent();
-        if (mouseEvent == null)
-            return new Point();
+        // Handle MouseEvent
+        Event event = (Event) getEvent();
+        if (isMouseEvent(event))
+            return getPointForMouseEvent((MouseEvent) event);
 
+        // Handle TouchEvent
+        if (isTouchEvent())
+            return getPointForTouchEvent((TouchEvent) event);
+
+        // Handle unknown event type (Currently called by ViewEvent.copyForView())
+        //System.out.println("TVEvent.getPointImpl: Unsupported event type: " + event.getType());
+        return new Point();
+    }
+
+    /**
+     * Returns the event point from browser MouseEvent.
+     */
+    private Point getPointForMouseEvent(MouseEvent mouseEvent)
+    {
         // Get event X/Y and convert to view
         View view = getView();
         boolean winMaximized = view.getWindow().isMaximized();
-        double x = winMaximized ? mouseEvent.getClientX() : TV.getPageX(mouseEvent); x = Math.round(x);
-        double y = winMaximized ? mouseEvent.getClientY() : TV.getPageY(mouseEvent); y = Math.round(y);
-        Point pt = view.parentToLocal(x,y, null);
-        return pt;
+        double viewX = winMaximized ? mouseEvent.getClientX() : mouseEvent.getPageX(); viewX = Math.round(viewX);
+        double viewY = winMaximized ? mouseEvent.getClientY() : mouseEvent.getPageY(); viewY = Math.round(viewY);
+        Point point = view.parentToLocal(viewX, viewY, null);
+        return point;
+    }
+
+    /**
+     * Returns the event point from browser TouchEvent.
+     */
+    private Point getPointForTouchEvent(TouchEvent touchEvent)
+    {
+        // Get event X/Y and convert to view
+        View view = getView();
+        boolean winMaximized = view.getWindow().isMaximized();
+        double viewX = winMaximized ? touchEvent.getClientX() : touchEvent.getPageX(); viewX = Math.round(viewX);
+        double viewY = winMaximized ? touchEvent.getClientY() : touchEvent.getPageY(); viewY = Math.round(viewY);
+        Point point = view.parentToLocal(viewX,viewY, null);
+        return point;
     }
 
     /**
@@ -80,6 +108,8 @@ public class TVEvent extends ViewEvent {
             return getKeyEvent().isShiftKey();
         if (isMouseEvent())
             return getMouseEvent().getShiftKey();
+        //if (isTouchEvent())
+        //    return getTouchEvent().getShiftKey();
         return false;
     }
 
@@ -92,6 +122,8 @@ public class TVEvent extends ViewEvent {
             return getKeyEvent().isCtrlKey();
         if (isMouseEvent())
             return getMouseEvent().getCtrlKey();
+        //if (isTouchEvent())
+        //    return getTouchEvent().getCtrlKey();
         return false;
     }
 
@@ -104,6 +136,8 @@ public class TVEvent extends ViewEvent {
             return getKeyEvent().isAltKey();
         if (isMouseEvent())
             return getMouseEvent().getAltKey();
+        //if (isTouchEvent())
+        //    return getTouchEvent().getAltKey();
         return false;
     }
 
@@ -116,6 +150,8 @@ public class TVEvent extends ViewEvent {
             return getKeyEvent().isMetaKey();
         if (isMouseEvent())
             return getMouseEvent().getMetaKey();
+        //if (isTouchEvent())
+        //    return getTouchEvent().getMetaKey();
         return false;
     }
 
@@ -128,6 +164,8 @@ public class TVEvent extends ViewEvent {
             return getKeyEvent().isMetaKey();
         if (isMouseEvent())
             return isMetaDown() || isControlDown();
+        //if (isTouchEvent())
+        //    return isMetaDown() || isControlDown();
         return false;
     }
 
@@ -138,17 +176,6 @@ public class TVEvent extends ViewEvent {
     {
         MouseEvent mouseEvent = getMouseEvent();
         return mouseEvent != null && mouseEvent.getButton() == MouseEvent.RIGHT_BUTTON;
-    }
-
-    /**
-     * Returns the JSO MouseEvent (or null, if not available).
-     */
-    private MouseEvent getMouseEvent()
-    {
-        JSObject eventObj = (JSObject) getEvent();
-        if (isMouseEvent(eventObj))
-            return (MouseEvent) eventObj;
-        return null;
     }
 
     /**
@@ -163,17 +190,55 @@ public class TVEvent extends ViewEvent {
     }
 
     /**
+     * Returns the JSO MouseEvent (or null, if not available).
+     */
+    private MouseEvent getMouseEvent()
+    {
+        JSObject eventObj = (JSObject) getEvent();
+        if (isMouseEvent(eventObj))
+            return (MouseEvent) eventObj;
+        return null;
+    }
+
+    /**
+     * Returns whether event is TouchEvent.
+     */
+    private boolean isTouchEvent()
+    {
+        Event event = (Event) getEvent();
+        String type = event.getType();
+        return type.startsWith("touch");
+        //return isTouchEvent(eventObj);
+    }
+
+    /**
+     * Returns the JSO TouchEvent (or null, if not available).
+     */
+    private TouchEvent getTouchEvent()
+    {
+        if (isTouchEvent())
+            return (TouchEvent) getEvent();
+        return null;
+    }
+
+    /**
      * Returns whether given object is MouseEvent.
      */
     @JSBody(params={ "anObj" }, script = "return anObj instanceof MouseEvent;")
     private static native boolean isMouseEvent(JSObject anObj);
 
     /**
+     * Returns whether given object is TouchEvent. Safari doesn't know what a TouchEvent is or has AppTouchEvent?
+     */
+    //@JSBody(params={ "anObj" }, script = "return anObj instanceof TouchEvent;")
+    //private static native boolean isTouchEvent(JSObject anObj);
+
+    /**
      * Returns the event type.
      */
     protected Type getTypeImpl()
     {
-        Event event = (Event)getEvent();
+        Event event = (Event) getEvent();
         String type = event.getType();
         switch(type) {
             case "dragstart": return Type.DragGesture;
