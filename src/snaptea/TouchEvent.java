@@ -7,17 +7,17 @@ import org.teavm.jso.dom.events.Event;
  */
 public interface TouchEvent extends Event {
 
-    //@JSProperty
-    default boolean getCtrlKey()  { return false; }
+    @JSProperty
+    boolean getCtrlKey();
 
-    //@JSProperty
-    default boolean getShiftKey()  { return false; }
+    @JSProperty
+    boolean getShiftKey();
 
-    //@JSProperty
-    default boolean getAltKey()  { return false; }
+    @JSProperty
+    boolean getAltKey();
 
-    //@JSProperty
-    default boolean getMetaKey()  { return false; }
+    @JSProperty
+    boolean getMetaKey();
 
     @JSProperty
     Touch[] getTouches();
@@ -30,13 +30,17 @@ public interface TouchEvent extends Event {
      */
     default Touch getTouch()
     {
+        // Get Touches
+        Touch[] touches = getTouches();
+
+        // If at end, see if there no are changed touches
         String type = getType();
         boolean isTouchEnd = type.equals("touchend");
-
-        Touch[] touches;
-        if (isTouchEnd)
-            touches = getChangedTouches();
-        else touches = getTouches();
+        if (isTouchEnd) {
+            Touch[] changedTouches = getChangedTouches();
+            if (changedTouches != null && changedTouches.length > 0)
+                touches = changedTouches;
+        }
 
         // Get First touch
         Touch touch = touches != null && touches.length > 0 ? touches[0] : null;

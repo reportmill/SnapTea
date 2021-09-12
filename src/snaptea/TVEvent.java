@@ -21,7 +21,7 @@ public class TVEvent extends ViewEvent {
             return getPointForMouseEvent((MouseEvent) event);
 
         // Handle TouchEvent
-        if (isTouchEvent())
+        if (isTouchEventJS())
             return getPointForTouchEvent((TouchEvent) event);
 
         // Handle unknown event type (Currently called by ViewEvent.copyForView())
@@ -106,10 +106,10 @@ public class TVEvent extends ViewEvent {
     {
         if (isKeyEvent())
             return getKeyEvent().isShiftKey();
-        if (isMouseEvent())
+        if (isMouseEventJS())
             return getMouseEvent().getShiftKey();
-        //if (isTouchEvent())
-        //    return getTouchEvent().getShiftKey();
+        if (isTouchEventJS())
+            return getTouchEvent().getShiftKey();
         return false;
     }
 
@@ -120,10 +120,10 @@ public class TVEvent extends ViewEvent {
     {
         if (isKeyEvent())
             return getKeyEvent().isCtrlKey();
-        if (isMouseEvent())
+        if (isMouseEventJS())
             return getMouseEvent().getCtrlKey();
-        //if (isTouchEvent())
-        //    return getTouchEvent().getCtrlKey();
+        if (isTouchEventJS())
+            return getTouchEvent().getCtrlKey();
         return false;
     }
 
@@ -134,10 +134,10 @@ public class TVEvent extends ViewEvent {
     {
         if (isKeyEvent())
             return getKeyEvent().isAltKey();
-        if (isMouseEvent())
+        if (isMouseEventJS())
             return getMouseEvent().getAltKey();
-        //if (isTouchEvent())
-        //    return getTouchEvent().getAltKey();
+        if (isTouchEventJS())
+            return getTouchEvent().getAltKey();
         return false;
     }
 
@@ -148,10 +148,10 @@ public class TVEvent extends ViewEvent {
     {
         if (isKeyEvent())
             return getKeyEvent().isMetaKey();
-        if (isMouseEvent())
+        if (isMouseEventJS())
             return getMouseEvent().getMetaKey();
-        //if (isTouchEvent())
-        //    return getTouchEvent().getMetaKey();
+        if (isTouchEventJS())
+            return getTouchEvent().getMetaKey();
         return false;
     }
 
@@ -162,10 +162,10 @@ public class TVEvent extends ViewEvent {
     {
         if (isKeyEvent())
             return getKeyEvent().isMetaKey();
-        if (isMouseEvent())
+        if (isMouseEventJS())
             return isMetaDown() || isControlDown();
-        //if (isTouchEvent())
-        //    return isMetaDown() || isControlDown();
+        if (isTouchEventJS())
+            return isMetaDown() || isControlDown();
         return false;
     }
 
@@ -190,6 +190,15 @@ public class TVEvent extends ViewEvent {
     }
 
     /**
+     * Returns whether underlying JS event is MouseEvent.
+     */
+    private boolean isMouseEventJS()
+    {
+        Event event = (Event) getEvent();
+        return isMouseEvent(event);
+    }
+
+    /**
      * Returns the JSO MouseEvent (or null, if not available).
      */
     private MouseEvent getMouseEvent()
@@ -203,7 +212,7 @@ public class TVEvent extends ViewEvent {
     /**
      * Returns whether event is TouchEvent.
      */
-    private boolean isTouchEvent()
+    private boolean isTouchEventJS()
     {
         Event event = (Event) getEvent();
         String type = event.getType();
@@ -216,7 +225,7 @@ public class TVEvent extends ViewEvent {
      */
     private TouchEvent getTouchEvent()
     {
-        if (isTouchEvent())
+        if (isTouchEventJS())
             return (TouchEvent) getEvent();
         return null;
     }
@@ -228,7 +237,8 @@ public class TVEvent extends ViewEvent {
     private static native boolean isMouseEvent(JSObject anObj);
 
     /**
-     * Returns whether given object is TouchEvent. Safari doesn't know what a TouchEvent is or has AppTouchEvent?
+     * Returns whether given object is TouchEvent.
+     * Safari doesn't know what a TouchEvent is or has AppTouchEvent instead??
      */
     //@JSBody(params={ "anObj" }, script = "return anObj instanceof TouchEvent;")
     //private static native boolean isTouchEvent(JSObject anObj);
