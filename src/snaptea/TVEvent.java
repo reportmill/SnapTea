@@ -16,13 +16,14 @@ public class TVEvent extends ViewEvent {
     protected Point getPointImpl()
     {
         // Handle MouseEvent
-        Event event = (Event) getEvent();
-        if (isMouseEvent(event))
-            return getPointForMouseEvent((MouseEvent) event);
+        MouseEvent mouseEvent = getMouseEvent();
+        if (mouseEvent != null)
+            return getPointForMouseEvent(mouseEvent);
 
         // Handle TouchEvent
-        if (isTouchEventJS())
-            return getPointForTouchEvent((TouchEvent) event);
+        TouchEvent touchEvent = getTouchEvent();
+        if (touchEvent != null)
+            return getPointForTouchEvent(touchEvent);
 
         // Handle unknown event type (Currently called by ViewEvent.copyForView())
         //System.out.println("TVEvent.getPointImpl: Unsupported event type: " + event.getType());
@@ -104,12 +105,17 @@ public class TVEvent extends ViewEvent {
      */
     public boolean isShiftDown()
     {
-        if (isKeyEvent())
-            return getKeyEvent().isShiftKey();
-        if (isMouseEventJS())
-            return getMouseEvent().getShiftKey();
-        if (isTouchEventJS())
-            return getTouchEvent().getShiftKey();
+        KeyboardEvent keyEvent = getKeyEvent();
+        if (keyEvent != null)
+            return keyEvent.isShiftKey();
+
+        MouseEvent mouseEvent = getMouseEvent();
+        if (mouseEvent != null)
+            return mouseEvent.getShiftKey();
+
+        TouchEvent touchEvent = getTouchEvent();
+        if (touchEvent != null)
+            return touchEvent.getShiftKey();
         return false;
     }
 
@@ -118,12 +124,17 @@ public class TVEvent extends ViewEvent {
      */
     public boolean isControlDown()
     {
-        if (isKeyEvent())
-            return getKeyEvent().isCtrlKey();
-        if (isMouseEventJS())
-            return getMouseEvent().getCtrlKey();
-        if (isTouchEventJS())
-            return getTouchEvent().getCtrlKey();
+        KeyboardEvent keyEvent = getKeyEvent();
+        if (keyEvent != null)
+            return keyEvent.isCtrlKey();
+
+        MouseEvent mouseEvent = getMouseEvent();
+        if (mouseEvent != null)
+            return mouseEvent.getCtrlKey();
+
+        TouchEvent touchEvent = getTouchEvent();
+        if (touchEvent != null)
+            return touchEvent.getCtrlKey();
         return false;
     }
 
@@ -132,12 +143,18 @@ public class TVEvent extends ViewEvent {
      */
     public boolean isAltDown()
     {
-        if (isKeyEvent())
-            return getKeyEvent().isAltKey();
-        if (isMouseEventJS())
-            return getMouseEvent().getAltKey();
-        if (isTouchEventJS())
-            return getTouchEvent().getAltKey();
+        KeyboardEvent keyEvent = getKeyEvent();
+        if (keyEvent != null)
+            return keyEvent.isAltKey();
+
+        MouseEvent mouseEvent = getMouseEvent();
+        if (mouseEvent != null)
+            return mouseEvent.getAltKey();
+
+        TouchEvent touchEvent = getTouchEvent();
+        if (touchEvent != null)
+            return touchEvent.getAltKey();
+
         return false;
     }
 
@@ -146,12 +163,18 @@ public class TVEvent extends ViewEvent {
      */
     public boolean isMetaDown()
     {
-        if (isKeyEvent())
-            return getKeyEvent().isMetaKey();
-        if (isMouseEventJS())
-            return getMouseEvent().getMetaKey();
-        if (isTouchEventJS())
-            return getTouchEvent().getMetaKey();
+        KeyboardEvent keyEvent = getKeyEvent();
+        if (keyEvent != null)
+            return keyEvent.isMetaKey();
+
+        MouseEvent mouseEvent = getMouseEvent();
+        if (mouseEvent != null)
+            return mouseEvent.getMetaKey();
+
+        TouchEvent touchEvent = getTouchEvent();
+        if (touchEvent != null)
+            return touchEvent.getMetaKey();
+
         return false;
     }
 
@@ -160,12 +183,18 @@ public class TVEvent extends ViewEvent {
      */
     public boolean isShortcutDown()
     {
-        if (isKeyEvent())
-            return getKeyEvent().isMetaKey();
-        if (isMouseEventJS())
+        KeyboardEvent keyEvent = getKeyEvent();
+        if (keyEvent != null)
+            return keyEvent.isMetaKey();
+
+        MouseEvent mouseEvent = getMouseEvent();
+        if (mouseEvent != null)
             return isMetaDown() || isControlDown();
-        if (isTouchEventJS())
+
+        TouchEvent touchEvent = getTouchEvent();
+        if (touchEvent != null)
             return isMetaDown() || isControlDown();
+
         return false;
     }
 
@@ -183,19 +212,14 @@ public class TVEvent extends ViewEvent {
      */
     private KeyboardEvent getKeyEvent()
     {
-        JSObject eventObj = (JSObject) getEvent();
-        if (isKeyEvent())
-            return (KeyboardEvent) eventObj;
-        return null;
-    }
+        for (ViewEvent ve = this; ve != null; ve = ve.getParentEvent()) {
+            if (ve.isKeyEvent()) {
+                JSObject eventObj = (JSObject) ve.getEvent();
+                return (KeyboardEvent) eventObj;
+            }
+        }
 
-    /**
-     * Returns whether underlying JS event is MouseEvent.
-     */
-    private boolean isMouseEventJS()
-    {
-        Event event = (Event) getEvent();
-        return isMouseEvent(event);
+        return null;
     }
 
     /**
@@ -203,21 +227,13 @@ public class TVEvent extends ViewEvent {
      */
     private MouseEvent getMouseEvent()
     {
-        JSObject eventObj = (JSObject) getEvent();
-        if (isMouseEvent(eventObj))
-            return (MouseEvent) eventObj;
-        return null;
-    }
+        for (ViewEvent ve = this; ve != null; ve = ve.getParentEvent()) {
+            JSObject eventObj = (JSObject) ve.getEvent();
+            if (eventObj != null && isMouseEvent(eventObj))
+                return (MouseEvent) eventObj;
+        }
 
-    /**
-     * Returns whether event is TouchEvent.
-     */
-    private boolean isTouchEventJS()
-    {
-        Event event = (Event) getEvent();
-        String type = event.getType();
-        return type.startsWith("touch");
-        //return isTouchEvent(eventObj);
+        return null;
     }
 
     /**
@@ -225,8 +241,13 @@ public class TVEvent extends ViewEvent {
      */
     private TouchEvent getTouchEvent()
     {
-        if (isTouchEventJS())
-            return (TouchEvent) getEvent();
+        for (ViewEvent ve = this; ve != null; ve = ve.getParentEvent()) {
+            Event eventObj = (Event) ve.getEvent();
+            String type = eventObj != null ? eventObj.getType() : null;
+            if (type != null && type.startsWith("touch"))
+                return (TouchEvent) getEvent();
+        }
+
         return null;
     }
 
