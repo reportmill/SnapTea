@@ -192,12 +192,13 @@ public class TVRenderer extends Renderer {
         // Set VertexArray.pointArray in pointsBuffer (was program.setPoints(pointArray) )
         float[] pointArray = aVertexArray.getPointArray();
         _gl.bufferData(_gl.ARRAY_BUFFER, TV.getFloat32Array(pointArray), _gl.STATIC_DRAW);
-        int positionAttribLocation = _gl.getAttribLocation(program, "vertPoint");
-        _gl.vertexAttribPointer(positionAttribLocation, 3, _gl.FLOAT, false, 3 * 4, 0);
-        _gl.enableVertexAttribArray(positionAttribLocation);
+        int pointsAttrLoc = _gl.getAttribLocation(program, "vertPoint");
+        _gl.vertexAttribPointer(pointsAttrLoc, 3, _gl.FLOAT, false, 3 * 4, 0);
+        _gl.enableVertexAttribArray(pointsAttrLoc);
 
         // If color array present, set colors
         WebGLBuffer colorsBuffer = null;
+        int colorsAttrLoc = 0;
         if (aVertexArray.isColorArraySet()) {
 
             // Create colorsBuffer
@@ -207,9 +208,9 @@ public class TVRenderer extends Renderer {
             // Set VertexArray.colorArray in colorsBuffer (was program.setColors(pointArray) )
             float[] colorArray = aVertexArray.getColorArray();
             _gl.bufferData(_gl.ARRAY_BUFFER, TV.getFloat32Array(colorArray), _gl.STATIC_DRAW);
-            int colorsAttr = _gl.getAttribLocation(program, "vertColor");
-            _gl.vertexAttribPointer(colorsAttr, 3, _gl.FLOAT, false, 3 * 4, 0);
-            _gl.enableVertexAttribArray(colorsAttr);
+            colorsAttrLoc = _gl.getAttribLocation(program, "vertColor");
+            _gl.vertexAttribPointer(colorsAttrLoc, 3, _gl.FLOAT, false, 3 * 4, 0);
+            _gl.enableVertexAttribArray(colorsAttrLoc);
         }
 
         // Otherwise, set VertexArray color (was program.setColor(color) )
@@ -226,12 +227,19 @@ public class TVRenderer extends Renderer {
 
         // Delete buffers
         _gl.deleteBuffer(pointsBuffer);
-        if (colorsBuffer != null)
+        _gl.disableVertexAttribArray(pointsAttrLoc);
+        if (colorsBuffer != null) {
             _gl.deleteBuffer(colorsBuffer);
+            _gl.disableVertexAttribArray(colorsAttrLoc);
+        }
 
         // Restore
         if (doubleSided)
             _gl.enable(_gl.CULL_FACE);
+
+        // Close program
+        _gl.finish();
+        _gl.useProgram(null);
     }
 
     /**
@@ -254,6 +262,9 @@ public class TVRenderer extends Renderer {
 
         // Link Program
         _gl.linkProgram(program);
+
+        // Validate
+        _gl.validateProgram(program);
         //JSObject linkStatus = _gl.getProgramParameter(program, _gl.LINK_STATUS);
         //if ( ! linkStatus) {
         //    var info = gl.getProgramInfoLog(program);
