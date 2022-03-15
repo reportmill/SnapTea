@@ -165,7 +165,10 @@ public class TVViewEnv extends ViewEnv {
      */
     public static TVViewEnv get()
     {
-        if (_shared!=null) return _shared;
+        if (_shared != null) return _shared;
+
+        TVRenderer.registerFactory();
+
         return _shared = new TVViewEnv();
     }
 

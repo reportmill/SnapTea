@@ -8,6 +8,7 @@ import org.teavm.jso.dom.html.HTMLDocument;
 import org.teavm.jso.dom.html.HTMLElement;
 import org.teavm.jso.dom.xml.Node;
 import org.teavm.jso.dom.xml.NodeList;
+import org.teavm.jso.typedarrays.Float32Array;
 import org.teavm.jso.typedarrays.Int8Array;
 import snap.geom.Point;
 import snap.geom.Rect;
@@ -181,6 +182,26 @@ public class TV {
         Int8Array bytesJS = Int8Array.create(theBytes.length);
         for (int i=0; i<theBytes.length; i++) bytesJS.set(i, theBytes[i]);
         return bytesJS;
+    }
+
+    /**
+     * Creates an array.
+     */
+    public static Float32Array getFloat32Array(float[] floatArray)
+    {
+        Float32Array float32Array = Float32Array.create(floatArray.length);
+        for (int i = 0; i < floatArray.length; i++) float32Array.set(i, floatArray[i]);
+        return float32Array;
+    }
+
+    /**
+     * Creates an array.
+     */
+    public static Float32Array getFloat32Array(double[] doubleArray)
+    {
+        Float32Array float32Array = Float32Array.create(doubleArray.length);
+        for (int i = 0; i < doubleArray.length; i++) float32Array.set(i, (float) doubleArray[i]);
+        return float32Array;
     }
 
     /**

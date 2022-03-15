@@ -14,10 +14,10 @@ import snap.gfx.*;
 public class TVPainter extends PainterImpl {
     
     // The canvas
-    private HTMLCanvasElement  _canvas;
+    protected HTMLCanvasElement  _canvas;
     
     // The image dpi scale (1 = normal, 2 for retina/hidpi)
-    private int _scale;
+    protected int _scale;
     
     // The RenderContext2D
     protected CanvasRenderingContext2D  _cntx;
