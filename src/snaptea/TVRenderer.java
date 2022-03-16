@@ -236,10 +236,6 @@ public class TVRenderer extends Renderer {
         // Restore
         if (doubleSided)
             _gl.enable(_gl.CULL_FACE);
-
-        // Close program
-        _gl.finish();
-        _gl.useProgram(null);
     }
 
     /**
