@@ -26,7 +26,7 @@ project.ext.teavmVersion = "0.7.0-dev-1196"
 dependencies {
 
     // SnapKit (assumed to be peer module)
-    compile project(':SnapKit')
+    implementation project(':SnapKit')
 
     // TeaVM (might also want 'teavm-devserver', 'jso', 'jso-apis', 'classlib')
     implementation group: 'org.teavm', name: 'teavm-cli', version: "$teavmVersion"
