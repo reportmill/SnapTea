@@ -174,14 +174,14 @@ public class TVRenderer extends Renderer {
 
         // Set program Projection Matrix (was program.setProjectionMatrix(projMatrix) )
         Camera3D camera = getCamera();
-        double[] projMatrix = camera.getProjectionTransform().toArray();
+        double[] projMatrix = camera.getCameraToClip().toArray();
         Float32Array matrix4fv = TV.getFloat32Array(projMatrix);
         WebGLUniformLocation projMatrixUniform = _gl.getUniformLocation(program, "projMatrix");
         _gl.uniformMatrix4fv(projMatrixUniform, false, matrix4fv);
 
         // Set program ViewMatrix (was program.setViewMatrix(viewMatrix) )
-        double[] viewMatrix = camera.getTransform().toArray();
-        Float32Array viewMatrix4fv = TV.getFloat32Array(viewMatrix);
+        double[] sceneToCamera = camera.getSceneToCamera().toArray();
+        Float32Array viewMatrix4fv = TV.getFloat32Array(sceneToCamera);
         WebGLUniformLocation viewMatrixUniform = _gl.getUniformLocation(program, "viewMatrix");
         _gl.uniformMatrix4fv(viewMatrixUniform, false, viewMatrix4fv);
 
