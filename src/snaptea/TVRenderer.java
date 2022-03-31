@@ -139,8 +139,8 @@ public class TVRenderer extends Renderer {
     protected void renderShape3D(Shape3D aShape3D)
     {
         // Handle Parent: Iterate over children and recurse
-        if (aShape3D instanceof ParentShape3D) {
-            ParentShape3D parentShape = (ParentShape3D) aShape3D;
+        if (aShape3D instanceof ParentShape) {
+            ParentShape parentShape = (ParentShape) aShape3D;
             Shape3D[] children = parentShape.getChildren();
             for (Shape3D child : children)
                 renderShape3D(child);
