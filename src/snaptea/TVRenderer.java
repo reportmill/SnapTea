@@ -64,7 +64,7 @@ public class TVRenderer extends Renderer {
         }
 
         // Initialize OpenGL
-        _gl.clearColor(1f, 1f, 1f, 1f);
+        _gl.clearColor(0f, 0f, 0f, 0f);
         _gl.enable(_gl.DEPTH_TEST);
         _gl.enable(_gl.CULL_FACE);
     }
