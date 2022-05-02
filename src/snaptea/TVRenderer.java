@@ -194,7 +194,7 @@ public class TVRenderer extends Renderer {
         _gl.bindBuffer(_gl.ARRAY_BUFFER, pointsBuffer);
 
         // Set VertexArray.pointsArray in pointsBuffer (was program.setPoints(pointsArray) )
-        float[] pointsArray = aVertexArray.getPointsArray();
+        float[] pointsArray = aVertexArray.getPointArray();
         _gl.bufferData(_gl.ARRAY_BUFFER, TV.getFloat32Array(pointsArray), _gl.STATIC_DRAW);
         int pointsAttrLoc = _gl.getAttribLocation(program, "vertPoint");
         _gl.vertexAttribPointer(pointsAttrLoc, 3, _gl.FLOAT, false, 3 * 4, 0);
@@ -203,14 +203,14 @@ public class TVRenderer extends Renderer {
         // If color array present, set colors
         WebGLBuffer colorsBuffer = null;
         int colorsAttrLoc = 0;
-        if (aVertexArray.isColorsArraySet()) {
+        if (aVertexArray.isColorArraySet()) {
 
             // Create colorsBuffer
             colorsBuffer = _gl.createBuffer();
             _gl.bindBuffer(_gl.ARRAY_BUFFER, colorsBuffer);
 
             // Set VertexArray.colorsArray in colorsBuffer (was program.setColors(colorsArray) )
-            float[] colorsArray = aVertexArray.getColorsArray();
+            float[] colorsArray = aVertexArray.getColorArray();
             _gl.bufferData(_gl.ARRAY_BUFFER, TV.getFloat32Array(colorsArray), _gl.STATIC_DRAW);
             colorsAttrLoc = _gl.getAttribLocation(program, "vertColor");
             _gl.vertexAttribPointer(colorsAttrLoc, 3, _gl.FLOAT, false, 3 * 4, 0);
@@ -318,7 +318,7 @@ public class TVRenderer extends Renderer {
      */
     public String getShaderString(VertexArray aVertexArray)
     {
-        boolean hasColors = aVertexArray.isColorsArraySet();
+        boolean hasColors = aVertexArray.isColorArraySet();
         return hasColors ? "Points_Colors" : "Points_Color";
     }
 
