@@ -39,7 +39,7 @@ public class TVRenderer extends Renderer {
     /**
      * Constructor.
      */
-    public TVRenderer(Camera3D aCamera)
+    public TVRenderer(Camera aCamera)
     {
         super(aCamera);
     }
@@ -75,7 +75,7 @@ public class TVRenderer extends Renderer {
     private void resizeCanvas(TVPainter aPainter)
     {
         // If Camera.ViewSize matches canvas size, just return - Should probably be checking scale, too
-        Camera3D camera = getCamera();
+        Camera camera = getCamera();
         int viewW = (int) Math.round(camera.getViewWidth());
         int viewH = (int) Math.round(camera.getViewHeight());
         if (viewW == _canvasW && viewH == _canvasH)
@@ -177,7 +177,7 @@ public class TVRenderer extends Renderer {
         _gl.useProgram(program);
 
         // Set program Projection Matrix (was program.setProjectionMatrix(projMatrix) )
-        Camera3D camera = getCamera();
+        Camera camera = getCamera();
         double[] projMatrix = camera.getCameraToClipArray();
         Float32Array matrix4fv = TV.getFloat32Array(projMatrix);
         WebGLUniformLocation projMatrixUniform = _gl.getUniformLocation(program, "projMatrix");
@@ -379,7 +379,7 @@ public class TVRenderer extends Renderer {
         /**
          * Returns a new default renderer.
          */
-        public Renderer newRenderer(Camera3D aCamera)
+        public Renderer newRenderer(Camera aCamera)
         {
             return new TVRenderer(aCamera);
         }
