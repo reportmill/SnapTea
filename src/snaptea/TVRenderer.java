@@ -33,6 +33,9 @@ public class TVRenderer extends Renderer {
     // A map of fragment shaders
     private Map<String,WebGLShader>  _fragShaders = new HashMap<>();
 
+    // A map of textures
+    private Map<Texture,WebGLTexture>  _textures = new HashMap<>();
+
     // Canvas size in points
     private int  _canvasW, _canvasH;
 
@@ -189,32 +192,36 @@ public class TVRenderer extends Renderer {
         WebGLUniformLocation viewMatrixUniform = _gl.getUniformLocation(program, "viewMatrix");
         _gl.uniformMatrix4fv(viewMatrixUniform, false, viewMatrix4fv);
 
-        // Create pointsBuffer
-        WebGLBuffer pointsBuffer = _gl.createBuffer();
-        _gl.bindBuffer(_gl.ARRAY_BUFFER, pointsBuffer);
+        // Create/bind pointBuffer
+        WebGLBuffer pointBuffer = _gl.createBuffer();
+        _gl.bindBuffer(_gl.ARRAY_BUFFER, pointBuffer);
 
-        // Set VertexArray.pointsArray in pointsBuffer (was program.setPoints(pointsArray) )
-        float[] pointsArray = aVertexArray.getPointArray();
-        _gl.bufferData(_gl.ARRAY_BUFFER, TV.getFloat32Array(pointsArray), _gl.STATIC_DRAW);
+        // Buffer pointArray
+        float[] pointArray = aVertexArray.getPointArray();
+        _gl.bufferData(_gl.ARRAY_BUFFER, TV.getFloat32Array(pointArray), _gl.STATIC_DRAW);
+
+        // Get, configure and enable vertPoint attribute
         int pointsAttrLoc = _gl.getAttribLocation(program, "vertPoint");
         _gl.vertexAttribPointer(pointsAttrLoc, 3, _gl.FLOAT, false, 3 * 4, 0);
         _gl.enableVertexAttribArray(pointsAttrLoc);
 
         // If color array present, set colors
-        WebGLBuffer colorsBuffer = null;
-        int colorsAttrLoc = 0;
+        WebGLBuffer colorBuffer = null;
+        int colorAttrLoc = 0;
         if (aVertexArray.isColorArraySet()) {
 
-            // Create colorsBuffer
-            colorsBuffer = _gl.createBuffer();
-            _gl.bindBuffer(_gl.ARRAY_BUFFER, colorsBuffer);
+            // Create/bind colorBuffer
+            colorBuffer = _gl.createBuffer();
+            _gl.bindBuffer(_gl.ARRAY_BUFFER, colorBuffer);
 
-            // Set VertexArray.colorsArray in colorsBuffer (was program.setColors(colorsArray) )
-            float[] colorsArray = aVertexArray.getColorArray();
-            _gl.bufferData(_gl.ARRAY_BUFFER, TV.getFloat32Array(colorsArray), _gl.STATIC_DRAW);
-            colorsAttrLoc = _gl.getAttribLocation(program, "vertColor");
-            _gl.vertexAttribPointer(colorsAttrLoc, 3, _gl.FLOAT, false, 3 * 4, 0);
-            _gl.enableVertexAttribArray(colorsAttrLoc);
+            // Buffer colorArray
+            float[] colorArray = aVertexArray.getColorArray();
+            _gl.bufferData(_gl.ARRAY_BUFFER, TV.getFloat32Array(colorArray), _gl.STATIC_DRAW);
+
+            // Get, configure and enable vertColor attribute
+            colorAttrLoc = _gl.getAttribLocation(program, "vertColor");
+            _gl.vertexAttribPointer(colorAttrLoc, 3, _gl.FLOAT, false, 3 * 4, 0);
+            _gl.enableVertexAttribArray(colorAttrLoc);
         }
 
         // Otherwise, set VertexArray color (was program.setColor(color) )
@@ -225,17 +232,72 @@ public class TVRenderer extends Renderer {
             _gl.uniform3fv(colorUniform, colorArray);
         }
 
+        // Set VertexShader texture coords
+        WebGLBuffer texCoordBuffer = null;
+        int texCoordAttrLoc = 0;
+        if (aVertexArray.isTexCoordArraySet()) {
+
+            // Get Texture, WebGLTexture
+            Texture texture = aVertexArray.getTexture();
+            WebGLTexture wglTexture = getTexture(texture);
+
+            // Bind and activate texture
+            _gl.bindTexture(_gl.TEXTURE_2D, wglTexture);
+            _gl.activeTexture(_gl.TEXTURE0);
+
+            // Map texture
+            WebGLUniformLocation textureUniform = _gl.getUniformLocation(program, "fragTexture");
+            _gl.uniform1i(textureUniform, 0);
+
+            // Create/bind texCoordBuffer
+            texCoordBuffer = _gl.createBuffer();
+            _gl.bindBuffer(_gl.ARRAY_BUFFER, texCoordBuffer);
+
+            // Buffer texCoordArray
+            float[] texCoordArray = aVertexArray.getTexCoordArray();
+            _gl.bufferData(_gl.ARRAY_BUFFER, TV.getFloat32Array(texCoordArray), _gl.STATIC_DRAW);
+
+            // Get, configure and enable vertTexCoord attribute
+            texCoordAttrLoc = _gl.getAttribLocation(program, "vertTexCoord");
+            _gl.vertexAttribPointer(texCoordAttrLoc, 2, _gl.FLOAT, false, 2 * 4, 0);
+            _gl.enableVertexAttribArray(texCoordAttrLoc);
+        }
+
+        // Set IndexArray
+        WebGLBuffer indexBuffer = null;
+        if (aVertexArray.isIndexArraySet()) {
+
+            // Create/bind indexBuffer
+            indexBuffer = _gl.createBuffer();
+            _gl.bindBuffer(_gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+
+            // Buffer indexArray
+            int[] indexArray = aVertexArray.getIndexArray();
+            _gl.bufferData(_gl.ELEMENT_ARRAY_BUFFER, TV.getUInt16Array(indexArray), _gl.STATIC_DRAW);
+
+            // Draw elements
+            _gl.drawElements(_gl.TRIANGLES, indexArray.length, _gl.UNSIGNED_SHORT, 0);
+        }
+
         // Run program
-        int vertexCount = pointsArray.length / 3;
-        _gl.drawArrays(_gl.TRIANGLES, 0, vertexCount);
+        else {
+            int vertexCount = pointArray.length / 3;
+            _gl.drawArrays(_gl.TRIANGLES, 0, vertexCount);
+        }
 
         // Delete buffers
-        _gl.deleteBuffer(pointsBuffer);
+        _gl.deleteBuffer(pointBuffer);
         _gl.disableVertexAttribArray(pointsAttrLoc);
-        if (colorsBuffer != null) {
-            _gl.deleteBuffer(colorsBuffer);
-            _gl.disableVertexAttribArray(colorsAttrLoc);
+        if (colorBuffer != null) {
+            _gl.deleteBuffer(colorBuffer);
+            _gl.disableVertexAttribArray(colorAttrLoc);
         }
+        if (texCoordBuffer != null) {
+            _gl.deleteBuffer(texCoordBuffer);
+            _gl.disableVertexAttribArray(texCoordAttrLoc);
+        }
+        if (indexBuffer != null)
+            _gl.deleteBuffer(indexBuffer);
 
         // Restore
         if (doubleSided)
@@ -285,11 +347,17 @@ public class TVRenderer extends Renderer {
         if (shader != null)
             return shader;
 
-        // Create, set and return
-        shader = _gl.createShader(_gl.VERTEX_SHADER);
+        // Get shader source
         String sourceText = getSourceText(_gl.VERTEX_SHADER, name);
+
+        // Create WebGLShader and set source
+        shader = _gl.createShader(_gl.VERTEX_SHADER);
         _gl.shaderSource(shader, sourceText);
+
+        // Compile
         _gl.compileShader(shader);
+
+        // Add to VertShaders map and return
         _vertShaders.put(name, shader);
         return shader;
     }
@@ -304,13 +372,51 @@ public class TVRenderer extends Renderer {
         if (shader != null)
             return shader;
 
-        // Create, set and return
-        shader = _gl.createShader(_gl.FRAGMENT_SHADER);
+        // Get shader source
         String sourceText = getSourceText(_gl.FRAGMENT_SHADER, name);
+
+        // Create WebGLShader and set source
+        shader = _gl.createShader(_gl.FRAGMENT_SHADER);
         _gl.shaderSource(shader, sourceText);
+
+        // Compile
         _gl.compileShader(shader);
+
+        // Add to VertShaders map and return
         _fragShaders.put(name, shader);
         return shader;
+    }
+
+    /**
+     * Returns a WebGL texture for given Snap texture.
+     */
+    public WebGLTexture getTexture(Texture aTexture)
+    {
+        // Get from Textures map (Just return if found)
+        WebGLTexture wglTexture = _textures.get(aTexture);
+        if (wglTexture != null)
+            return wglTexture;
+
+        // Get BufferedImage and flip for OpenGL
+        TVImage image = (TVImage) aTexture.getImage();
+        HTMLCanvasElement canvas = image.getCanvas();
+        _gl.pixelStorei(_gl.UNPACK_FLIP_Y_WEBGL, 1); //ImageUtil.flipImageVertically(canvas);
+
+        // Create texture for canvas
+        wglTexture = _gl.createTexture();
+        _gl.bindTexture(_gl.TEXTURE_2D, wglTexture);
+        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE);
+        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE);
+        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
+        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.LINEAR);
+        _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA, _gl.RGBA, _gl.UNSIGNED_BYTE, canvas);
+
+        // Unbind
+        _gl.bindTexture(_gl.TEXTURE_2D, null);
+
+        // Add to textures map and return
+        _textures.put(aTexture, wglTexture);
+        return wglTexture;
     }
 
     /**
@@ -318,6 +424,12 @@ public class TVRenderer extends Renderer {
      */
     public String getShaderString(VertexArray aVertexArray)
     {
+        // Handle Textures
+        boolean hasTexCoords = aVertexArray.getTexCoordArray().length > 0;
+        if (hasTexCoords)
+            return "Points_Color_Tex";
+
+        // Handle Color/Colors
         boolean hasColors = aVertexArray.isColorArraySet();
         return hasColors ? "Points_Colors" : "Points_Color";
     }
@@ -328,7 +440,10 @@ public class TVRenderer extends Renderer {
     public String getSourceText(int aType, String aName)
     {
         String sourcePath = "shaders/" + getSourceName(aType, aName);
-        return SnapUtils.getText(getClass(), sourcePath);
+        String sourceText = SnapUtils.getText(getClass(), sourcePath);
+        if (sourceText == null || sourceText.length() == 0)
+            System.err.println("TVRenderer.getSourceText: shader source not found: " + sourcePath);
+        return sourceText;
     }
 
     /**
@@ -337,14 +452,20 @@ public class TVRenderer extends Renderer {
     public String getSourceName(int aType, String aName)
     {
         // Handle Vertex Shaders:
-        if (aType == _gl.VERTEX_SHADER && aName.equals("Points_Color"))
-            return "Points_Color.vs";
-        if (aType == _gl.VERTEX_SHADER && aName.equals("Points_Colors"))
-            return "Points_Colors.vs";
+        if (aType == _gl.VERTEX_SHADER) {
+            switch (aName) {
+                case "Points_Color": return "Points_Color.vs";
+                case "Points_Colors": return "Points_Colors.vs";
+                case "Points_Color_Tex": return "Points_Color_Tex.vs";
+            }
+        }
 
         // Handle Fragment Shaders
-        if (aType == _gl.FRAGMENT_SHADER)
+        if (aType == _gl.FRAGMENT_SHADER) {
+            if (aName.equals("Points_Color_Tex"))
+                return "Points_Color_Tex.fs";
             return "General.fs";
+        }
 
         // Something went wrong
         return null;

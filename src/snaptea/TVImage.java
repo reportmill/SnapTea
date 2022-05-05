@@ -248,6 +248,15 @@ public class TVImage extends Image {
     }
 
     /**
+     * Returns the canvas.
+     */
+    public HTMLCanvasElement getCanvas()
+    {
+        if (_img != null) convertToCanvas();
+        return _canvas;
+    }
+
+    /**
      * Converts to canvas.
      */
     protected void convertToCanvas()
