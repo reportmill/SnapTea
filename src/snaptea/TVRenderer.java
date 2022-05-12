@@ -155,10 +155,10 @@ public class TVRenderer extends Renderer {
 
         // Handle child: Get VertexArray and render
         else {
-            VertexArray vertexArray = aShape3D.getVertexArray();
-            while (vertexArray != null) {
-                renderVertexArray(vertexArray);
-                vertexArray = vertexArray.getNext();
+            VertexArray triangleArray = aShape3D.getTriangleArray();
+            while (triangleArray != null) {
+                renderTriangleArray(triangleArray);
+                triangleArray = triangleArray.getNext();
             }
         }
     }
@@ -166,15 +166,15 @@ public class TVRenderer extends Renderer {
     /**
      * Renders a VertexBuffer of triangles.
      */
-    protected void renderVertexArray(VertexArray aVertexArray)
+    protected void renderTriangleArray(VertexArray aTriangleArray)
     {
         // If VertexArray.DoubleSided, disable face culling
-        boolean doubleSided = aVertexArray.isDoubleSided();
+        boolean doubleSided = aTriangleArray.isDoubleSided();
         if (doubleSided)
             _gl.disable(_gl.CULL_FACE);
 
         // Get ShaderProgram
-        WebGLProgram program = getProgram(aVertexArray);
+        WebGLProgram program = getProgram(aTriangleArray);
 
         // Use this program
         _gl.useProgram(program);
@@ -197,7 +197,7 @@ public class TVRenderer extends Renderer {
         _gl.bindBuffer(_gl.ARRAY_BUFFER, pointBuffer);
 
         // Buffer pointArray
-        float[] pointArray = aVertexArray.getPointArray();
+        float[] pointArray = aTriangleArray.getPointArray();
         _gl.bufferData(_gl.ARRAY_BUFFER, TV.getFloat32Array(pointArray), _gl.STATIC_DRAW);
 
         // Get, configure and enable vertPoint attribute
@@ -208,14 +208,14 @@ public class TVRenderer extends Renderer {
         // If color array present, set colors
         WebGLBuffer colorBuffer = null;
         int colorAttrLoc = 0;
-        if (aVertexArray.isColorArraySet()) {
+        if (aTriangleArray.isColorArraySet()) {
 
             // Create/bind colorBuffer
             colorBuffer = _gl.createBuffer();
             _gl.bindBuffer(_gl.ARRAY_BUFFER, colorBuffer);
 
             // Buffer colorArray
-            float[] colorArray = aVertexArray.getColorArray();
+            float[] colorArray = aTriangleArray.getColorArray();
             _gl.bufferData(_gl.ARRAY_BUFFER, TV.getFloat32Array(colorArray), _gl.STATIC_DRAW);
 
             // Get, configure and enable vertColor attribute
@@ -226,7 +226,7 @@ public class TVRenderer extends Renderer {
 
         // Otherwise, set VertexArray color (was program.setColor(color) )
         else {
-            Color color = aVertexArray.getColor(); if (color == null) color = Color.RED;
+            Color color = aTriangleArray.getColor(); if (color == null) color = Color.RED;
             WebGLUniformLocation colorUniform = _gl.getUniformLocation(program, "vertColor");
             float[] colorArray = { (float) color.getRed(), (float) color.getGreen(), (float) color.getBlue() };
             _gl.uniform3fv(colorUniform, colorArray);
@@ -235,10 +235,10 @@ public class TVRenderer extends Renderer {
         // Set VertexShader texture coords
         WebGLBuffer texCoordBuffer = null;
         int texCoordAttrLoc = 0;
-        if (aVertexArray.isTexCoordArraySet()) {
+        if (aTriangleArray.isTexCoordArraySet()) {
 
             // Get Texture, WebGLTexture
-            Texture texture = aVertexArray.getTexture();
+            Texture texture = aTriangleArray.getTexture();
             WebGLTexture wglTexture = getTexture(texture);
 
             // Bind and activate texture
@@ -254,7 +254,7 @@ public class TVRenderer extends Renderer {
             _gl.bindBuffer(_gl.ARRAY_BUFFER, texCoordBuffer);
 
             // Buffer texCoordArray
-            float[] texCoordArray = aVertexArray.getTexCoordArray();
+            float[] texCoordArray = aTriangleArray.getTexCoordArray();
             _gl.bufferData(_gl.ARRAY_BUFFER, TV.getFloat32Array(texCoordArray), _gl.STATIC_DRAW);
 
             // Get, configure and enable vertTexCoord attribute
@@ -265,14 +265,14 @@ public class TVRenderer extends Renderer {
 
         // Set IndexArray
         WebGLBuffer indexBuffer = null;
-        if (aVertexArray.isIndexArraySet()) {
+        if (aTriangleArray.isIndexArraySet()) {
 
             // Create/bind indexBuffer
             indexBuffer = _gl.createBuffer();
             _gl.bindBuffer(_gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
 
             // Buffer indexArray
-            int[] indexArray = aVertexArray.getIndexArray();
+            int[] indexArray = aTriangleArray.getIndexArray();
             _gl.bufferData(_gl.ELEMENT_ARRAY_BUFFER, TV.getUInt16Array(indexArray), _gl.STATIC_DRAW);
 
             // Draw elements
