@@ -112,7 +112,7 @@ public class TVRenderer extends Renderer {
      * Override to render.
      */
     @Override
-    public void renderAll(Painter aPainter)
+    public void renderAndPaint(Painter aPainter)
     {
         // Make sure OpenGL is initialized
         if (_gl == null) {
