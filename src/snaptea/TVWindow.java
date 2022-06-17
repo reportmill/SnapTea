@@ -5,7 +5,8 @@ import org.teavm.jso.dom.html.*;
 import snap.geom.Point;
 import snap.geom.Rect;
 import snap.gfx.*;
-import snap.util.*;
+import snap.props.PropChange;
+import snap.props.PropChangeListener;
 import snap.view.*;
 
 /**
@@ -35,7 +36,7 @@ public class TVWindow {
     HTMLElement           _parent;
     
     // A listener for hide
-    PropChangeListener    _hideLsnr;
+    PropChangeListener _hideLsnr;
     
     // A listener for browser window resize
     EventListener         _resizeLsnr = null;
