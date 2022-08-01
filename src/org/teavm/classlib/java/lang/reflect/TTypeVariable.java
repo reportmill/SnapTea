@@ -10,4 +10,6 @@ public class TTypeVariable<D extends TGenericDeclaration> implements TType {
     public D getGenericDeclaration()  { return null; }
 
     public String getName()  { return null; }
+
+    public String getTypeName()  { return null; }
 }

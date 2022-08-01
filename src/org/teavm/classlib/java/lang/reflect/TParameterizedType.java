@@ -10,4 +10,6 @@ public class TParameterizedType implements TType {
     public TType getOwnerType()  { return null; }
 
     public TType getRawType()  { return null; }
+
+    public String getTypeName()  { return null; }
 }
