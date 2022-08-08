@@ -98,9 +98,9 @@ public View createToggleButtonsView()
     ColView vbox = new ColView(); vbox.setAlign(Pos.CENTER); vbox.setSpacing(20); vbox.setPadding(2,2,2,2);
     vbox.setChildren(label, btn1, btn2, btn3); //vbox.setBorder(VIEW_BORDER); vbox.setFont(VIEW_FONT);
     vbox.setPrefWidth(360);
-    btn1.addEventHandler(e -> ViewAnim.setAlign(vbox, Pos.CENTER_LEFT, 500), Action);
-    btn2.addEventHandler(e -> ViewAnim.setAlign(vbox, Pos.CENTER, 500), Action);
-    btn3.addEventHandler(e -> ViewAnim.setAlign(vbox, Pos.CENTER_RIGHT, 500), Action);
+    btn1.addEventHandler(e -> ViewAnimUtils.setAlign(vbox, Pos.CENTER_LEFT, 500), Action);
+    btn2.addEventHandler(e -> ViewAnimUtils.setAlign(vbox, Pos.CENTER, 500), Action);
+    btn3.addEventHandler(e -> ViewAnimUtils.setAlign(vbox, Pos.CENTER_RIGHT, 500), Action);
     
     ToggleButton btn1a = new ToggleButton("1"); btn1a.setPadding(2,12,2,12); btn1a.setPosition(Pos.CENTER_LEFT);
     ToggleButton btn2a = new ToggleButton("2"); btn2a.setPadding(2,12,2,12);  btn2a.setPosition(Pos.CENTER);
