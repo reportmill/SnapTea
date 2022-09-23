@@ -68,6 +68,7 @@ public class TVImage extends Image {
 
         // Create image
         _img = HTMLDocument.current().createElement("img").cast();
+        _img.setCrossOrigin("anonymous");
         _pw = _ph = 20;
 
         // Set src and wait till loaded
