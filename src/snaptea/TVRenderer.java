@@ -235,7 +235,7 @@ public class TVRenderer extends Renderer {
         // Set VertexShader texture coords
         WebGLBuffer texCoordBuffer = null;
         int texCoordAttrLoc = 0;
-        if (aTriangleArray.isTexCoordArraySet()) {
+        if (aTriangleArray.isTextureSetAndReady()) {
 
             // Get Texture, WebGLTexture
             Texture texture = aTriangleArray.getTexture();
