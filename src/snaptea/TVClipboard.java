@@ -128,12 +128,17 @@ public class TVClipboard extends Clipboard {
 
         // Write to system clipboard
         JSPromise writePromise = getClipboardWriteItemsPromise(clipItemsJS);
-        if (writePromise != null)
+
+        // Handle/configure promise
+        if (writePromise != null) {
+
+            // On failure, complain and return
             writePromise.catch_(aJSObj -> {
                 System.err.println("TVClipboard.addAllDataToClipboard failed:");
                 TV.log(aJSObj);
                 return null;
             });
+        }
 
         // Clear datas
         clearData();
@@ -148,8 +153,8 @@ public class TVClipboard extends Clipboard {
         if (aData.isImage()) {
 
             // Get image as PNG blob
-            TVImage img = (TVImage) aData.getImage();
-            byte[] bytes = img.getBytesPNG();
+            TVImage image = (TVImage) aData.getImage();
+            byte[] bytes = image.getBytesPNG();
             Blob blob = TV.createBlob(bytes, "image/png");
 
             // Get ClipboardItem array for blob
@@ -220,12 +225,23 @@ public class TVClipboard extends Clipboard {
         _loadListener = aRun;
 
         // Get PermissionsPromise
-        JSPromise<JSObject> rval = getReadPermissionsPromise();
-        if (rval != null) {
-            rval.then(perm -> didGetPermissions(perm));
-            rval.catch_(anObjJS -> {
+        JSPromise<JSObject> permissionsPromise = getReadPermissionsPromise();
+
+        // If returned, handle
+        if (permissionsPromise != null) {
+
+            // On success, forward to didGetClipboardReadText()
+            permissionsPromise.then(perm -> didGetPermissions(perm));
+
+            // On failure, complain and return
+            permissionsPromise.catch_(anObjJS -> {
+
+                // Complain
                 System.err.println("TVClipboard.addLoadListener: failed:");
                 TV.log(anObjJS);
+
+                // Actually, try anyway - works on Safari
+                didGetPermissions(null);
                 return null;
             });
         }
@@ -235,19 +251,6 @@ public class TVClipboard extends Clipboard {
             System.out.println("TVClipboard.addLoadListener: No read permissions promise?");
             didGetPermissions(null);
         }
-    }
-
-    /**
-     * Notify loaded.
-     */
-    private void notifyLoaded()
-    {
-        ViewUtils.runLater(() -> {
-            _loaded = true;
-            _loadListener.run();
-            _loaded = false;
-            _loadListener = null;
-        });
     }
 
     /**
@@ -261,17 +264,21 @@ public class TVClipboard extends Clipboard {
             System.out.println("TVClipboard.didGetPermissions: Got Read Permissions: " + state);
         }
 
-        // Get/configure readText promise to call didGetClipboardReadText
-        JSPromise<JSString> rval = getClipboardReadTextPromise();
-        rval.then(str -> didGetClipboardReadText(str));
-        rval.catch_(aJSO -> {
+        // Get readText promise to call didGetClipboardReadText
+        JSPromise<JSString> readTextPromise = getClipboardReadTextPromise();
+
+        // On success, forward to didGetClipboardReadText()
+        readTextPromise.then(str -> didGetClipboardReadText(str));
+
+        // On failure, complain and return
+        readTextPromise.catch_(aJSO -> {
             System.err.println("TVClipboard.didGetPermissions: failed:");
             TV.log(aJSO);
             return null;
         });
 
         // Return promise
-        return rval;
+        return readTextPromise;
     }
 
     /**
@@ -297,6 +304,19 @@ public class TVClipboard extends Clipboard {
         // Trigger LoadListener
         _shared.notifyLoaded();
         return null;
+    }
+
+    /**
+     * Notify loaded.
+     */
+    private void notifyLoaded()
+    {
+        ViewUtils.runLater(() -> {
+            _loaded = true;
+            _loadListener.run();
+            _loaded = false;
+            _loadListener = null;
+        });
     }
 
     /**
