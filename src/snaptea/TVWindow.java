@@ -3,7 +3,6 @@ import org.teavm.jso.browser.Window;
 import org.teavm.jso.dom.events.EventListener;
 import org.teavm.jso.dom.html.*;
 import snap.geom.Point;
-import snap.geom.Rect;
 import snap.gfx.*;
 import snap.props.PropChange;
 import snap.props.PropChangeListener;
@@ -15,40 +14,40 @@ import snap.view.*;
 public class TVWindow {
 
     // The Window View
-    WindowView            _win;
+    protected WindowView  _win;
     
     // The element to represent the window
-    HTMLElement           _winEmt;
+    protected HTMLElement  _winEmt;
     
     // The RootView
-    RootView              _rview;
+    protected RootView  _rootView;
     
     // The native RootView
-    TVRootView            _rviewNtv;
+    protected TVRootView  _rootViewNtv;
     
     // The HTML document element
-    HTMLDocument          _doc;
+    protected HTMLDocument  _doc;
     
     // The HTML body element
-    HTMLBodyElement       _body;
+    protected HTMLBodyElement  _body;
     
     // The parent element
-    HTMLElement           _parent;
+    protected HTMLElement  _parent;
     
     // A listener for hide
-    PropChangeListener _hideLsnr;
+    protected PropChangeListener  _hideLsnr;
     
     // A listener for browser window resize
-    EventListener         _resizeLsnr = null;
+    protected EventListener  _resizeLsnr = null;
     
     // The body overflow value
-    String                _bodyMargin = "undefined", _bodyOverflow;
+    protected String  _bodyMargin = "undefined", _bodyOverflow;
     
     // The last top window
-    static int            _topWin;
+    protected static int  _topWin;
     
     // The paint scale
-    public static int     scale = TV.getDevicePixelRatio()==2 ? 2 : 1;
+    public static int  scale = TV.getDevicePixelRatio()==2 ? 2 : 1;
 
     /**
      * Sets the snap window.
@@ -72,8 +71,9 @@ public class TVWindow {
         _winEmt.getStyle().setProperty("background", "#F4F4F4CC");
 
         // Get RootView and TVRootView
-        _rview = _win.getRootView();
-        _rviewNtv = new TVRootView(); _rviewNtv.setView(_rview);
+        _rootView = _win.getRootView();
+        _rootViewNtv = new TVRootView();
+        _rootViewNtv.setView(_rootView);
 
         // Get RootView canvas and add to WinEmt
         HTMLCanvasElement canvas = getCanvas();
@@ -85,16 +85,16 @@ public class TVWindow {
      */
     public void initWindow()
     {
-        if (_rview.getFill()==null)
-            _rview.setFill(ViewUtils.getBackFill());
-        if (_rview.getBorder()==null)
-            _rview.setBorder(Color.GRAY, 1);
+        if (_rootView.getFill() == null)
+            _rootView.setFill(ViewUtils.getBackFill());
+        if (_rootView.getBorder() == null)
+            _rootView.setBorder(Color.GRAY, 1);
     }
 
     /**
      * Returns the canvas for the window.
      */
-    public HTMLCanvasElement getCanvas()  { return _rviewNtv._canvas; }
+    public HTMLCanvasElement getCanvas()  { return _rootViewNtv._canvas; }
 
     /**
      * Returns the parent DOM element of this window (WinEmt).
@@ -107,14 +107,14 @@ public class TVWindow {
     protected void setParent(HTMLElement aNode)
     {
         // If already set, just return
-        if (aNode==_parent) return;
+        if (aNode == _parent) return;
 
         // Set new value
         HTMLElement par = _parent;
         _parent = aNode;
 
         // If null, just remove from old parent and return
-        if (aNode==null) {
+        if (aNode == null) {
             par.removeChild(_winEmt);
             return;
         }
@@ -123,7 +123,7 @@ public class TVWindow {
         aNode.appendChild(_winEmt);
 
         // If body, configure special
-        if (aNode==_body) {
+        if (aNode == _body) {
 
             // Set body and html height so that document covers the whole browser page
             HTMLHtmlElement html = _doc.getDocumentElement();
@@ -143,8 +143,8 @@ public class TVWindow {
             }
 
             // If Window.Type not PLAIN, attach WindowBar
-            if (_win.getType()!=WindowView.TYPE_PLAIN) {
-                WindowBar wbar = WindowBar.attachWindowBar(_rview);
+            if (_win.getType() != WindowView.TYPE_PLAIN) {
+                WindowBar wbar = WindowBar.attachWindowBar(_rootView);
                 if (_win.isMaximized())
                     wbar.setTitlebarHeight(18);
             }
@@ -152,7 +152,7 @@ public class TVWindow {
 
         // If arbitrary element
         else {
-            if (_bodyMargin!="undefined")
+            if (_bodyMargin != "undefined")
                 _body.getStyle().setProperty("margin", _bodyMargin);
             _winEmt.getStyle().setProperty("position", "static");
             _winEmt.getStyle().setProperty("width", "100%");
@@ -166,13 +166,14 @@ public class TVWindow {
     private HTMLElement getParentForWin()
     {
         // If window is maximized, parent should always be body
-        if(_win.isMaximized()) return _body;
+        if(_win.isMaximized())
+            return _body;
 
         // If window has named element, return that
-        String pname = _win.getName();
-        if (pname!=null) {
-            HTMLElement par = _doc.getElementById(pname);
-            if (par!=null)
+        String parentName = _win.getName();
+        if (parentName != null) {
+            HTMLElement par = _doc.getElementById(parentName);
+            if (par != null)
                 return par;
         }
 
@@ -183,7 +184,7 @@ public class TVWindow {
     /**
      * Returns whether window is child of body.
      */
-    private boolean isChildOfBody()  { return getParent()==_body; }
+    private boolean isChildOfBody()  { return getParent() == _body; }
 
     /**
      * Resets the parent DOM element and Window/WinEmt bounds.
@@ -195,8 +196,9 @@ public class TVWindow {
         setParent(par);
 
         // If window floating in body, set WinEmt bounds from Window
-        if (par==_body) {
-            if (_win.isMaximized()) _win.setBounds(TV.getViewportBounds());
+        if (par == _body) {
+            if (_win.isMaximized())
+                _win.setBounds(TV.getViewportBounds());
             snapWindowBoundsChanged(null);
         }
 
@@ -312,8 +314,9 @@ public class TVWindow {
         _win.setXY(off.x, off.y);
 
         // Reset window size
-        int w = parent.getClientWidth(), h = parent.getClientHeight();
-        _win.setSize(w,h);
+        int parW = parent.getClientWidth();
+        int parH = parent.getClientHeight();
+        _win.setSize(parW, parH);
         _win.repaint();
     }
 
@@ -330,16 +333,16 @@ public class TVWindow {
         int y = (int)Math.round(_win.getY());
         int w = (int)Math.round(_win.getWidth());
         int h = (int)Math.round(_win.getHeight());
-        String pname = aPC!=null ? aPC.getPropName() : null;
+        String propName = aPC != null ? aPC.getPropName() : null;
 
         // Handle changes
-        if (pname==null || pname==View.X_Prop)
+        if (propName == null || propName == View.X_Prop)
             _winEmt.getStyle().setProperty("left", x + "px");
-        if (pname==null || pname==View.Y_Prop)
+        if (propName == null || propName == View.Y_Prop)
             _winEmt.getStyle().setProperty("top", y + "px");
-        if (pname==null || pname==View.Width_Prop)
+        if (propName == null || propName == View.Width_Prop)
             _winEmt.getStyle().setProperty("width", w + "px");
-        if (pname==null || pname==View.Height_Prop)
+        if (propName == null || propName == View.Height_Prop)
             _winEmt.getStyle().setProperty("height", h + "px");
     }
 
@@ -391,20 +394,20 @@ public class TVWindow {
     {
         Cursor aCursor = _win.getActiveCursor();
         String cstr = "default";
-        if (aCursor==Cursor.DEFAULT) cstr = "default";
-        if (aCursor==Cursor.CROSSHAIR) cstr = "crosshair";
-        if (aCursor==Cursor.HAND) cstr = "pointer";
-        if (aCursor==Cursor.MOVE) cstr = "move";
-        if (aCursor==Cursor.TEXT) cstr = "text";
-        if (aCursor==Cursor.NONE) cstr = "none";
-        if (aCursor==Cursor.N_RESIZE) cstr = "n-resize";
-        if (aCursor==Cursor.S_RESIZE) cstr = "s-resize";
-        if (aCursor==Cursor.E_RESIZE) cstr = "e-resize";
-        if (aCursor==Cursor.W_RESIZE) cstr = "w-resize";
-        if (aCursor==Cursor.NE_RESIZE) cstr = "ne-resize";
-        if (aCursor==Cursor.NW_RESIZE) cstr = "nw-resize";
-        if (aCursor==Cursor.SE_RESIZE) cstr = "se-resize";
-        if (aCursor==Cursor.SW_RESIZE) cstr = "sw-resize";
+        if (aCursor == Cursor.DEFAULT) cstr = "default";
+        if (aCursor == Cursor.CROSSHAIR) cstr = "crosshair";
+        if (aCursor == Cursor.HAND) cstr = "pointer";
+        if (aCursor == Cursor.MOVE) cstr = "move";
+        if (aCursor == Cursor.TEXT) cstr = "text";
+        if (aCursor == Cursor.NONE) cstr = "none";
+        if (aCursor == Cursor.N_RESIZE) cstr = "n-resize";
+        if (aCursor == Cursor.S_RESIZE) cstr = "s-resize";
+        if (aCursor == Cursor.E_RESIZE) cstr = "e-resize";
+        if (aCursor == Cursor.W_RESIZE) cstr = "w-resize";
+        if (aCursor == Cursor.NE_RESIZE) cstr = "ne-resize";
+        if (aCursor == Cursor.NW_RESIZE) cstr = "nw-resize";
+        if (aCursor == Cursor.SE_RESIZE) cstr = "se-resize";
+        if (aCursor == Cursor.SW_RESIZE) cstr = "sw-resize";
         getCanvas().getStyle().setProperty("cursor", cstr);
     }
 
@@ -416,46 +419,5 @@ public class TVWindow {
         if (!_win.getEventAdapter().isEnabled(aType)) return;
         ViewEvent event = ViewEvent.createEvent(_win, null, aType, null);
         _win.fireEvent(event);
-    }
-
-    /**
-     * A WindowHpr to map WindowView to TVWindow.
-     */
-    public static class TVWindowHpr extends WindowView.WindowHpr <TVWindow> {
-
-        // The snap Window and TVWindow
-        WindowView     _win;
-        TVWindow       _winNtv;
-
-        /** Creates the native. */
-        public WindowView getWindow()  { return _win; }
-
-        /** Override to set snap Window in TVWindow. */
-        public void setWindow(WindowView aWin)
-        {
-            _win = aWin;
-            _winNtv = new TVWindow(); _winNtv.setWindow(aWin);
-        }
-
-        /** Returns the native. */
-        public TVWindow getNative()  { return _winNtv; }
-
-        /** Window method: initializes native window. */
-        public void initWindow()  { _winNtv.initWindow(); }
-
-        /** Window/Popup method: Shows the window. */
-        public void show()  { _winNtv.show(); }
-
-        /** Window/Popup method: Hides the window. */
-        public void hide()  { _winNtv.hide(); }
-
-        /** Window/Popup method: Order window to front. */
-        public void toFront()  { _winNtv.toFront(); }
-
-        /** Registers a view for repaint. */
-        public void requestPaint(Rect aRect)
-        {
-            _winNtv._rviewNtv.paintViews(aRect);
-        }
     }
 }

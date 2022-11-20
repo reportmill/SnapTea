@@ -60,7 +60,11 @@ public class TVClipboard extends Clipboard {
         if (aMimeType == FILE_LIST) {
 
             // Get files
-            File[] jsfiles = _dataTrans.getFiles(); if (jsfiles == null) return null;
+            File[] jsfiles = _dataTrans.getFiles();
+            if (jsfiles == null)
+                return null;
+
+            // Iterate over jsFiles and create clipbard data
             List<ClipboardData> cfiles = new ArrayList<>(jsfiles.length);
             for (File jsfile : jsfiles) {
                 ClipboardData cbfile = new TVClipboardData(jsfile);
@@ -127,10 +131,22 @@ public class TVClipboard extends Clipboard {
         JSArray<JSClipboardItem> clipItemsJS = JSArray.of(clipItems);
 
         // Write to system clipboard
-        JSPromise writePromise = getClipboardWriteItemsPromise(clipItemsJS);
+        JSPromise writePromise = null;
+        try {
+            writePromise = getClipboardWriteItemsPromise(clipItemsJS);
+        }
+        catch (Exception e) {
+            System.err.println("TVClipboard.addAllDataToClipboard: Failed to do navigator.clipboard.write");
+        }
 
         // Handle/configure promise
         if (writePromise != null) {
+
+            // On success, log
+            writePromise.then(aJSObj -> {
+                System.out.println("TVClipboard.write: Successfully did copy");
+                return null;
+            });
 
             // On failure, complain and return
             writePromise.catch_(aJSObj -> {

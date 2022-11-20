@@ -170,6 +170,12 @@ public class TV {
     static native String createURL(Blob theBlob);
 
     /**
+     * Creates a URL from given blob.
+     */
+    @JSBody(params={ "htmlElement", "aValue" }, script = "htmlElement.contentEditable = aValue; htmlElement.tabIndex = 0;")
+    static native String setContentEditable(HTMLElement htmlElement, boolean aValue);
+
+    /**
      * Log given object.
      */
     @JSBody(params={ "anObj" }, script = "console.log(anObj);")

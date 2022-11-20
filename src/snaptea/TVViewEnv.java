@@ -89,7 +89,7 @@ public class TVViewEnv extends ViewEnv {
     /**
      * Returns a new ViewHelper for given native component.
      */
-    public WindowView.WindowHpr createHelper(View aView)  { return new TVWindow.TVWindowHpr(); }
+    public WindowView.WindowHpr createHelper(View aView)  { return new TVWindowHpr(); }
 
     /**
      * Creates an event for a UI view.
