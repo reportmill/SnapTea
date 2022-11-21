@@ -1,4 +1,6 @@
 package snaptea;
+import org.teavm.jso.dom.html.HTMLBodyElement;
+import org.teavm.jso.dom.html.HTMLDocument;
 import snap.geom.Rect;
 import snap.view.TextArea;
 import snap.view.TextField;
@@ -102,11 +104,12 @@ public class TVWindowHpr extends WindowView.WindowHpr<TVWindow> {
         // Set value
         _contentEditable = aValue;
 
-        // Update Canvas.ContentEditable and TabIndex
-        TVRootView rootViewTV = _winNtv._rootViewNtv;
-        TV.setContentEditable(rootViewTV._canvas, aValue);
+        // Update Body.ContentEditable and TabIndex
+        HTMLDocument doc = HTMLDocument.current();
+        HTMLBodyElement body = doc.getBody();
+        TV.setContentEditable(body, aValue);
 
         // Focus element
-        rootViewTV._canvas.focus();
+        body.focus();
     }
 }
