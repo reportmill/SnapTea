@@ -206,16 +206,24 @@ public class WindowBar extends ParentView {
      */
     public static WindowBar attachWindowBar(View aView)
     {
-        RootView rview = aView.getRootView();
-        View content = rview.getContent();
-        if (content instanceof WindowBar) return (WindowBar)content;
-        Size size = rview.getSize();
-        Size psize = rview.getPrefSize();
-        WindowBar wbar = new WindowBar(content);
-        rview.setContent(wbar);
-        if (size.equals(psize))
-            rview.getWindow().setSize(rview.getWindow().getPrefSize());
-        return wbar;
+        RootView rootView = aView.getRootView();
+        View content = rootView.getContent();
+        if (content instanceof WindowBar)
+            return (WindowBar)content;
+
+        Size size = rootView.getSize();
+        Size prefSize = rootView.getPrefSize();
+        WindowBar windowBar = new WindowBar(content);
+        rootView.setContent(windowBar);
+        WindowView window = rootView.getWindow();
+        if (size.equals(prefSize))
+            window.setSize(window.getPrefSize());
+
+        // Register to repaint when Title changes
+        window.addPropChangeListener(pc -> windowBar.repaint(), WindowView.Title_Prop);
+
+        // Return
+        return windowBar;
     }
 
     /**
