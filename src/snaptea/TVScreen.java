@@ -62,6 +62,12 @@ public class TVScreen {
         body.addEventListener("touchstart", lsnr);
         body.addEventListener("touchmove", lsnr);
         body.addEventListener("touchend", lsnr);
+
+        // Disable selection events on iOS
+        EventListener stopLsnr = e -> { e.preventDefault(); e.stopPropagation(); };
+        body.addEventListener("select", stopLsnr);
+        body.addEventListener("selectstart", stopLsnr);
+        body.addEventListener("selectend", stopLsnr);
     }
 
     /**
