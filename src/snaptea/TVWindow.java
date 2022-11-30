@@ -15,39 +15,39 @@ public class TVWindow {
 
     // The Window View
     protected WindowView  _win;
-    
+
     // The element to represent the window
     protected HTMLElement  _winEmt;
-    
+
     // The RootView
     protected RootView  _rootView;
-    
+
     // The native RootView
     protected TVRootView  _rootViewNtv;
-    
+
     // The HTML document element
     protected HTMLDocument  _doc;
-    
+
     // The HTML body element
     protected HTMLBodyElement  _body;
-    
+
     // The parent element
     protected HTMLElement  _parent;
-    
+
     // A listener for hide
     protected PropChangeListener  _hideLsnr;
-    
+
     // A listener for browser window resize
     protected EventListener  _resizeLsnr = null;
-    
+
     // The body overflow value
     protected String  _bodyMargin = "undefined", _bodyOverflow;
-    
+
     // The last top window
     protected static int  _topWin;
-    
+
     // The paint scale
-    public static int  scale = TV.getDevicePixelRatio()==2 ? 2 : 1;
+    public static int scale = TV.getDevicePixelRatio() == 2 ? 2 : 1;
 
     /**
      * Sets the snap window.
@@ -58,7 +58,7 @@ public class TVWindow {
         _win = aWin;
         _win.addPropChangeListener(pc -> snapWindowMaximizedChanged(), WindowView.Maximized_Prop);
         _win.addPropChangeListener(pce -> snapWindowBoundsChanged(pce), View.X_Prop, View.Y_Prop,
-            View.Width_Prop, View.Height_Prop);
+                View.Width_Prop, View.Height_Prop);
         _win.addPropChangeListener(pc -> snapWindowActiveCursorChanged(), WindowView.ActiveCursor_Prop);
 
         // Get Doc and body elements
@@ -166,7 +166,7 @@ public class TVWindow {
     private HTMLElement getParentForWin()
     {
         // If window is maximized, parent should always be body
-        if(_win.isMaximized())
+        if (_win.isMaximized())
             return _body;
 
         // If window has named element, return that
@@ -184,7 +184,10 @@ public class TVWindow {
     /**
      * Returns whether window is child of body.
      */
-    private boolean isChildOfBody()  { return getParent() == _body; }
+    private boolean isChildOfBody()
+    {
+        return getParent() == _body;
+    }
 
     /**
      * Resets the parent DOM element and Window/WinEmt bounds.
@@ -233,7 +236,7 @@ public class TVWindow {
         ViewUtils.setFocused(_win, true);
 
         // Start listening to browser window resizes
-        if (_resizeLsnr==null)
+        if (_resizeLsnr == null)
             _resizeLsnr = e -> TVEnv.runOnAppThread(() -> browserWindowSizeChanged());
         Window.current().addEventListener("resize", _resizeLsnr);
     }
@@ -262,7 +265,8 @@ public class TVWindow {
      */
     synchronized void snapWindowShowingChanged()
     {
-        _win.removePropChangeListener(_hideLsnr); _hideLsnr = null;
+        _win.removePropChangeListener(_hideLsnr);
+        _hideLsnr = null;
         notify();
     }
 
@@ -331,10 +335,10 @@ public class TVWindow {
         if (!isChildOfBody()) return;
 
         // Get bounds x, y, width, height and PropChange name
-        int x = (int)Math.round(_win.getX());
-        int y = (int)Math.round(_win.getY());
-        int w = (int)Math.round(_win.getWidth());
-        int h = (int)Math.round(_win.getHeight());
+        int x = (int) Math.round(_win.getX());
+        int y = (int) Math.round(_win.getY());
+        int w = (int) Math.round(_win.getWidth());
+        int h = (int) Math.round(_win.getHeight());
         String propName = aPC != null ? aPC.getPropName() : null;
 
         // Handle changes
@@ -364,7 +368,7 @@ public class TVWindow {
             _body.getStyle().setProperty("overflow", "hidden");
 
             // Set Window/WinEmt padding
-            _win.setPadding(5,5,5,5);
+            _win.setPadding(5, 5, 5, 5);
             _winEmt.getStyle().setProperty("padding", "5px");
 
             // Add a shadow to canvas
@@ -378,7 +382,7 @@ public class TVWindow {
             _body.getStyle().setProperty("overflow", _bodyOverflow);
 
             // Clear Window/WinEmt padding
-            _win.setPadding(0,0,0,0);
+            _win.setPadding(0, 0, 0, 0);
             _winEmt.getStyle().setProperty("padding", null);
 
             // Remove shadow from canvas
