@@ -230,6 +230,7 @@ public class TVWindow {
 
         // Set Window showing
         ViewUtils.setShowing(_win, true);
+        ViewUtils.setFocused(_win, true);
 
         // Start listening to browser window resizes
         if (_resizeLsnr==null)
@@ -279,6 +280,7 @@ public class TVWindow {
 
         // Set Window not showing
         ViewUtils.setShowing(_win, false);
+        ViewUtils.setFocused(_win, false);
 
         // Stop listening to browser window resizes
         Window.current().removeEventListener("resize", _resizeLsnr);
