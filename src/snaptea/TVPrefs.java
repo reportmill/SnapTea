@@ -28,12 +28,12 @@ public class TVPrefs extends Prefs {
     @Override
     public Object getValue(String aKey, Object aDefault)
     {
-        // Get key
+        // Get key for name
         String key = aKey;
         if (_name != null)
             key = _name + '.' + key;
 
-        // Get value
+        // Get value from LocalStorage
         String val = getStringValueJS(key);
         return val!=null ? val : aDefault;
     }
@@ -44,11 +44,14 @@ public class TVPrefs extends Prefs {
     @Override
     public void setValue(String aKey, Object aValue)
     {
-        // Get string value
-        String valueStr = SnapUtils.stringValue(aValue);
+        // Get key for name
+        String key = aKey;
+        if (_name != null)
+            key = _name + '.' + key;
 
-        // Set value
-        setStringValueJS(aKey, valueStr);
+        // Get string value and set in LocalStorage
+        String valueStr = SnapUtils.stringValue(aValue);
+        setStringValueJS(key, valueStr);
     }
 
     /**
@@ -60,9 +63,15 @@ public class TVPrefs extends Prefs {
         // Get keys until null
         List<String> keys = new ArrayList<>();
         for (int i = 0; i < 1000; i++) {
+
+            // Get key - just break if null
             String key = getKey(i);
             if (key == null)
                 break;
+
+            // Strip name
+            if (_name != null && key.startsWith(_name))
+                key = key.substring(_name.length());
             keys.add(key);
         }
 
