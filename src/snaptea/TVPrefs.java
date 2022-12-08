@@ -1,6 +1,8 @@
 package snaptea;
 import org.teavm.jso.JSBody;
 import snap.util.Prefs;
+import snap.util.SnapUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,8 +11,16 @@ import java.util.List;
  */
 public class TVPrefs extends Prefs {
 
-    // The shared prefs
-    private static TVPrefs _shared;
+    // The name of this prefs node
+    private static String  _name;
+
+    /**
+     * Constructor.
+     */
+    public TVPrefs(String aName)
+    {
+        _name = aName;
+    }
 
     /**
      * Override to use LocalStorage.
@@ -18,22 +28,15 @@ public class TVPrefs extends Prefs {
     @Override
     public Object getValue(String aKey, Object aDefault)
     {
-        if (isValueNumberJS(aKey)) {
-            double val = getNumberValueJS(aKey);
-            return val;
-        }
-        String val = getStringValueJS(aKey);
+        // Get key
+        String key = aKey;
+        if (_name != null)
+            key = _name + '.' + key;
+
+        // Get value
+        String val = getStringValueJS(key);
         return val!=null ? val : aDefault;
     }
-
-    @JSBody(params={ "aKey" }, script = "return typeof window.localStorage.getItem(aKey) === 'number';")
-    public static native boolean isValueNumberJS(String aKey);
-
-    @JSBody(params={ "aKey" }, script = "return window.localStorage.getItem(aKey);")
-    public static native String getStringValueJS(String aKey);
-
-    @JSBody(params={ "aKey" }, script = "return window.localStorage.getItem(aKey);")
-    public static native double getNumberValueJS(String aKey);
 
     /**
      * Override to use LocalStorage.
@@ -41,21 +44,12 @@ public class TVPrefs extends Prefs {
     @Override
     public void setValue(String aKey, Object aValue)
     {
-        if (aValue instanceof Number) {
-            double val = ((Number)aValue).doubleValue();
-            setDoubleValueJS(aKey, val);
-        }
-        else {
-            String val = aValue!=null ? aValue.toString() : null;
-            setStringValueJS(aKey, val);
-        }
+        // Get string value
+        String valueStr = SnapUtils.stringValue(aValue);
+
+        // Set value
+        setStringValueJS(aKey, valueStr);
     }
-
-    @JSBody(params={ "aKey", "aValue" }, script = "window.localStorage.setItem(aKey,aValue);")
-    public static native void setStringValueJS(String aKey, String aValue);
-
-    @JSBody(params={ "aKey", "aValue" }, script = "window.localStorage.setItem(aKey,aValue);")
-    public static native void setDoubleValueJS(String aKey, double aValue);
 
     /**
      * Override to use LocalStorage.
@@ -63,18 +57,18 @@ public class TVPrefs extends Prefs {
     @Override
     public String[] getKeys()
     {
+        // Get keys until null
         List<String> keys = new ArrayList<>();
-        for (int i=0; i<1000;i++) {
-            Object key = getKey(i);
-            if (key==null)
+        for (int i = 0; i < 1000; i++) {
+            String key = getKey(i);
+            if (key == null)
                 break;
-            keys.add(key.toString());
+            keys.add(key);
         }
+
+        // Return array
         return keys.toArray(new String[0]);
     }
-
-    @JSBody(params={ "anIndex" }, script = "return window.localStorage.key(anIndex);")
-    public static native String getKey(int anIndex);
 
     /**
      * Clears all the preferences.
@@ -84,16 +78,15 @@ public class TVPrefs extends Prefs {
         clearJS();
     }
 
-    @JSBody(params={ }, script = "return window.localStorage.clear();")
-    public static native void clearJS();
+    @JSBody(params={ "aKey" }, script = "return window.localStorage.getItem(aKey);")
+    private static native String getStringValueJS(String aKey);
 
-    /**
-     * Returns the shared prefs.
-     */
-    public static TVPrefs get()
-    {
-        if (_shared!=null) return _shared;
-        _shared = new TVPrefs();
-        return _shared;
-    }
+    @JSBody(params={ "aKey", "aValue" }, script = "window.localStorage.setItem(aKey,aValue);")
+    private static native void setStringValueJS(String aKey, String aValue);
+
+    @JSBody(params={ "anIndex" }, script = "return window.localStorage.key(anIndex);")
+    public static native String getKey(int anIndex);
+
+    @JSBody(params={ }, script = "return window.localStorage.clear();")
+    private static native void clearJS();
 }

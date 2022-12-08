@@ -14,24 +14,24 @@ import snap.web.*;
 public class TVEnv extends GFXEnv {
     
     // The app thread
-    static TVEventThread  _appThread;
+    protected static TVEventThread  _appThread;
     
     // The shared AWTEnv
-    static TVEnv               _shared;
+    private static TVEnv  _shared;
 
     // Font names, Family names
-    private static String _fontNames[] = {
+    private static String[]  _fontNames = {
         "Arial", "Arial Bold", "Arial Italic", "Arial Bold Italic",
         "Times New Roman", "Times New Roman Bold", "Times New Roman Italic", "Times New Roman Bold Italic",
     };
-    private static String _famNames[] = { "Arial", "Times New Roman" };
+    private static String[]  _famNames = { "Arial", "Times New Roman" };
 
     /**
      * Creates a TVEnv.
      */
     public TVEnv()
     {
-        if (_env==null) {
+        if (_env == null) {
             _env = _shared = this;
             startNewAppThread();
         }
@@ -40,7 +40,7 @@ public class TVEnv extends GFXEnv {
     /**
      * Returns resource for class and path.
      */
-    public URL getResource(Class aClass, String aPath)
+    public URL getResource(Class<?> aClass, String aPath)
     {
         TVWebSite site = TVWebSite.get();
         return site.getJavaURL(aClass, aPath);
@@ -70,20 +70,22 @@ public class TVEnv extends GFXEnv {
     public String[] getFontNames(String aFamilyName)
     {
         // Get system fonts and create new list for font family
-        String fonts[] = getFontNames();
-        List family = new ArrayList();
+        String[] fonts = getFontNames();
+        List<String> familyNames = new ArrayList<>();
 
         // Iterate over fonts
         for(String name : fonts) {
 
             // If family name is equal to given family name, add font name
-            if(name.contains(aFamilyName) && !family.contains(name))
-                family.add(name);
+            if(name.contains(aFamilyName) && !familyNames.contains(name))
+                familyNames.add(name);
         }
 
         // Get font names as array and sort
-        String familyArray[] = (String[])family.toArray(new String[0]);
+        String[] familyArray = familyNames.toArray(new String[0]);
         Arrays.sort(familyArray);
+
+        // Return
         return familyArray;
     }
 
@@ -108,7 +110,7 @@ public class TVEnv extends GFXEnv {
      */
     public Image getImageForSizeAndScale(double aWidth, double aHeight, boolean hasAlpha, double aScale)
     {
-        double scale = aScale<=0 ? getScreenScale() : aScale;
+        double scale = aScale <= 0 ? getScreenScale() : aScale;
         return new TVImage(aWidth, aHeight, hasAlpha, scale);
     }
 
@@ -128,7 +130,7 @@ public class TVEnv extends GFXEnv {
     @Override
     public Prefs getPrefs(String aName)
     {
-        return TVPrefs.get();
+        return new TVPrefs(aName);
     }
 
     /**
@@ -147,14 +149,16 @@ public class TVEnv extends GFXEnv {
     public void openFile(Object aSource)
     {
         // Get Java File for source
-        if (aSource instanceof WebFile) aSource = ((WebFile)aSource).getJavaFile();
-        if (aSource instanceof WebURL) aSource = ((WebURL)aSource).getJavaURL();
+        if (aSource instanceof WebFile)
+            aSource = ((WebFile) aSource).getJavaFile();
+        if (aSource instanceof WebURL)
+            aSource = ((WebURL) aSource).getJavaURL();
         java.io.File file = FileUtils.getFile(aSource);
 
         // Get file name, type, bytes
         String name = file.getName().toLowerCase();
         String type = name.endsWith("pdf") ? "application/pdf" : name.endsWith("html") ? "text/html" : null;
-        byte bytes[] = FileUtils.getBytes(file);
+        byte[] bytes = FileUtils.getBytes(file);
 
         // Create file and URL string
         File fileJS = TV.createFile(bytes, name, type);
@@ -162,12 +166,7 @@ public class TVEnv extends GFXEnv {
 
         // Open
         Window.current().open(urls, "_blank");
-        //HTMLAnchorElement anchor = HTMLDocument.current().createElement("a").cast();
-        //anchor.setHref(urls); setDownload(anchor, name); anchor.click();
     }
-
-//@org.teavm.jso.JSBody(params={ "anAnchor", "aStr" }, script = "anAnchor.download = aStr;")
-//static native int setDownload(HTMLAnchorElement anAnchor, String aStr);
 
     /**
      * Tries to open the given URL with the platform reader.
@@ -175,8 +174,9 @@ public class TVEnv extends GFXEnv {
     public void openURL(Object aSource)
     {
         WebURL url = WebURL.getURL(aSource);
-        String urls = url!=null ? url.getString() : null;
-        if (urls!=null) urls = urls.replace("!", "");
+        String urls = url != null ? url.getString() : null;
+        if (urls != null)
+            urls = urls.replace("!", "");
         System.out.println("Open URL: " + urls);
         Window.current().open(urls, "_blank", "menubar=no");
     }
@@ -189,7 +189,7 @@ public class TVEnv extends GFXEnv {
     /**
      * This is really just here to help with TeaVM.
      */
-    public Method getMethod(Class aClass, String aName, Class ... theClasses) throws NoSuchMethodException
+    public Method getMethod(Class<?> aClass, String aName, Class<?>... theClasses)
     {
         System.err.println("TVEnv.getMethod: Trying to call: " + aClass.getName() + " " + aName);
         return null;
@@ -212,7 +212,7 @@ public class TVEnv extends GFXEnv {
     /**
      * Adds given run to the event queue.
      */
-    public static final void runOnAppThread(Runnable aRun)
+    public static void runOnAppThread(Runnable aRun)
     {
         TVEventThread.runOnAppThread(aRun);
     }
@@ -222,7 +222,7 @@ public class TVEnv extends GFXEnv {
      */
     public static TVEnv get()
     {
-        if (_shared!=null) return _shared;
+        if (_shared != null) return _shared;
         return _shared = new TVEnv();
     }
 }
