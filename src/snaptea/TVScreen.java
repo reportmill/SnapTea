@@ -229,7 +229,7 @@ public class TVScreen {
         // Dispatch MouseMove event
         ViewEvent event = createEvent(win, anEvent, View.MouseMove, null);
         event.setClickCount(_clicks);
-        win.dispatchEvent(event);
+        win.dispatchEventToWindow(event);
     }
 
     /**
@@ -249,7 +249,7 @@ public class TVScreen {
         // Dispatch MousePress event
         ViewEvent event = createEvent(_mouseDownWin, anEvent, View.MousePress, null);
         event.setClickCount(_clicks);
-        _mouseDownWin.dispatchEvent(event);
+        _mouseDownWin.dispatchEventToWindow(event);
     }
 
     /**
@@ -262,7 +262,7 @@ public class TVScreen {
         // Create and dispatch MouseDrag event
         ViewEvent event = createEvent(_mouseDownWin, anEvent, View.MouseDrag, null);
         event.setClickCount(_clicks);
-        _mouseDownWin.dispatchEvent(event);
+        _mouseDownWin.dispatchEventToWindow(event);
     }
 
     /**
@@ -277,7 +277,7 @@ public class TVScreen {
         // Create and dispatch MouseRelease event
         ViewEvent event = createEvent(mouseDownWin, anEvent, View.MouseRelease, null);
         event.setClickCount(_clicks);
-        mouseDownWin.dispatchEvent(event);
+        mouseDownWin.dispatchEventToWindow(event);
     }
 
     /* Only Y Axis Scrolling has been implemented */
@@ -286,7 +286,7 @@ public class TVScreen {
         // Get window for WheelEvent and dispatch WheelEvent event
         WindowView win = getWindow(anEvent); if (win == null) return;
         ViewEvent event = createEvent(win, anEvent, View.Scroll, null);
-        win.dispatchEvent(event);
+        win.dispatchEventToWindow(event);
 
         // if (event.isConsumed()) { anEvent.stopPropagation(); anEvent.preventDefault(); }
     }
@@ -297,7 +297,7 @@ public class TVScreen {
     public void keyDown(KeyboardEvent anEvent)
     {
         ViewEvent event = createEvent(_win, anEvent, View.KeyPress, null);
-        _win.dispatchEvent(event); //anEvent.stopPropagation();
+        _win.dispatchEventToWindow(event); //anEvent.stopPropagation();
 
         String str = anEvent.getKey();
         if (str == null || str.length() == 0) return;
@@ -313,7 +313,7 @@ public class TVScreen {
     public void keyPress(KeyboardEvent anEvent)
     {
         ViewEvent event = createEvent(_win, anEvent, View.KeyType, null);
-        _win.dispatchEvent(event); //anEvent.stopPropagation();
+        _win.dispatchEventToWindow(event); //anEvent.stopPropagation();
     }
 
     /**
@@ -322,7 +322,7 @@ public class TVScreen {
     public void keyUp(KeyboardEvent anEvent)
     {
         ViewEvent event = createEvent(_win, anEvent, View.KeyRelease, null);
-        _win.dispatchEvent(event); //anEvent.stopPropagation();
+        _win.dispatchEventToWindow(event); //anEvent.stopPropagation();
     }
 
     /**
@@ -345,7 +345,7 @@ public class TVScreen {
         // Create and dispatch MousePress event
         ViewEvent event = createEvent(_mouseDownWin, anEvent, View.MousePress, null);
         event.setClickCount(_clicks);
-        _mouseDownWin.dispatchEvent(event);
+        _mouseDownWin.dispatchEventToWindow(event);
     }
 
     /**
@@ -362,7 +362,7 @@ public class TVScreen {
         // Create and dispatch MouseDrag event
         ViewEvent event = createEvent(_mouseDownWin, anEvent, View.MouseDrag, null);
         event.setClickCount(_clicks);
-        _mouseDownWin.dispatchEvent(event);
+        _mouseDownWin.dispatchEventToWindow(event);
     }
 
     /**
@@ -382,7 +382,7 @@ public class TVScreen {
         // Create and dispatch MouseDrag event
         ViewEvent event = createEvent(mouseDownWin, anEvent, View.MouseRelease, null);
         event.setClickCount(_clicks);
-        mouseDownWin.dispatchEvent(event);
+        mouseDownWin.dispatchEventToWindow(event);
     }
 
     /**

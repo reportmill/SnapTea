@@ -11,10 +11,10 @@ import snap.view.*;
 public class TVRootView {
 
     // The RootView
-    private RootView  _rview;
+    private RootView  _rootView;
     
     // The HTMLCanvas
-    protected HTMLCanvasElement _canvas;
+    protected HTMLCanvasElement  _canvas;
     
     // The image dpi scale (1 = normal, 2 for retina/hidpi)
     private int  _scale = TVWindow.scale;
@@ -28,7 +28,7 @@ public class TVRootView {
     public void setView(RootView aView)
     {
         // Set RootView
-        _rview = aView;
+        _rootView = aView;
 
         // Create canvas and configure to totally fill window element (minus padding insets)
         _canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
@@ -37,7 +37,7 @@ public class TVRootView {
         _canvas.getStyle().setProperty("box-sizing", "border-box");
 
         // Add RootView listener to propagate size changes to canvas
-        _rview.addPropChangeListener(pc -> rootViewSizeChange(), View.Width_Prop, View.Height_Prop);
+        _rootView.addPropChangeListener(pc -> rootViewSizeChange(), View.Width_Prop, View.Height_Prop);
         rootViewSizeChange();
 
         // Have to do this so TouchEvent.preventDefault doesn't complain and iOS doesn't scroll doc
@@ -70,7 +70,7 @@ public class TVRootView {
     public void paintViews(Rect aRect)
     {
         _pntr.setTransform(1,0,0,1,0,0); // I don't know why I need this!
-        ViewUpdater updater = _rview.getUpdater();
+        ViewUpdater updater = _rootView.getUpdater();
         updater.paintViews(_pntr, aRect);
     }
 
@@ -79,8 +79,8 @@ public class TVRootView {
      */
     void rootViewSizeChange()
     {
-        int rootW = (int) Math.ceil(_rview.getWidth());
-        int rootH = (int) Math.ceil(_rview.getHeight());
+        int rootW = (int) Math.ceil(_rootView.getWidth());
+        int rootH = (int) Math.ceil(_rootView.getHeight());
         _canvas.setWidth(rootW*_scale); _canvas.setHeight(rootH*_scale);
     }
 
@@ -92,15 +92,15 @@ public class TVRootView {
     public void handleDragEvent(DragEvent anEvent)
     {
         anEvent.preventDefault();
-        ViewEvent event = ViewEvent.createEvent(_rview, anEvent, null, null);
-        _rview.getWindow().dispatchEvent(event);
+        ViewEvent event = ViewEvent.createEvent(_rootView, anEvent, null, null);
+        _rootView.getWindow().dispatchEventToWindow(event);
     }
 
     /** Called to handle a drag event. */
     public void handleDragGesture(DragEvent anEvent)
     {
-        ViewEvent event = ViewEvent.createEvent(_rview, anEvent, null, null);
-        _rview.getWindow().dispatchEvent(event);
+        ViewEvent event = ViewEvent.createEvent(_rootView, anEvent, null, null);
+        _rootView.getWindow().dispatchEventToWindow(event);
         if (!TVDragboard.isDragging) {
             anEvent.preventDefault();
             anEvent.stopPropagation();
@@ -110,7 +110,7 @@ public class TVRootView {
     /** Called to handle dragend event. */
     public void handleDragEnd(DragEvent anEvent)
     {
-        ViewEvent nevent = ViewEvent.createEvent(_rview, anEvent, null, null);
-        _rview.getWindow().dispatchEvent(nevent);
+        ViewEvent nevent = ViewEvent.createEvent(_rootView, anEvent, null, null);
+        _rootView.getWindow().dispatchEventToWindow(nevent);
     }
 }

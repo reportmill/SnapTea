@@ -94,17 +94,17 @@ public class TVViewEnv extends ViewEnv {
     /**
      * Creates an event for a UI view.
      */
+    @Override
     public ViewEvent createEvent(View aView, Object anEvent, ViewEvent.Type aType, String aName)
     {
-        Event eobj = (Event)anEvent;
-        if (eobj==null && aType==null) aType = View.Action; //eobj=new ActionEvent(this,ACTION_PERFORMED,"DefAct")
-
-        // Create event, configure and send
+        // Create, configure event
         ViewEvent event = new TVEvent();
         event.setView(aView);
-        event.setEvent(eobj);
+        event.setEvent(anEvent);
         event.setType(aType);
         event.setName(aName!=null ? aName : aView!=null? aView.getName() : null);
+
+        // Return
         return event;
     }
 

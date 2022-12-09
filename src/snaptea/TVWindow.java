@@ -424,6 +424,6 @@ public class TVWindow {
     {
         if (!_win.getEventAdapter().isEnabled(aType)) return;
         ViewEvent event = ViewEvent.createEvent(_win, null, aType, null);
-        _win.fireEvent(event);
+        _win.dispatchEventToView(event);
     }
 }
