@@ -12,7 +12,7 @@ public class WindowBar extends ParentView {
     private View  _content;
     
     // The title bar height
-    private double  _titlebarHeight;
+    private double  _titleBarHeight;
     
     // The ButtonArea
     private ButtonArea  _btnArea;
@@ -20,19 +20,19 @@ public class WindowBar extends ParentView {
     // The buttons
     private Shape  _closeButton, _minButton, _maxButton;
     
-    // The titlebar font
+    // The title bar font
     private Font  _font;
     
     // For dragging
-    private Point  _mpt;
+    private Point  _mousePoint;
     
     // Colors
-    static final Color CLOSE_COLOR = new Color("#ED6B5F");
-    static final Color CLOSE_COLOR2 = CLOSE_COLOR.blend(Color.BLACK,.2);
-    static final Color MIN_COLOR = new Color("#F5BF4F");
-    static final Color MIN_COLOR2 = MIN_COLOR.blend(Color.BLACK,.2);
-    static final Color MAX_COLOR = new Color("#62C654");
-    static final Color MAX_COLOR2 = MAX_COLOR.blend(Color.BLACK,.2);
+    private static final Color CLOSE_COLOR = new Color("#ED6B5F");
+    private static final Color CLOSE_COLOR2 = CLOSE_COLOR.blend(Color.BLACK,.2);
+    private static final Color MIN_COLOR = new Color("#F5BF4F");
+    private static final Color MIN_COLOR2 = MIN_COLOR.blend(Color.BLACK,.2);
+    private static final Color MAX_COLOR = new Color("#62C654");
+    private static final Color MAX_COLOR2 = MAX_COLOR.blend(Color.BLACK,.2);
     
     /**
      * Creates a WindowBar.
@@ -40,8 +40,8 @@ public class WindowBar extends ParentView {
     public WindowBar(View aView)
     {
         WindowView win = aView.getWindow();
-        double tth = win.getType()==WindowView.TYPE_MAIN ? 24 : 18;
-        setTitlebarHeight(tth);
+        double titleBarH = win.getType() == WindowView.TYPE_MAIN ? 24 : 18;
+        setTitlebarHeight(titleBarH);
         enableEvents(MousePress, MouseDrag, MouseRelease);
         setContent(aView);
     }
@@ -65,21 +65,29 @@ public class WindowBar extends ParentView {
      */
     public void setTitlebarHeight(double aValue)
     {
-        _titlebarHeight = aValue;
-        setPadding(_titlebarHeight,0,0,0);
+        _titleBarHeight = aValue;
+        setPadding(_titleBarHeight,0,0,0);
 
         // Create ButtonArea to paint title bar
         _btnArea = new ButtonArea();
-        _btnArea.setHeight(_titlebarHeight);
-        _btnArea.setRadius(4);
+        _btnArea.setHeight(_titleBarHeight);
+        _btnArea.setBorderRadius(4);
         _btnArea.setPosition(Pos.TOP_CENTER);
 
         // Create buttons
-        double y = 6, w = 12; if (_titlebarHeight!=24) { y = 4; w = 10; }
-        _closeButton = new Arc(10,y,w,w,0,360);
-        _minButton = new Arc(30,y,w,w,0,360);
-        _maxButton = new Arc(50,y,w,w,0,360);
-        double fontSize = _titlebarHeight==24 ? 14 : 11;
+        double buttonY = 6;
+        double buttonW = 12;
+        if (_titleBarHeight != 24) {
+            buttonY = 4; buttonW = 10;
+        }
+
+        // Create buttons
+        _closeButton = new Arc(10, buttonY, buttonW, buttonW,0,360);
+        _minButton = new Arc(30, buttonY, buttonW, buttonW,0,360);
+        _maxButton = new Arc(50, buttonY, buttonW, buttonW,0,360);
+
+        // Set font
+        double fontSize = _titleBarHeight == 24 ? 14 : 11;
         _font = Font.Arial10.deriveFont(fontSize);
     }
 
@@ -88,7 +96,7 @@ public class WindowBar extends ParentView {
      */
     protected void paintFront(Painter aPntr)
     {
-        if (_titlebarHeight==0) return;
+        if (_titleBarHeight == 0) return;
 
         // Paint titlebar
         _btnArea.setWidth(getWidth());
@@ -96,28 +104,35 @@ public class WindowBar extends ParentView {
 
         // Paint buttons
         aPntr.setStroke(Stroke.getStroke(.5));
-        if (_closeButton!=null) {
-            aPntr.setColor(CLOSE_COLOR); aPntr.fill(_closeButton);
-            aPntr.setColor(CLOSE_COLOR2); aPntr.draw(_closeButton);
+        if (_closeButton != null) {
+            aPntr.setColor(CLOSE_COLOR);
+            aPntr.fill(_closeButton);
+            aPntr.setColor(CLOSE_COLOR2);
+            aPntr.draw(_closeButton);
         }
-        if (_minButton!=null) {
-            aPntr.setColor(MIN_COLOR); aPntr.fill(_minButton);
-            aPntr.setColor(MIN_COLOR2); aPntr.draw(_minButton);
+        if (_minButton != null) {
+            aPntr.setColor(MIN_COLOR);
+            aPntr.fill(_minButton);
+            aPntr.setColor(MIN_COLOR2);
+            aPntr.draw(_minButton);
         }
-        if(_maxButton!=null) {
-            aPntr.setColor(MAX_COLOR); aPntr.fill(_maxButton);
-            aPntr.setColor(MAX_COLOR2); aPntr.draw(_maxButton);
+        if(_maxButton != null) {
+            aPntr.setColor(MAX_COLOR);
+            aPntr.fill(_maxButton);
+            aPntr.setColor(MAX_COLOR2);
+            aPntr.draw(_maxButton);
         }
         aPntr.setStroke(Stroke.getStroke(1));
 
         // Paint title
         String title = getWindow().getTitle();
-        if (title!=null) {
-            double y = _titlebarHeight==24? 4 : 3;
+        if (title != null) {
+            double strY = _titleBarHeight == 24 ? 4 : 3;
             double strW = _font.getStringAdvance(title);
-            double x = Math.round((getWidth() - strW)/2);
-            aPntr.setColor(Color.DARKGRAY); aPntr.setFont(_font);
-            aPntr.drawString(title, x, y + _font.getAscent());
+            double strX = Math.round((getWidth() - strW) / 2);
+            aPntr.setColor(Color.DARKGRAY);
+            aPntr.setFont(_font);
+            aPntr.drawString(title, strX, strY + _font.getAscent());
         }
     }
 
@@ -130,7 +145,7 @@ public class WindowBar extends ParentView {
 
         // Handle MousePress: Update MousePoint
         if (anEvent.isMousePress()) {
-            _mpt = anEvent.getY()<=_titlebarHeight ? anEvent.getPoint(null) : null;
+            _mousePoint = anEvent.getY() <= _titleBarHeight ? anEvent.getPoint(null) : null;
             return;
         }
 
@@ -150,15 +165,17 @@ public class WindowBar extends ParentView {
     {
         // If Maximized, just return
         WindowView win = getWindow();
-        if (win.isMaximized()) return;
+        if (win.isMaximized())
+            return;
 
         // Update MousePoint
-        Point mpt = _mpt; if (mpt==null) return;
-        _mpt = anEvent.getPoint(null);
+        Point mousePoint = _mousePoint;
+        if (mousePoint == null) return;
+        _mousePoint = anEvent.getPoint(null);
 
         // Update Window XY
-        double x2 = win.getX() + (_mpt.x - mpt.x);
-        double y2 = win.getY() + (_mpt.y - mpt.y);
+        double x2 = win.getX() + (_mousePoint.x - mousePoint.x);
+        double y2 = win.getY() + (_mousePoint.y - mousePoint.y);
         win.setXY(x2, y2);
     }
 
@@ -168,13 +185,13 @@ public class WindowBar extends ParentView {
     private void mouseRelease(ViewEvent anEvent)
     {
         // If click hit CloseButton, close window
-        Point pnt = anEvent.getPoint();
-        if (_closeButton.contains(pnt.x, pnt.y)) {
+        Point ppointt = anEvent.getPoint();
+        if (_closeButton.contains(ppointt.x, ppointt.y)) {
             WindowView win = getWindow();
             win.setVisible(false);
         }
 
-        _mpt = null;
+        _mousePoint = null;
     }
 
     /**
@@ -209,7 +226,7 @@ public class WindowBar extends ParentView {
         RootView rootView = aView.getRootView();
         View content = rootView.getContent();
         if (content instanceof WindowBar)
-            return (WindowBar)content;
+            return (WindowBar) content;
 
         Size size = rootView.getSize();
         Size prefSize = rootView.getPrefSize();
@@ -231,9 +248,9 @@ public class WindowBar extends ParentView {
      */
     public static void detachWindowBar(View aView)
     {
-        RootView rview = aView.getRootView();
-        View content = rview.getContent();
+        RootView rvrootViewew = aView.getRootView();
+        View content = rvrootViewew.getContent();
         WindowBar wbar = content instanceof WindowBar ? (WindowBar)content : null; if (wbar==null) return;
-        rview.setContent(wbar.getContent());
+        rvrootViewew.setContent(wbar.getContent());
     }
 }
