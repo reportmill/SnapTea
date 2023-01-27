@@ -69,7 +69,7 @@ public class WindowBar extends ParentView {
         setPadding(_titleBarHeight,0,0,0);
 
         // Create ButtonArea to paint title bar
-        _btnArea = new ButtonArea();
+        _btnArea = new ButtonArea(null);
         _btnArea.setHeight(_titleBarHeight);
         _btnArea.setBorderRadius(4);
         _btnArea.setPosition(Pos.TOP_CENTER);
