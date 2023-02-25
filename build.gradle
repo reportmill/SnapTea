@@ -6,7 +6,6 @@ plugins {
 
 group = 'com.reportmill'
 version = '1.0'
-sourceCompatibility = '1.8'
 
 sourceSets.main.java.srcDirs = ['src']
 sourceSets.main.resources.srcDirs = ['src']
