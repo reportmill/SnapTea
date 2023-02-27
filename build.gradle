@@ -2,6 +2,7 @@
 plugins {
     id 'java'
     id 'maven-publish'
+    //id "org.teavm" version "0.8.0-dev-2"
 }
 
 group = 'com.reportmill'
@@ -11,6 +12,7 @@ sourceSets.main.java.srcDirs = ['src']
 sourceSets.main.resources.srcDirs = ['src']
 
 repositories {
+    mavenCentral()
 
     // Maven package repository for latest TeaVM
     maven { url 'https://teavm.org/maven/repository' }
@@ -18,6 +20,7 @@ repositories {
 
 // TeaVM version
 project.ext.teavmVersion = "0.7.0-dev-1209"
+//project.ext.teavmVersion = "0.8.0-dev-2"
 
 dependencies {
 
@@ -27,6 +30,8 @@ dependencies {
     // TeaVM (might also want 'teavm-devserver', 'jso', 'jso-apis', 'classlib')
     implementation group: 'org.teavm', name: 'teavm-cli', version: "$teavmVersion"
     //implementation files('/Users/Temp/teavm/tools/cli/build/libs/cli-0.8.0-SNAPSHOT-all.jar')
+    //implementation group: 'org.teavm', name: 'teavm-classlib', version: "$teavmVersion"
+    //implementation group: 'org.teavm', name: 'teavm-jso-apis', version: "$teavmVersion"
 }
 
 publishing {
