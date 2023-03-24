@@ -84,9 +84,16 @@ public class TVEvent extends ViewEvent {
     public int getKeyCode()
     {
         KeyboardEvent keyboardEvent = getKeyEvent();
-        int kcode = keyboardEvent.getKeyCode();
-        if (kcode==13) kcode = 10;
-        return kcode;
+        int keyCode = keyboardEvent.getKeyCode();
+
+        // Remap some codes
+        if (keyCode == 13)
+            keyCode = KeyCode.ENTER;
+        if (keyCode == 91)
+            keyCode = KeyCode.COMMAND;
+
+        // Return
+        return keyCode;
     }
 
     /**
