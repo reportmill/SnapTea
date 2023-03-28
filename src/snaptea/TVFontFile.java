@@ -19,10 +19,16 @@ public class TVFontFile extends FontFile {
     private String  _name = "Arial";
     
     // The Family name
-    private String  _fname = "Arial";
+    private String  _familyName = "Arial";
     
+    // The JavaScript name
+    private String  _jsName;
+
+    // The PostScript/PDF name
+    private String  _psName;
+
     // The char advance cache array
-    private double  _adv[];
+    private double[]  _adv;
 
     // The canvas
     private static HTMLCanvasElement _canvas;
@@ -37,14 +43,14 @@ public class TVFontFile extends FontFile {
     {
         // Set name and family
         _name = aName;
-        _fname = _name.replace("Bold","").replace("Italic","").trim();
+        _familyName = _name.replace("Bold","").replace("Italic","").trim();
 
         // Create/init advance cache array
         _adv = new double[255];
         Arrays.fill(_adv, -1);
 
         // Initialize Canvas/Context
-        if (_canvas==null) {
+        if (_canvas == null) {
             _canvas = (HTMLCanvasElement) HTMLDocument.current().createElement("canvas");
             _cntx = (CanvasRenderingContext2D) _canvas.getContext("2d");
         }
@@ -63,29 +69,42 @@ public class TVFontFile extends FontFile {
     /**
      * Returns the family name of this font.
      */
-    public String getFamily()  { return _fname; }
+    public String getFamily()  { return _familyName; }
 
     /**
      * Returns the PostScript name of this font.
      */
-    public String getPSName()  { return _name; }
+    public String getPSName()
+    {
+        if (_psName != null) return _psName;
+        String psName = _name.replace(" ", "-");
+        return _psName = psName;
+    }
 
     /**
      * Returns the family name of this font in English.
      */
-    public String getFamilyEnglish()  { return _fname; }
+    public String getFamilyEnglish()  { return _familyName; }
 
     /**
      * Returns the font declaration string in JavaScript format.
      */
     public String getJSName()
     {
-        String str = "";
-        if (isBold()) str += "Bold ";
-        if (isItalic()) str += "Italic ";
-        str += "1000px ";
-        str += getFamily();
-        return str;
+        // If already set, just return
+        if (_jsName != null) return _jsName;
+
+        // Create name
+        String jsName = "";
+        if (isBold())
+            jsName += "Bold ";
+        if (isItalic())
+            jsName += "Italic ";
+        jsName += "1000px ";
+        jsName += getFamily();
+
+        // Set/return
+        return _jsName = jsName;
     }
 
     /**
@@ -94,9 +113,9 @@ public class TVFontFile extends FontFile {
     protected double charAdvanceImpl(char aChar)
     {
         // Handle basic range
-        if (aChar<=255) {
+        if (aChar <= 255) {
             double adv = _adv[aChar];
-            if (adv>=0)
+            if (adv >= 0)
                 return adv;
             return _adv[aChar] = charAdvanceImplImpl(aChar);
         }
