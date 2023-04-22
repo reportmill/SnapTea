@@ -1,8 +1,7 @@
 package snaptea;
 import org.teavm.jso.JSBody;
+import snap.util.Convert;
 import snap.util.Prefs;
-import snap.util.SnapUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,7 +49,7 @@ public class TVPrefs extends Prefs {
             key = _name + '.' + key;
 
         // Get string value and set in LocalStorage
-        String valueStr = SnapUtils.stringValue(aValue);
+        String valueStr = Convert.stringValue(aValue);
         setStringValueJS(key, valueStr);
     }
 
