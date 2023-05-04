@@ -322,14 +322,14 @@ public class TVImage extends Image {
         int radius = (int)Math.round(aRadius), rad = Math.abs(radius);
 
         // Create bump map: original graphics offset by radius, blurred. Color doesn't matter - only alpha channel used.
-        TVImage bumpImg = (TVImage)Image.get(w+rad*2, h+rad*2, true);
+        TVImage bumpImg = (TVImage)Image.getImageForSize(w+rad*2, h+rad*2, true);
         Painter ipntr = bumpImg.getPainter(); //ipntr.setImageQuality(1); ipntr.clipRect(0, 0, width, height);
         ipntr.drawImage(this, rad, rad, w, h);
         bumpImg.blur(rad, null);
 
         // Get source and bump pixels as short arrays
-        short spix[] = TVImageUtils.getShortsRGBA(this);
-        short bpix[] = TVImageUtils.getShortsAlpha(bumpImg);
+        short[] spix = TVImageUtils.getShortsRGBA(this);
+        short[] bpix = TVImageUtils.getShortsAlpha(bumpImg);
 
         // Call emboss method and reset pix
         TVImageUtils.emboss(spix, bpix, pw, ph, radius*_scale, anAzi*Math.PI/180, anAlt*Math.PI/180);

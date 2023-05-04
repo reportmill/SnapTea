@@ -163,26 +163,31 @@ public class TVPainter extends PainterImpl {
     public void fill(Shape aShape)
     {
         // Handle GradientPaint
-        if (getPaint() instanceof GradientPaint) { GradientPaint gpnt = (GradientPaint)getPaint();
+        Paint paint = getPaint();
+        if (paint instanceof GradientPaint) {
+            GradientPaint gpnt = (GradientPaint) paint;
             GradientPaint gpnt2 = gpnt.copyForRect(aShape.getBounds());
             CanvasGradient cg = TV.get(gpnt2, _cntx);
             _cntx.setFillStyle(cg);
         }
 
         // Handle ImagePaint
-        else if (getPaint() instanceof ImagePaint) { ImagePaint ipnt = (ImagePaint)getPaint();
+        else if (paint instanceof ImagePaint) {
 
             // Get image - if HiDPI, reduce because CanvasPattern seems to render at pixel sizes
-            Image img = ipnt.getImage();
-            if (img.getWidth()!=img.getPixWidth()) {
-                Image img2 = Image.get(img.getPixWidth()/4, img.getPixHeight()/4, img.hasAlpha());
+            ImagePaint imagePaint = (ImagePaint) paint;
+            Image image = imagePaint.getImage();
+
+            // If HiDPI, reduce because CanvasPattern seems to render at pixel sizes
+            if (image.getWidth() != image.getPixWidth()) {
+                Image img2 = Image.getImageForSize(image.getPixWidth() / 4, image.getPixHeight() / 4, image.hasAlpha());
                 Painter pntr = img2.getPainter();
-                pntr.drawImage(img, 0, 0, img2.getWidth(), img2.getHeight());
-                img = img2;
+                pntr.drawImage(image, 0, 0, img2.getWidth(), img2.getHeight());
+                image = img2;
             }
 
             // Get CanvasPattern and set
-            CanvasImageSource isrc = (CanvasImageSource)img.getNative();
+            CanvasImageSource isrc = (CanvasImageSource) image.getNative();
             CanvasPattern ptrn = _cntx.createPattern(isrc, "repeat");
             _cntx.setFillStyle(ptrn);
         }

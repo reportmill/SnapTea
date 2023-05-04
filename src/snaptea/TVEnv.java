@@ -100,7 +100,7 @@ public class TVEnv extends GFXEnv {
     /**
      * Creates image from source.
      */
-    public Image getImage(Object aSource)
+    public Image getImageForSource(Object aSource)
     {
         return new TVImage(aSource);
     }

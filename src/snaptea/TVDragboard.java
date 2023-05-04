@@ -30,7 +30,7 @@ public class TVDragboard extends TVClipboard {
         // Get drag image
         Image dimg = getDragImage();
         if (dimg == null)
-            dimg = Image.get(1,1,true);
+            dimg = Image.getImageForSize(1,1,true);
 
         // Get native HTML element for image
         HTMLElement img = (HTMLElement) dimg.getNative();
