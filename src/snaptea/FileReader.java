@@ -13,83 +13,89 @@ import snap.view.ViewUtils;
 public class FileReader {
 
     JSFileReader _js;
-    
-/**
- * Creates a new FileReader.
- */
-public FileReader()
-{
-    _js = createFileReaderJS();
-}
 
-/**
- * Creates a FileReader JSO.
- */
-@JSBody(params={ }, script = "return new FileReader();")
-static native JSFileReader createFileReaderJS();
+    /**
+     * Creates a new FileReader.
+     */
+    public FileReader()
+    {
+        _js = createFileReaderJS();
+    }
 
-/**
- * Returns the bytes.
- */
-public byte[] getResultBytes()
-{
-    ArrayBuffer arrayBuf = _js.getResult();
-    Int8Array array = Int8Array.create(arrayBuf);
-    byte[] bytes = new byte[array.getLength()]; for(int i=0; i<bytes.length; ++i) bytes[i] = array.get(i);
-    return bytes;
-}
+    /**
+     * Creates a FileReader JSO.
+     */
+    @JSBody(params = {}, script = "return new FileReader();")
+    static native JSFileReader createFileReaderJS();
 
-/**
- * readBytesAndWait
- */
-synchronized void readBytesAndRunLater(Blob aBlob, Runnable aRun)
-{
-    _js.addEventListener("loadend", e -> ViewUtils.runLater(aRun));
-    _js.readAsArrayBuffer(aBlob);
-}
+    /**
+     * Returns the bytes.
+     */
+    public byte[] getResultBytes()
+    {
+        ArrayBuffer arrayBuf = _js.getResult();
+        Int8Array array = Int8Array.create(arrayBuf);
+        byte[] bytes = new byte[array.getLength()];
+        for (int i = 0; i < bytes.length; ++i) bytes[i] = array.get(i);
+        return bytes;
+    }
 
-/**
- * readBytesAndWait
- */
-synchronized void readBytesAndWait(Blob aBlob)
-{
-    _js.addEventListener("loadend", e -> readBytesNotify());
-    _js.readAsArrayBuffer(aBlob);
-    
-    // Wait until done
-    try { wait(); }
-    catch(Exception e) { throw new RuntimeException(e); }
-}
+    /**
+     * readBytesAndWait
+     */
+    synchronized void readBytesAndRunLater(Blob aBlob, Runnable aRun)
+    {
+        _js.addEventListener("loadend", e -> ViewUtils.runLater(aRun));
+        _js.readAsArrayBuffer(aBlob);
+    }
 
-/**
- * readBytesNotify
- */
-synchronized void readBytesNotify()  { notify(); }
+    /**
+     * readBytesAndWait
+     */
+    synchronized void readBytesAndWait(Blob aBlob)
+    {
+        _js.addEventListener("loadend", e -> readBytesNotify());
+        _js.readAsArrayBuffer(aBlob);
 
-/**
- * Returns the bytes for the Blob.
- */
-public static byte[] getBytes(Blob aBlob)
-{
-    // Create FileReader and readBytes
-    FileReader frdr = new FileReader();
-    frdr.readBytesAndWait(aBlob);
-    
-    // Get result
-    byte bytes[] = frdr.getResultBytes();
-    return bytes;
-}
+        // Wait until done
+        try {
+            wait();
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-/**
- * FileReader lets web applications asynchronously read the contents of files (or raw data buffers) stored on
- * the user's computer, using File or Blob objects to specify the file or data to read.
- */
-interface JSFileReader extends EventTarget {
+    /**
+     * readBytesNotify
+     */
+    synchronized void readBytesNotify()
+    {
+        notify();
+    }
 
-    @JSProperty
-    ArrayBuffer getResult();
-    
-    void readAsArrayBuffer(Blob aBlob);
-}
+    /**
+     * Returns the bytes for the Blob.
+     */
+    public static byte[] getBytes(Blob aBlob)
+    {
+        // Create FileReader and readBytes
+        FileReader fileReader = new FileReader();
+        fileReader.readBytesAndWait(aBlob);
 
+        // Get result
+        return fileReader.getResultBytes();
+    }
+
+    /**
+     * FileReader lets web applications asynchronously read the contents of files (or raw data buffers) stored on
+     * the user's computer, using File or Blob objects to specify the file or data to read.
+     */
+    interface JSFileReader extends EventTarget {
+
+        @JSProperty
+        ArrayBuffer getResult();
+
+        void readAsArrayBuffer(Blob aBlob);
+    }
 }

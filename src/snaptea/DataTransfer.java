@@ -44,9 +44,9 @@ public interface DataTransfer {
      */
     default boolean hasType(String aType)
     {
-        String types[] = getTypes();
-        for(String type : types)
-            if(type.equals(aType))
+        String[] types = getTypes();
+        for (String type : types)
+            if (type.equals(aType))
                 return true;
         return false;
     }
@@ -67,16 +67,21 @@ public interface DataTransfer {
         // The JSDataTransfer
         private JSDataTransfer _jsDT;
 
-        /** Constructor. */
-        DataTransferJS(JSDataTransfer jsDT)  { _jsDT = jsDT; }
+        /**
+         * Constructor.
+         */
+        DataTransferJS(JSDataTransfer jsDT)
+        {
+            _jsDT = jsDT;
+        }
 
         @Override
         public String[] getTypes()
         {
             JSArray<JSString> typesJS = _jsDT.getTypes();
             int len = typesJS.getLength();
-            String types[] = new String[len];
-            for (int i=0; i<len; i++)
+            String[] types = new String[len];
+            for (int i = 0; i < len; i++)
                 types[i] = typesJS.get(i).stringValue();
             return types;
         }
@@ -108,8 +113,8 @@ public interface DataTransfer {
             System.out.println("DataTransfer: Getting files: " + len);
 
             // Load in File array and return
-            File files[] = new File[len];
-            for (int i=0;i<len;i++) files[i] = filesAR.get(i);
+            File[] files = new File[len];
+            for (int i = 0; i < len; i++) files[i] = filesAR.get(i);
             return files;
         }
 
@@ -134,15 +139,20 @@ public interface DataTransfer {
     class DataTransferString implements DataTransfer {
 
         // The String
-        private String  _str;
+        private String _str;
 
-        /** Constructor. */
-        DataTransferString(String aStr)  { _str = aStr; }
+        /**
+         * Constructor.
+         */
+        DataTransferString(String aStr)
+        {
+            _str = aStr;
+        }
 
         @Override
         public String[] getTypes()
         {
-            return new String[] { "text/plain" };
+            return new String[]{"text/plain"};
         }
 
         @Override
@@ -169,86 +179,4 @@ public interface DataTransfer {
             throw new RuntimeException("DataTransfer.DataTransferString.setDragImage: Not implemented");
         }
     }
-
-    /**
-     * Returns a DataTransfer for JSDataTransfer.
-     */
-    //static DataTransfer getDataTrasferForDataTransferItemArray(JSArray<JSDataTransferItem> theDTIs) {
-    //    return new DataTransferDTIs(theDTIs); }
-
-//    /**
-//     * A DataTransfer implementation for JSDataTransfer.
-//     */
-//    class DataTransferDTIs implements DataTransfer {
-//
-//        // The array of JSDataTransferItems
-//        private JSArray<JSDataTransferItem> _dtis;
-//
-//        /** Constructor. */
-//        DataTransferDTIs(JSArray<JSDataTransferItem> theDTIs)  { _dtis = theDTIs; }
-//
-//        @Override
-//        public String[] getTypes()
-//        {
-//            int len = _dtis.getLength();
-//            String types[] = new String[len];
-//            for (int i=0; i<len; i++) {
-//                JSDataTransferItem dti = _dtis.get(i);
-//                types[i] = dti.getType();
-//            }
-//            return types;
-//        }
-//
-//        @Override
-//        public String getData(String aType)
-//        {
-//            int len = _dtis.getLength();
-//            for (int i=0; i<len; i++) {
-//                JSDataTransferItem dti = _dtis.get(i);
-//                if (dti.getType().equals(aType))
-//                    return dti.getAsString();
-//            }
-//
-//            System.err.println("DataTransfer.DataTransferDTIs.getData: Data not found for type: " + aType);
-//            return null;
-//        }
-//
-//        @Override
-//        public void setData(String aType, String theData)
-//        {
-//            throw new RuntimeException("DataTransfer.DataTransferDTIs.setData: Not implemented");
-//        }
-//
-//        @Override
-//        public int getFileCount()
-//        {
-//            int len = _dtis.getLength();
-//            for (int i=0; i<len; i++) {
-//                JSDataTransferItem dti = _dtis.get(i);
-//                String kind = dti.getKind();
-//                if (kind.equals("file"))
-//                    return 1;
-//            }
-//            return 0;
-//        }
-//
-//        @Override
-//        public File[] getFiles()
-//        {
-//            int len = _dtis.getLength();
-//            for (int i=0; i<len; i++) {
-//                JSDataTransferItem dti = _dtis.get(i);
-//                String kind = dti.getKind();
-//                if (kind.equals("file"))
-//                    return new File[] { dti.getAsFile() };
-//            }
-//            return new File[0];
-//        }
-//
-//        @Override
-//        public void setDragImage(HTMLElement aImg, double xOffset, double yOffset)
-//        {
-//            throw new RuntimeException("DataTransfer.DataTransferDTIs.setDragImage: Not implemented");
-//        }
-//    }
 }

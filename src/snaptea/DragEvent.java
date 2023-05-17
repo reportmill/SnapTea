@@ -14,36 +14,4 @@ public interface DragEvent extends MouseEvent {
      */
     @JSProperty
     public JSDataTransfer getDataTransfer();
-
-
-
-
-
-    // The DataTransfer object
-    //DataTransfer          _dataTrans;
-
-    /**
-     * Returns the data that is transferred during a drag and drop interaction.
-     */
-    /*public JSDataTransfer getDataTransfer();
-    {
-        if(_dataTrans!=null) return _dataTrans;
-        DataTransfer dt = new DataTransfer();
-        dt._jso = getDataTransferJSO();
-        return dt;
-    }*/
-
-    /**
-     * Returns the data transfer JSO.
-     */
-    //native Object getDataTransferJSO();
-
-    /**
-     * Standard toString implementation.
-     */
-    /*default String toString()
-    {
-        StringBuilder sb = new StringBuilder("DragEvent { ").append(getDataTransfer()).append(" }");
-        return sb.toString();
-    }*/
 }

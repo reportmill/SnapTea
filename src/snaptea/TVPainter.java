@@ -12,15 +12,15 @@ import snap.gfx.*;
  * A snap Painter for rendering to a TeaVM HTMLCanvasElement.
  */
 public class TVPainter extends PainterImpl {
-    
+
     // The canvas
-    protected HTMLCanvasElement  _canvas;
-    
+    protected HTMLCanvasElement _canvas;
+
     // The image dpi scale (1 = normal, 2 for retina/hidpi)
     protected int _scale;
-    
+
     // The RenderContext2D
-    protected CanvasRenderingContext2D  _cntx;
+    protected CanvasRenderingContext2D _cntx;
 
     // Constants
     private JSArray<JSObject> EMPTY_DASH_ARRAY = JSArray.create();
@@ -39,7 +39,7 @@ public class TVPainter extends PainterImpl {
         // Clip to canvas bounds
         int canvasW = _canvas.getWidth();
         int canvasH = _canvas.getHeight();
-        clipRect(0,0, canvasW, canvasH);
+        clipRect(0, 0, canvasW, canvasH);
 
         // If hidpi, scale default transform
         if (_scale > 1)
@@ -52,7 +52,8 @@ public class TVPainter extends PainterImpl {
     public void setPaint(Paint aPaint)
     {
         super.setPaint(aPaint);
-        if (aPaint instanceof Color) { String cstr = TV.get((Color)aPaint);
+        if (aPaint instanceof Color) {
+            String cstr = TV.get((Color) aPaint);
             _cntx.setFillStyle(cstr);
             _cntx.setStrokeStyle(cstr);
         }
@@ -64,7 +65,7 @@ public class TVPainter extends PainterImpl {
     public void setStroke(Stroke aStroke)
     {
         // Let's be nice and map null to reasonable default
-        if (aStroke==null) aStroke = Stroke.Stroke1;
+        if (aStroke == null) aStroke = Stroke.Stroke1;
 
         // Do normal version
         super.setStroke(aStroke);
@@ -73,10 +74,10 @@ public class TVPainter extends PainterImpl {
         _cntx.setLineWidth(aStroke.getWidth());
 
         // Set DashArray null:, DashOffset
-        if (aStroke.getDashArray()==null)
+        if (aStroke.getDashArray() == null)
             _cntx.setLineDash(EMPTY_DASH_ARRAY);
 
-        // Set DashArray
+            // Set DashArray
         else {
             double[] da = aStroke.getDashArray();
             JSArray<JSObject> jsa = JSArray.create();
@@ -96,7 +97,10 @@ public class TVPainter extends PainterImpl {
 
         // Set join
         switch (aStroke.getJoin()) {
-            case Miter: _cntx.setLineJoin("miter"); _cntx.setMiterLimit(aStroke.getMiterLimit()); break;
+            case Miter:
+                _cntx.setLineJoin("miter");
+                _cntx.setMiterLimit(aStroke.getMiterLimit());
+                break;
             case Round: _cntx.setLineJoin("round"); break;
             case Bevel: _cntx.setLineJoin("bevel"); break;
         }
@@ -129,7 +133,7 @@ public class TVPainter extends PainterImpl {
         double[] m = aTrans.getMatrix();
 
         // Set transform with dpi scale (in case retina/hidpi)
-        _cntx.setTransform(m[0]*_scale, m[1], m[2], m[3]*_scale, m[4], m[5]);
+        _cntx.setTransform(m[0] * _scale, m[1], m[2], m[3] * _scale, m[4], m[5]);
     }
 
     /**
@@ -147,7 +151,8 @@ public class TVPainter extends PainterImpl {
      */
     public void draw(Shape aShape)
     {
-        if (getPaint() instanceof GradientPaint) { GradientPaint gpnt = (GradientPaint)getPaint();
+        if (getPaint() instanceof GradientPaint) {
+            GradientPaint gpnt = (GradientPaint) getPaint();
             GradientPaint gpnt2 = gpnt.copyForRect(aShape.getBounds());
             CanvasGradient cg = TV.get(gpnt2, _cntx);
             _cntx.setStrokeStyle(cg);
@@ -211,10 +216,10 @@ public class TVPainter extends PainterImpl {
     public void setShape(Shape aShape)
     {
         double[] pnts = new double[6];
-        PathIter piter = aShape.getPathIter(null);
+        PathIter pathIter = aShape.getPathIter(null);
         _cntx.beginPath();
-        while (piter.hasNext()) {
-            switch (piter.getNext(pnts)) {
+        while (pathIter.hasNext()) {
+            switch (pathIter.getNext(pnts)) {
                 case MoveTo: _cntx.moveTo(pnts[0], pnts[1]); break;
                 case LineTo: _cntx.lineTo(pnts[0], pnts[1]); break;
                 case CubicTo: _cntx.bezierCurveTo(pnts[0], pnts[1], pnts[2], pnts[3], pnts[4], pnts[5]); break;
@@ -228,7 +233,7 @@ public class TVPainter extends PainterImpl {
      */
     public void drawImage(Image anImg, Transform xform)
     {
-        CanvasImageSource img = (CanvasImageSource)anImg.getNative();
+        CanvasImageSource img = (CanvasImageSource) anImg.getNative();
         save();
         transform(xform);
         _cntx.drawImage(img, 0, 0);
@@ -238,35 +243,40 @@ public class TVPainter extends PainterImpl {
     /**
      * Draw image in rect.
      */
-    public void drawImage(Image anImg, double sx, double sy, double sw, double sh, double dx,double dy,double dw,double dh)
+    public void drawImage(Image anImg, double srcX, double srcY, double srcW, double srcH, double dx, double dy, double dw, double dh)
     {
         // Correct source width/height for image dpi
-        double isw = anImg.getDPIX()/72, ish = anImg.getDPIY()/72;
-        if (isw!=1) { sx *= isw; sw *= isw; }
-        if (ish!=1) { sy *= ish; sh *= ish; }
+        double scaleX = anImg.getDPIX() / 72;
+        double scaleY = anImg.getDPIY() / 72;
+        if (scaleX != 1 || scaleY != 1) {
+            srcX *= scaleX;
+            srcW *= scaleX;
+            srcY *= scaleY;
+            srcH *= scaleY;
+        }
 
         // Get points for corner as ints and draw image
-        CanvasImageSource img = anImg instanceof TVImage ? (CanvasImageSource)anImg.getNative() : null;
-        _cntx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+        CanvasImageSource img = anImg instanceof TVImage ? (CanvasImageSource) anImg.getNative() : null;
+        _cntx.drawImage(img, srcX, srcY, srcW, srcH, dx, dy, dw, dh);
     }
 
     /**
      * Draw string at location.
      */
-    public void drawString(String aStr, double aX, double aY, double cs)
+    public void drawString(String aStr, double aX, double aY, double charSpacing)
     {
         // Handle no char spacing
-        if (cs==0)
+        if (charSpacing == 0)
             _cntx.fillText(aStr, aX, aY);
 
-        // Handle char spacing
+            // Handle char spacing
         else {
             Font font = getFont();
             double x = aX;
-            for (int i=0, iMax=aStr.length(); i<iMax; i++) {
+            for (int i = 0, iMax = aStr.length(); i < iMax; i++) {
                 char c = aStr.charAt(i);
                 _cntx.fillText(String.valueOf(c), x, aY);
-                x += font.charAdvance(c) + cs;
+                x += font.charAdvance(c) + charSpacing;
             }
         }
     }
@@ -274,24 +284,35 @@ public class TVPainter extends PainterImpl {
     /**
      * Clears a rect.
      */
-    public void clearRect(double aX, double aY, double aW, double aH)  { _cntx.clearRect(aX,aY,aW,aH); }
+    public void clearRect(double aX, double aY, double aW, double aH)
+    {
+        _cntx.clearRect(aX, aY, aW, aH);
+    }
 
     /**
      * Standard clone implementation.
      */
-    public void save()  { super.save(); _cntx.save(); }
+    public void save()
+    {
+        super.save();
+        _cntx.save();
+    }
 
     /**
      * Disposes of the painter.
      */
-    public void restore()  { super.restore(); _cntx.restore(); }
+    public void restore()
+    {
+        super.restore();
+        _cntx.restore();
+    }
 
     /**
      * Sets image rendering quality.
      */
     public void setImageQuality(double aValue)
     {
-        if (snap.util.MathUtils.equals(aValue,getImageQuality())) return;
+        if (snap.util.MathUtils.equals(aValue, getImageQuality())) return;
         super.setImageQuality(aValue);
         //if (aValue>.67) _cntx.setImageSmoothingQuality("high");
         //else if (aValue>.33) _cntx.setImageSmoothingQuality("medium");

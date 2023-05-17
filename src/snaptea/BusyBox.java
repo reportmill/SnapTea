@@ -25,7 +25,7 @@ public class BusyBox extends ViewOwner {
     public View createUI()
     {
         System.out.println("BusyBox createUI");
-        ListView lview = new ListView();
+        ListView<String> lview = new ListView<>();
         lview.setName("ListView");
         lview.setPrefWidth(200);
         lview.setPrefHeight(500);
@@ -38,7 +38,7 @@ public class BusyBox extends ViewOwner {
         vbox.setFill(ViewUtils.getBackFill());
         vbox.setSpacing(30);
         vbox.setName("VBox");
-        List items = new ArrayList();
+        List<String> items = new ArrayList<>();
 
         System.out.println("BusyBox createUI 2");
         items.add("Buttons");
@@ -75,7 +75,7 @@ public class BusyBox extends ViewOwner {
         top.setPrefHeight(40);
         top.setPadding(4, 4, 4, 14);
         Color c1 = new Color("#DDDDDD"), c2 = new Color("#EEEEEE"), c3 = new Color("#CCCCCC");
-        GradientPaint.Stop stops[] = GradientPaint.getStops(0, c1, .5, c2, 1, c3);
+        GradientPaint.Stop[] stops = GradientPaint.getStops(0, c1, .5, c2, 1, c3);
         GradientPaint gpaint = new GradientPaint(90, stops);
         top.setFill(gpaint);
         top.setFont(new Font("Arial-Bold", 25));
@@ -346,7 +346,7 @@ public class BusyBox extends ViewOwner {
     public View createSpinnerView()
     {
         Label label = new Label("Spinner");
-        Spinner spnr = new Spinner();
+        Spinner<Integer> spnr = new Spinner<>();
         spnr.setPrefSize(160, 24);
         spnr.setValue(100);
         ColView vbox = new ColView();
@@ -402,7 +402,7 @@ public class BusyBox extends ViewOwner {
     /**
      * Main.
      */
-    public static void main(String args[])
+    public static void main(String[] args)
     {
         System.out.println("BusyBox main");
         BusyBox bbox = new BusyBox();
@@ -413,5 +413,4 @@ public class BusyBox extends ViewOwner {
         bbox.setWindowVisible(true);
         System.out.println("BusyBox did setWindowVisible");
     }
-
 }

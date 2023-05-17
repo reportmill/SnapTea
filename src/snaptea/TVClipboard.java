@@ -1,13 +1,9 @@
 package snaptea;
 import java.util.*;
-
 import org.teavm.jso.JSBody;
 import org.teavm.jso.JSObject;
 import org.teavm.jso.core.JSArray;
 import org.teavm.jso.core.JSString;
-import org.teavm.jso.dom.html.HTMLDocument;
-import org.teavm.jso.dom.html.HTMLElement;
-import snap.gfx.Image;
 import snap.view.*;
 
 /**
@@ -131,7 +127,7 @@ public class TVClipboard extends Clipboard {
         JSArray<JSClipboardItem> clipItemsJS = JSArray.of(clipItems);
 
         // Write to system clipboard
-        JSPromise writePromise = null;
+        JSPromise<?> writePromise = null;
         try {
             writePromise = getClipboardWriteItemsPromise(clipItemsJS);
         }
@@ -272,7 +268,7 @@ public class TVClipboard extends Clipboard {
     /**
      * Returns a readText promise
      */
-    private static JSPromise didGetPermissions(JSObject aPermResult)
+    private static JSPromise<JSString> didGetPermissions(JSObject aPermResult)
     {
         // Print result of permissions
         if (aPermResult != null) {
@@ -300,7 +296,7 @@ public class TVClipboard extends Clipboard {
     /**
      * Returns the system DataTransfer.
      */
-    private static JSPromise didGetClipboardReadText(JSString aStr)
+    private static JSPromise<JSString> didGetClipboardReadText(JSString aStr)
     {
         // Get string. Null check? This probably can't happen
         String str = aStr != null ? aStr.stringValue() : null;

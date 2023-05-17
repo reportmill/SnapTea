@@ -23,7 +23,7 @@ class TVClipboardData extends ClipboardData {
      */
     void fileReaderDidLoad(FileReader aFR)
     {
-        byte bytes[] = aFR.getResultBytes();
+        byte[] bytes = aFR.getResultBytes();
         setBytes(bytes);
     }
 }

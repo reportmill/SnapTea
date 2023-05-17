@@ -1,5 +1,6 @@
 package snaptea;
 import java.io.IOException;
+
 import org.teavm.jso.dom.html.HTMLAudioElement;
 import org.teavm.jso.dom.html.HTMLDocument;
 import snap.gfx.SoundClip;
@@ -9,93 +10,95 @@ import snap.web.WebURL;
  * A custom class.
  */
 public class TVSoundClip extends SoundClip {
-    
+
     // The Audio Element
-    HTMLAudioElement   _snd, _snd2;
-    
-/**
- * Creates a new TVSoundClip.
- */
-public TVSoundClip(Object aSource)
-{
-    WebURL url = WebURL.getURL(aSource);
-    _snd = HTMLDocument.current().createElement("audio").withAttr("src", url.getPath().substring(1))
-    .withAttr("preload", "auto").cast();
-    _snd.load();
-}
+    private HTMLAudioElement _snd, _snd2;
 
-/**
- * Loads image synchronously with wait/notify.
- */
-private synchronized void loadSound(WebURL aURL)
-{
-    _snd = HTMLDocument.current().createElement("audio").withAttr("src", aURL.getPath().substring(1))
-    .withAttr("preload", "auto").cast();
-    _snd.load();
-}
+    /**
+     * Creates a new TVSoundClip.
+     */
+    public TVSoundClip(Object aSource)
+    {
+        WebURL url = WebURL.getURL(aSource);
+        _snd = HTMLDocument.current().createElement("audio").withAttr("src", url.getPath().substring(1))
+                .withAttr("preload", "auto").cast();
+        _snd.load();
+    }
 
-/**
- * Returns whether sound is playing.
- */
-public boolean isPlaying()  { return _snd2!=null && !_snd2.isEnded(); }
+    /**
+     * Loads image synchronously with wait/notify.
+     */
+    private synchronized void loadSound(WebURL aURL)
+    {
+        _snd = HTMLDocument.current().createElement("audio").withAttr("src", aURL.getPath().substring(1))
+                .withAttr("preload", "auto").cast();
+        _snd.load();
+    }
 
-/**
- * Plays the sound.
- */
-public void play()
-{
-    _snd2 = (HTMLAudioElement)_snd.cloneNode(false);
-    _snd2.play();
-}
+    /**
+     * Returns whether sound is playing.
+     */
+    public boolean isPlaying()
+    {
+        return _snd2 != null && !_snd2.isEnded();
+    }
 
-/**
- * Plays the sound repeatedly for given count.
- */
-public void play(int aCount)  { }
+    /**
+     * Plays the sound.
+     */
+    public void play()
+    {
+        _snd2 = (HTMLAudioElement) _snd.cloneNode(false);
+        _snd2.play();
+    }
 
-/**
- * Tells sound to stop playing.
- */
-public void stop()  { }
+    /**
+     * Plays the sound repeatedly for given count.
+     */
+    public void play(int aCount)  { }
 
-/**
- * Pauses a sound.
- */
-public void pause()  { }
+    /**
+     * Tells sound to stop playing.
+     */
+    public void stop()  { }
 
-/**
- * Starts a recording.
- */
-public void recordStart()  { }
+    /**
+     * Pauses a sound.
+     */
+    public void pause()  { }
 
-/**
- * Stops a recording.
- */
-public void recordStop()  { }
+    /**
+     * Starts a recording.
+     */
+    public void recordStart()  { }
 
-/**
- * Returns whether sound is recording.
- */
-public boolean isRecording()  { return false; }
+    /**
+     * Stops a recording.
+     */
+    public void recordStop()  { }
 
-/**
- * Returns the sound length in milliseconds.
- */
-public int getLength()  { return 0; }
+    /**
+     * Returns whether sound is recording.
+     */
+    public boolean isRecording()  { return false; }
 
-/**
- * Returns the sound time in milliseconds.
- */
-public int getTime()  {  return 0; }
+    /**
+     * Returns the sound length in milliseconds.
+     */
+    public int getLength()  { return 0; }
 
-/**
- * Sets the sound time in milliseconds.
- */
-public void setTime(int aTime)  { }
+    /**
+     * Returns the sound time in milliseconds.
+     */
+    public int getTime()  { return 0; }
 
-/**
- * Saves this sound.
- */
-public void save() throws IOException  { }
+    /**
+     * Sets the sound time in milliseconds.
+     */
+    public void setTime(int aTime)  { }
 
+    /**
+     * Saves this sound.
+     */
+    public void save()  { }
 }
