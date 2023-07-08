@@ -64,7 +64,7 @@ public class BusyBox extends ViewOwner {
         //items.add("TabView"); vbox.addChild(createTabView());
         System.out.println("BusyBox createUI 8");
 
-        lview.setItems(items);
+        lview.setItemsList(items);
         lview.setSelIndex(0);
         ScrollView sview1 = new ScrollView(lview);
         ScrollView sview2 = new ScrollView(vbox);
