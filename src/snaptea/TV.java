@@ -58,31 +58,8 @@ public class TV {
         return str;
     }
 
-    /**
-     * Find a child with given id.
-     */
-    public static HTMLElement findElement(HTMLElement anEmt, String aId)
-    {
-        NodeList<Node> childEmts = anEmt.getChildNodes();
-        for (int i = 0; i < childEmts.getLength(); i++) {
-            HTMLElement emt = (HTMLElement) childEmts.get(i);
-            String id = emt.getAttribute("id");
-            if (id != null && id.equals(aId))
-                return emt;
-        }
-        for (int i = 0; i < childEmts.getLength(); i++) {
-            HTMLElement emt = (HTMLElement) childEmts.get(i);
-            HTMLElement emt2 = findElement(emt, aId);
-            if (emt2 != null)
-                return emt2;
-        }
-        return null;
-    }
-
     public static Point getOffsetAll(HTMLElement anEmt)
     {
-        //TextRectangle rect = anEmt.getBoundingClientRect(); return new Point(rect.getLeft(), rect.getTop());
-
         // Update window location
         int top = 0, left = 0;
         HTMLDocument doc = HTMLDocument.current();
@@ -98,19 +75,6 @@ public class TV {
 
     @JSBody(params = {"anEmt"}, script = "return anEmt.offsetLeft;")
     public static native int getOffsetLeft(HTMLElement anEmt);
-
-    /**
-     * Viewport X/Y. 3 options:
-     * <p>
-     * - window.pageYOffset (works in S, C, FF)
-     * - window.scrollY (works in S, C, FF)
-     * - document.documentElement.scrollTop (works in C. not S. returns value+1 in FF)
-     */
-    @JSBody(params = {}, script = "return window.pageYOffset;")
-    public static native int getViewportX();
-
-    @JSBody(params = {}, script = "return window.pageYOffset;")
-    public static native int getViewportY();
 
     /**
      * Viewport width/height.
