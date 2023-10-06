@@ -3,6 +3,7 @@ import org.teavm.jso.dom.html.HTMLDocument;
 import org.teavm.jso.dom.html.HTMLElement;
 import snap.gfx.Image;
 import snap.view.ViewEvent;
+import snap.view.ViewUtils;
 
 /**
  * A TVClipboard subclass to support drag and drop.
@@ -45,10 +46,10 @@ public class TVDragboard extends TVClipboard {
         body.appendChild(img);
 
         // Register to remove element a short time later
-        TVViewEnv.get().runDelayed(() -> {
+        ViewUtils.runDelayed(() -> {
             isDragging = false;
             body.removeChild(img);
-        }, 100, false);
+        }, 100);
     }
 
     /** Called to indicate that drop is accepted. */

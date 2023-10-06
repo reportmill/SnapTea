@@ -63,7 +63,8 @@ public class TVViewEnv extends ViewEnv {
     /**
      * Runs given runnable for given period after given delay with option to run once for every interval, even under load.
      */
-    public void runIntervals(Runnable aRun, int aPeriod, boolean doAll, boolean inAppThread)
+    @Override
+    public void runIntervals(Runnable aRun, int aPeriod, boolean doAll)
     {
         int id = Window.setInterval(() -> TVEnv.runOnAppThread(aRun), aPeriod);
         _intervalIds.put(aRun, id);
