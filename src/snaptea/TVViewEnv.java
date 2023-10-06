@@ -55,13 +55,14 @@ public class TVViewEnv extends ViewEnv {
     /**
      * Runs given runnable after delay.
      */
-    public void runDelayed(Runnable aRun, int aDelay, boolean inAppThread)
+    @Override
+    public void runDelayed(Runnable aRun, int aDelay)
     {
         Window.setTimeout(() -> TVEnv.runOnAppThread(aRun), aDelay);
     }
 
     /**
-     * Runs given runnable for given period after given delay with option to run once for every interval, even under load.
+     * Runs given runnable repeatedly every period milliseconds.
      */
     @Override
     public void runIntervals(Runnable aRun, int aPeriod)
@@ -71,8 +72,9 @@ public class TVViewEnv extends ViewEnv {
     }
 
     /**
-     * Runs given runnable for given period after given delay with option to run once for every interval, even under load.
+     * Stops running given runnable.
      */
+    @Override
     public void stopIntervals(Runnable aRun)
     {
         Integer id = _intervalIds.get(aRun);
