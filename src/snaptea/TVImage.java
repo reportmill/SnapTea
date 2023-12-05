@@ -24,15 +24,6 @@ public class TVImage extends Image {
     // The canvas object
     protected HTMLCanvasElement _canvas;
 
-    // The size
-    private int _pixW, _pixH;
-
-    // The dpi scale (1 = normal, 2 = retina/hidpi)
-    private int _dpiScale = 1;
-
-    // Whether image has transparency
-    private boolean _hasAlpha = true;
-
     /**
      * Constructor for given size, alpha and dpi scale.
      */
@@ -42,19 +33,21 @@ public class TVImage extends Image {
         _dpiScale = (int) Math.round(dpiScale);
         if (_dpiScale != 1 && _dpiScale != 2)
             System.out.println("TVImage.init: Odd scale" + _dpiScale);
+        _dpiX = 72 * _dpiScale;
+        _dpiY = 72 * _dpiScale;
 
         // Get image size, pixel size
-        int w = (int) Math.round(aWidth);
-        int h = (int) Math.round(aHeight);
-        _pixW = w * _dpiScale;
-        _pixH = h * _dpiScale;
+        _width = (int) Math.round(aWidth);
+        _height = (int) Math.round(aHeight);
+        _pixW = (int) Math.round(_width * _dpiScale);
+        _pixH = (int) Math.round(_height * _dpiScale);
 
         // Create canvas for pixel width/height, image width/height
         _canvas = (HTMLCanvasElement) HTMLDocument.current().createElement("canvas");
         _canvas.setWidth(_pixW);
         _canvas.setHeight(_pixH);
-        _canvas.getStyle().setProperty("width", w + "px");
-        _canvas.getStyle().setProperty("height", h + "px");
+        _canvas.getStyle().setProperty("width", _width + "px");
+        _canvas.getStyle().setProperty("height", _height + "px");
         _hasAlpha = hasAlpha;
     }
 
@@ -72,6 +65,7 @@ public class TVImage extends Image {
         // Create image
         _img = HTMLDocument.current().createElement("img").cast();
         _img.setCrossOrigin("anonymous");
+        _width = _height = 20;
         _pixW = _pixH = 20;
 
         // Set src and wait till loaded
@@ -112,8 +106,8 @@ public class TVImage extends Image {
      */
     private void didFinishLoad()
     {
-        _pixW = _img.getWidth();
-        _pixH = _img.getHeight();
+        _width = _pixW = _img.getWidth();
+        _height = _pixH = _img.getHeight();
         if (_src.toLowerCase().endsWith(".jpg"))
             _hasAlpha = false;
         snap.view.ViewUtils.runLater(() -> setLoaded(true));
@@ -127,31 +121,6 @@ public class TVImage extends Image {
         String scheme = aURL.getScheme();
         return scheme.equals("http") || scheme.equals("https") || scheme.equals("data") || scheme.equals("blob");
     }
-
-    /**
-     * Returns the width of given image in pixels.
-     */
-    public int getPixWidth()  { return _pixW; }
-
-    /**
-     * Returns the height of given image in pixels.
-     */
-    public int getPixHeight()  { return _pixH; }
-
-    /**
-     * Returns the width of given image.
-     */
-    public double getDpiX()  { return 72 * _dpiScale; }
-
-    /**
-     * Returns the height of given image.
-     */
-    public double getDpiY()  { return 72 * _dpiScale; }
-
-    /**
-     * Returns whether image has alpha.
-     */
-    public boolean hasAlpha()  { return _hasAlpha; }
 
     /**
      * Returns an RGB integer for given x, y.
@@ -275,9 +244,9 @@ public class TVImage extends Image {
         // Get canvas size and pixel size (might be 2x if HiDpi display)
         int imageW = getPixWidth();
         int imageH = getPixHeight();
-        int scale = TVWindow.scale;
-        int pixW = imageW * scale;
-        int pixH = imageH * scale;
+        int dpiScale = TVWindow.scale;
+        int pixW = imageW * dpiScale;
+        int pixH = imageH * dpiScale;
 
         // Create new canvas for image size and pixel size
         HTMLCanvasElement canvas = (HTMLCanvasElement) HTMLDocument.current().createElement("canvas");
@@ -287,7 +256,7 @@ public class TVImage extends Image {
         canvas.getStyle().setProperty("height", imageH + "px");
 
         // Copy ImageElement to Canvas
-        Painter pntr = new TVPainter(canvas, scale);
+        Painter pntr = new TVPainter(canvas, dpiScale);
         pntr.drawImage(this, 0, 0);
 
         // Swap in canvas for image element
@@ -295,7 +264,9 @@ public class TVImage extends Image {
         _img = null;
         _pixW = pixW;
         _pixH = pixH;
-        _dpiScale = scale;
+        _dpiScale = dpiScale;
+        _dpiX = 72 * dpiScale;
+        _dpiY = 72 * dpiScale;
     }
 
     /**
