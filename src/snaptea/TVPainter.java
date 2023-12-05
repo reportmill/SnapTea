@@ -246,8 +246,8 @@ public class TVPainter extends PainterImpl {
     public void drawImage(Image anImg, double srcX, double srcY, double srcW, double srcH, double dx, double dy, double dw, double dh)
     {
         // Correct source width/height for image dpi
-        double scaleX = anImg.getDPIX() / 72;
-        double scaleY = anImg.getDPIY() / 72;
+        double scaleX = anImg.getDpiX() / 72;
+        double scaleY = anImg.getDpiY() / 72;
         if (scaleX != 1 || scaleY != 1) {
             srcX *= scaleX;
             srcW *= scaleX;
