@@ -11,7 +11,7 @@ import snap.web.*;
  * This class is a WebSite implementation for the HTTP root at website holding jar resource files.
  * All resource Files need to be listed in an index.txt file.
  */
-public class TVWebSite extends WebSite {
+public class TVWebSite extends WebSiteX {
 
     // Return the paths that are available from this site
     private String[] _paths;
@@ -38,66 +38,25 @@ public class TVWebSite extends WebSite {
     }
 
     /**
-     * Handle a get or head request.
+     * Returns the file header for given path.
      */
     @Override
-    protected void doGetOrHead(WebRequest aReq, WebResponse aResp, boolean isHead)
+    protected FileHeader getFileHeaderForPath(String filePath)
     {
-        // Get file path
-        String filePath = aReq.getFilePath();
-
-        // Get FileHeader
-        FileHeader fileHeader = getFileHeaderForPath(filePath);
-
-        // Handle NOT_FOUND
-        if (fileHeader == null) {
-            aResp.setCode(WebResponse.NOT_FOUND);
-            return;
-        }
-
-        // Configure response info (just return if isHead). Need to pre-create FileHeader to fix capitalization.
-        aResp.setCode(WebResponse.OK);
-        aResp.setFileHeader(fileHeader);
-        if (isHead)
-            return;
-
-        // If file, just set bytes
-        if (aResp.isFile()) {
-
-            // Get Java URL
-            WebURL url = aReq.getURL();
-            URL javaUrl = getJavaUrlForUrl(url);
-
-            // Get bytes
-            byte[] bytes = getBytesForJavaUrl(javaUrl);
-            aResp.setBytes(bytes);
-        }
-
-        // If directory, configure directory info and return
-        else {
-            List<FileHeader> fileHeaders = getFileHeadersForPath(filePath);
-            aResp.setFileHeaders(fileHeaders.toArray(new FileHeader[0]));
-        }
-    }
-
-    /**
-     * Returns a data source file for given path (if file exists).
-     */
-    private FileHeader getFileHeaderForPath(String aPath)
-    {
-        if (!isPath(aPath))
+        if (!isPath(filePath))
             return null;
 
-        boolean isDir = isDirPath(aPath);
-        return new FileHeader(aPath, isDir); //isDir
+        boolean isDir = isDirPath(filePath);
+        return new FileHeader(filePath, isDir); //isDir
     }
 
     /**
-     * Returns FileHeaders for dir path.
+     * Returns FileHeaders for dir file path.
      */
-    private List<FileHeader> getFileHeadersForPath(String aPath)
+    @Override
+    protected FileHeader[] getFileHeadersForPath(String filePath)
     {
-        List<String> paths = getDirPaths(aPath);
+        List<String> paths = getDirPaths(filePath);
         List<FileHeader> fileHeaders = new ArrayList<>();
 
         // Iterate over paths
@@ -108,7 +67,18 @@ public class TVWebSite extends WebSite {
         }
 
         // Return
-        return fileHeaders;
+        return fileHeaders.toArray(new FileHeader[0]);
+    }
+
+    /**
+     * Returns bytes for Get call and given request/response.
+     */
+    @Override
+    protected byte[] getFileBytesForGet(WebRequest aReq, WebResponse aResp)
+    {
+        WebURL url = aReq.getURL();
+        URL javaUrl = getJavaUrlForUrl(url);
+        return getBytesForJavaUrl(javaUrl);
     }
 
     /**
