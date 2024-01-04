@@ -84,7 +84,8 @@ public class TVWebSite extends WebSiteX {
     /**
      * Handle a get request.
      */
-    protected void doPost(WebRequest aReq, WebResponse aResp)
+    @Override
+    protected void doPut(WebRequest aReq, WebResponse aResp)
     {
         WebURL url = aReq.getURL();
         String urls = url.getString(); //if(urls.startsWith("http://localhost")) urls = url.getPath().substring(1);
