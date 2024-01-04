@@ -8,7 +8,8 @@ import snap.util.SnapUtils;
 import snap.web.*;
 
 /**
- * A SnapSite subclass for the TeaVM root that uses an index.txt file to determine if app files exist.
+ * This class is a WebSite implementation for the HTTP root at website holding jar resource files.
+ * All resource Files need to be listed in an index.txt file.
  */
 public class TVWebSite extends WebSite {
 
@@ -21,19 +22,17 @@ public class TVWebSite extends WebSite {
     // Whether root has path
     private boolean _rootHasPath;
 
-    // Whether to debug
-    private boolean _debug = false;
-
     // The shared site
     private static TVWebSite _shared;
 
     /**
-     * Creates a TVWebSite.
+     * Constructor.
      */
     protected TVWebSite()
     {
         ROOT_URL = TVViewEnv.getScriptRoot(); // Was "http://localhost"
         WebURL url = WebURL.getURL(ROOT_URL);
+        assert (url != null);
         _rootHasPath = url.getPath() != null;
         setURL(url);
     }
@@ -41,25 +40,24 @@ public class TVWebSite extends WebSite {
     /**
      * Handle a get or head request.
      */
+    @Override
     protected void doGetOrHead(WebRequest aReq, WebResponse aResp, boolean isHead)
     {
-        // Get URL, path and file
-        WebURL url = aReq.getURL();
-        String path = url.getPath();
-        if (path == null) path = "/";
+        // Get file path
+        String filePath = aReq.getFilePath();
 
         // Get FileHeader
-        FileHeader fhdr = getFileHeader(path);
+        FileHeader fileHeader = getFileHeaderForPath(filePath);
 
         // Handle NOT_FOUND
-        if (fhdr == null) {
+        if (fileHeader == null) {
             aResp.setCode(WebResponse.NOT_FOUND);
             return;
         }
 
         // Configure response info (just return if isHead). Need to pre-create FileHeader to fix capitalization.
         aResp.setCode(WebResponse.OK);
-        aResp.setFileHeader(fhdr);
+        aResp.setFileHeader(fileHeader);
         if (isHead)
             return;
 
@@ -67,67 +65,37 @@ public class TVWebSite extends WebSite {
         if (aResp.isFile()) {
 
             // Get Java URL
-            String urls = url.getString().replace("!", "");
-            java.net.URL urlx;
-            try { urlx = new java.net.URL(urls); }
-            catch (Exception e) { throw new RuntimeException(e); }
+            WebURL url = aReq.getURL();
+            URL javaUrl = getJavaUrlForUrl(url);
 
             // Get bytes
-            byte[] bytes = getBytes(urlx);
+            byte[] bytes = getBytesForJavaUrl(javaUrl);
             aResp.setBytes(bytes);
         }
 
         // If directory, configure directory info and return
         else {
-            List<FileHeader> fileHeaders = getFileHeaders(path);
-            aResp.setFileHeaders(fileHeaders);
+            List<FileHeader> fileHeaders = getFileHeadersForPath(filePath);
+            aResp.setFileHeaders(fileHeaders.toArray(new FileHeader[0]));
         }
     }
 
     /**
      * Returns a data source file for given path (if file exists).
      */
-    public FileHeader getFileHeader(String aPath)
+    private FileHeader getFileHeaderForPath(String aPath)
     {
-        String urls = getURLString() + aPath;
-        if (_debug) System.out.println("Head: " + urls);
-
-        if (!isPath(aPath)) {
-            if (_debug)
-                System.out.println("TVWebSite.getFileHeader: File Not found: " + aPath);
+        if (!isPath(aPath))
             return null;
-        }
 
         boolean isDir = isDirPath(aPath);
         return new FileHeader(aPath, isDir); //isDir
     }
 
     /**
-     * Returns bytes for url.
-     */
-    private static byte[] getBytes(java.net.URL aURL)
-    {
-        try { return getBytesOrThrow(aURL); }
-        catch (Exception e) { throw new RuntimeException(e); }
-    }
-
-    /**
-     * Returns bytes for url.
-     */
-    private static byte[] getBytesOrThrow(java.net.URL aURL) throws java.io.IOException
-    {
-        // Get connection, stream, stream bytes, then close stream and return bytes
-        java.net.URLConnection conn = aURL.openConnection();
-        java.io.InputStream stream = conn.getInputStream();  // Get stream for URL
-        byte[] bytes = SnapUtils.getInputStreamBytes(stream);
-        stream.close();
-        return bytes;
-    }
-
-    /**
      * Returns FileHeaders for dir path.
      */
-    protected List<FileHeader> getFileHeaders(String aPath)
+    private List<FileHeader> getFileHeadersForPath(String aPath)
     {
         List<String> paths = getDirPaths(aPath);
         List<FileHeader> fileHeaders = new ArrayList<>();
@@ -155,9 +123,7 @@ public class TVWebSite extends WebSite {
         req.open("POST", urls, false);
 
         String str = new String(aReq.getSendBytes());
-        if (_debug) System.out.println("Post: " + urls);
         req.send(str); //req.send(str); - if not open Async
-        if (_debug) System.out.println("PostDone: " + urls);
 
         // Get bytes
         String text = req.getResponseText();
@@ -188,7 +154,7 @@ public class TVWebSite extends WebSite {
     /**
      * Returns whether a given path exists.
      */
-    public boolean isPath(String aPath)
+    private boolean isPath(String aPath)
     {
         // If path in known paths list, return true
         String[] paths = getPaths();
@@ -206,7 +172,7 @@ public class TVWebSite extends WebSite {
     /**
      * Returns whether a given path exists.
      */
-    public boolean isDirPath(String aPath)
+    private boolean isDirPath(String aPath)
     {
         // Get path (strip trailing separator)
         String path = aPath;
@@ -246,21 +212,25 @@ public class TVWebSite extends WebSite {
     /**
      * Return URL for class and path.
      */
-    public URL getJavaURL(Class<?> aClass, String aPath)
+    public URL getJavaUrlForPath(String aPath)
     {
         // If not known path, return null
         if (!isPath(aPath))
             return null;
 
         String urls = _rootHasPath ? (ROOT_URL + '!' + aPath) : (ROOT_URL + aPath);
-        try {
-            URL url = new java.net.URL(urls); // was "http://localhost"
-            System.out.println("TVWebSite.getURL: Returning url: " + url);
-            return url;
-        }
-        catch (java.net.MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
+        try { return new java.net.URL(urls); }
+        catch (java.net.MalformedURLException e)  { throw new RuntimeException(e); }
+    }
+
+    /**
+     * Returns a java URL for given WebURL.
+     */
+    private URL getJavaUrlForUrl(WebURL aURL)
+    {
+        String urlStr = aURL.getString().replace("!", "");
+        try { return new java.net.URL(urlStr); }
+        catch (Exception e) { throw new RuntimeException(e); }
     }
 
     /**
@@ -269,6 +239,24 @@ public class TVWebSite extends WebSite {
     public String toString()
     {
         return "TVWebSite " + getURLString();
+    }
+
+    /**
+     * Returns bytes for url.
+     */
+    private static byte[] getBytesForJavaUrl(java.net.URL aURL)
+    {
+        // Get connection, stream, stream bytes, then close stream and return bytes
+        try {
+            java.net.URLConnection conn = aURL.openConnection();
+            java.io.InputStream stream = conn.getInputStream();  // Get stream for URL
+            byte[] bytes = SnapUtils.getInputStreamBytes(stream);
+            stream.close();
+            return bytes;
+        }
+
+        // Rethrow exceptions
+        catch (Exception e) { throw new RuntimeException(e); }
     }
 
     /**
