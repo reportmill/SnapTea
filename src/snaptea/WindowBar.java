@@ -79,7 +79,7 @@ public class WindowBar extends ParentView {
 
         // Set font
         double fontSize = _titleBarHeight == 24 ? 14 : 11;
-        _font = Font.Arial10.deriveFont(fontSize);
+        _font = Font.Arial10.copyForSize(fontSize);
     }
 
     /**
