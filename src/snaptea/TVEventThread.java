@@ -60,17 +60,8 @@ class TVEventThread extends Thread {
             // Print exception
             e.printStackTrace();
 
-            // Get all windows
-            WindowView[] winViews = TVScreen.get().getWindows().toArray(new WindowView[0]);
-            if (winViews.length < 1) {
-                System.err.println("TVEventThread: Uncaught exception, no windows");
-                return;
-            }
-
             // Get last window and show exception
-            WindowView lastWin = winViews[winViews.length-1];
-            View rootView = lastWin.getRootView();
-            DevPane.showException(rootView, e);
+            DevPane.showException(e);
         }
     }
 
