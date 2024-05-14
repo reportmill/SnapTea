@@ -11,7 +11,7 @@ import java.util.List;
 public class TVPrefs extends Prefs {
 
     // The name of this prefs node
-    private static String  _name;
+    private String  _name;
 
     /**
      * Constructor.
@@ -83,7 +83,19 @@ public class TVPrefs extends Prefs {
      */
     public void clear()
     {
-        clearJS();
+        String[] keys = getKeys();
+        for (String key : keys)
+            removeItemJS(_name + '.' + key);
+    }
+
+    /**
+     * Returns a child node for name.
+     */
+    @Override
+    public Prefs getChild(String aName)
+    {
+        String childName = _name + '.' + aName;
+        return new TVPrefs(childName);
     }
 
     @JSBody(params={ "aKey" }, script = "return window.localStorage.getItem(aKey);")
@@ -95,6 +107,6 @@ public class TVPrefs extends Prefs {
     @JSBody(params={ "anIndex" }, script = "return window.localStorage.key(anIndex);")
     public static native String getKey(int anIndex);
 
-    @JSBody(params={ }, script = "return window.localStorage.clear();")
-    private static native void clearJS();
+    @JSBody(params={ "aKey" }, script = "return window.localStorage.removeItem(aKey);")
+    private static native String removeItemJS(String aKey);
 }
