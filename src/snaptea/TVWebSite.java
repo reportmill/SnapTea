@@ -207,9 +207,10 @@ public class TVWebSite extends WebSiteX {
     /**
      * Standard toString implementation.
      */
+    @Override
     public String toString()
     {
-        return "TVWebSite " + getURLString();
+        return "TVWebSite " + getUrlAddress();
     }
 
     /**
