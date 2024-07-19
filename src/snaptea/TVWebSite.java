@@ -33,7 +33,7 @@ public class TVWebSite extends WebSiteX {
         ROOT_URL = TVViewEnv.getScriptRoot(); // Was "http://localhost"
         WebURL url = WebURL.getURL(ROOT_URL);
         assert (url != null);
-        _rootHasPath = url.getPath() != null;
+        _rootHasPath = !url.getPath().isEmpty();
         setURL(url);
     }
 
