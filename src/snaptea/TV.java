@@ -13,7 +13,7 @@ import org.teavm.jso.typedarrays.Uint16Array;
 import snap.geom.Point;
 import snap.geom.Rect;
 import snap.gfx.*;
-import snap.util.SnapUtils;
+import snap.util.SnapEnv;
 
 /**
  * Utility methods for SnapKit+TeaVM.
@@ -194,6 +194,6 @@ public class TV {
      */
     public static void set()
     {
-        if (SnapUtils.isTeaVM) TVViewEnv.set();
+        if (SnapEnv.isTeaVM) TVViewEnv.set();
     }
 }
