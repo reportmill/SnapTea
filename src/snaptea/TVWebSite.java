@@ -54,7 +54,7 @@ public class TVWebSite extends WebSiteX {
      * Returns FileHeaders for dir file path.
      */
     @Override
-    protected FileHeader[] getFileHeadersForPath(String filePath)
+    protected List<FileHeader> getFileHeadersForPath(String filePath)
     {
         List<String> paths = getDirPaths(filePath);
         List<FileHeader> fileHeaders = new ArrayList<>();
@@ -67,7 +67,7 @@ public class TVWebSite extends WebSiteX {
         }
 
         // Return
-        return fileHeaders.toArray(new FileHeader[0]);
+        return fileHeaders;
     }
 
     /**
