@@ -1,5 +1,4 @@
 package snaptea;
-import java.io.IOException;
 
 import org.teavm.jso.dom.html.HTMLAudioElement;
 import org.teavm.jso.dom.html.HTMLDocument;
@@ -19,7 +18,7 @@ public class TVSoundClip extends SoundClip {
      */
     public TVSoundClip(Object aSource)
     {
-        WebURL url = WebURL.getURL(aSource);
+        WebURL url = WebURL.getUrl(aSource);
         _snd = HTMLDocument.current().createElement("audio").withAttr("src", url.getPath().substring(1))
                 .withAttr("preload", "auto").cast();
         _snd.load();

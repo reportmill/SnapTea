@@ -153,7 +153,7 @@ public class TVEnv extends GFXEnv {
         if (aSource instanceof WebFile)
             aSource = ((WebFile) aSource).getJavaFile();
         if (aSource instanceof WebURL)
-            aSource = ((WebURL) aSource).getJavaURL();
+            aSource = ((WebURL) aSource).getJavaUrl();
         java.io.File file = FileUtils.getFile(aSource);
 
         // Get file name, type, bytes
@@ -174,7 +174,7 @@ public class TVEnv extends GFXEnv {
      */
     public void openURL(Object aSource)
     {
-        WebURL url = WebURL.getURL(aSource);
+        WebURL url = WebURL.getUrl(aSource);
         String urls = url != null ? url.getString() : null;
         if (urls != null)
             urls = urls.replace("!", "");

@@ -88,7 +88,7 @@ public class TVImage extends Image {
         }
 
         // Get URL
-        WebURL url = WebURL.getURL(aSource);
+        WebURL url = WebURL.getUrl(aSource);
         if (url == null)
             return null;
 
