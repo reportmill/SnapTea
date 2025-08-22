@@ -1,10 +1,8 @@
 package snaptea;
 import java.net.URL;
 import java.util.*;
-
 import org.teavm.jso.ajax.XMLHttpRequest;
 import snap.util.ArrayUtils;
-import snap.util.SnapUtils;
 import snap.web.*;
 
 /**
@@ -221,10 +219,9 @@ public class TVWebSite extends WebSiteX {
         // Get connection, stream, stream bytes, then close stream and return bytes
         try {
             java.net.URLConnection conn = aURL.openConnection();
-            java.io.InputStream stream = conn.getInputStream();  // Get stream for URL
-            byte[] bytes = SnapUtils.getInputStreamBytes(stream);
-            stream.close();
-            return bytes;
+            try (java.io.InputStream inputStream = conn.getInputStream()) {
+                return inputStream.readAllBytes();
+            }
         }
 
         // Rethrow exceptions
