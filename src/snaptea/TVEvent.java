@@ -27,7 +27,7 @@ public class TVEvent extends ViewEvent {
 
         // Handle unknown event type (Currently called by ViewEvent.copyForView())
         //System.out.println("TVEvent.getPointImpl: Unsupported event type: " + event.getType());
-        return new Point();
+        return Point.ZERO;
     }
 
     /**
@@ -40,8 +40,7 @@ public class TVEvent extends ViewEvent {
         boolean winMaximized = view.getWindow().isMaximized();
         double viewX = winMaximized ? mouseEvent.getClientX() : mouseEvent.getPageX(); viewX = Math.round(viewX);
         double viewY = winMaximized ? mouseEvent.getClientY() : mouseEvent.getPageY(); viewY = Math.round(viewY);
-        Point point = view.parentToLocal(viewX, viewY, null);
-        return point;
+        return view.parentToLocal(viewX, viewY, null);
     }
 
     /**
@@ -54,8 +53,7 @@ public class TVEvent extends ViewEvent {
         boolean winMaximized = view.getWindow().isMaximized();
         double viewX = winMaximized ? touchEvent.getClientX() : touchEvent.getPageX(); viewX = Math.round(viewX);
         double viewY = winMaximized ? touchEvent.getClientY() : touchEvent.getPageY(); viewY = Math.round(viewY);
-        Point point = view.parentToLocal(viewX,viewY, null);
-        return point;
+        return view.parentToLocal(viewX,viewY, null);
     }
 
     /**
@@ -278,15 +276,15 @@ public class TVEvent extends ViewEvent {
     {
         Event event = (Event) getEvent();
         String type = event.getType();
-        switch(type) {
-            case "dragstart": return Type.DragGesture;
-            case "dragend": return Type.DragSourceEnd;
-            case "dragenter": return Type.DragEnter;
-            case "dragexit": return Type.DragExit;
-            case "dragover": return Type.DragOver;
-            case "drop": return Type.DragDrop;
-            default: return null;
-        }
+        return switch (type) {
+            case "dragstart" -> Type.DragGesture;
+            case "dragend" -> Type.DragSourceEnd;
+            case "dragenter" -> Type.DragEnter;
+            case "dragexit" -> Type.DragExit;
+            case "dragover" -> Type.DragOver;
+            case "drop" -> Type.DragDrop;
+            default -> null;
+        };
     }
 
     /**
