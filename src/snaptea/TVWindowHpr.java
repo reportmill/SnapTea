@@ -37,6 +37,7 @@ public class TVWindowHpr extends WindowView.WindowHpr {
         _win = aWin;
         _winNtv = new TVWindow();
         _winNtv.setWindow(aWin);
+        aWin.addPropChangeListener(pc -> handleFocusViewDidChange(), WindowView.FocusView_Prop);
     }
 
     /**
@@ -87,9 +88,10 @@ public class TVWindowHpr extends WindowView.WindowHpr {
     /**
      * Notifies that focus changed.
      */
-    public void focusDidChange(View aView)
+    private void handleFocusViewDidChange()
     {
-        boolean isText = aView instanceof TextArea || aView instanceof TextField;
+        View focusView = _win.getFocusedView();
+        boolean isText = focusView instanceof TextArea || focusView instanceof TextField;
         setContentEditable(isText);
     }
 
