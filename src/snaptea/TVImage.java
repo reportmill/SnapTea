@@ -244,7 +244,7 @@ public class TVImage extends Image {
         // Get canvas size and pixel size (might be 2x if HiDpi display)
         int imageW = getPixWidth();
         int imageH = getPixHeight();
-        int dpiScale = TVWindow.scale;
+        int dpiScale = TVWindow.PIXEL_SCALE;
         int pixW = imageW * dpiScale;
         int pixH = imageH * dpiScale;
 

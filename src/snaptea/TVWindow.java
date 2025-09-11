@@ -3,6 +3,7 @@ import org.teavm.jso.browser.Window;
 import org.teavm.jso.dom.events.EventListener;
 import org.teavm.jso.dom.html.*;
 import snap.geom.Point;
+import snap.geom.Rect;
 import snap.gfx.*;
 import snap.props.PropChange;
 import snap.props.PropChangeListener;
@@ -22,9 +23,6 @@ public class TVWindow {
     // The RootView
     protected RootView  _rootView;
 
-    // The native RootView
-    protected TVRootView  _rootViewNtv;
-
     // The HTML document element
     protected HTMLDocument  _doc;
 
@@ -33,6 +31,12 @@ public class TVWindow {
 
     // The parent element
     protected HTMLElement  _parent;
+
+    // The HTMLCanvas
+    protected HTMLCanvasElement _canvas;
+
+    // Painter
+    private Painter _painter;
 
     // A listener for hide
     protected PropChangeListener  _hideLsnr;
@@ -50,7 +54,7 @@ public class TVWindow {
     protected static int  _topWin;
 
     // The paint scale
-    public static int scale = TV.getDevicePixelRatio() == 2 ? 2 : 1;
+    public static int PIXEL_SCALE = TV.getDevicePixelRatio() == 2 ? 2 : 1;
 
     /**
      * Constructor.
@@ -62,10 +66,10 @@ public class TVWindow {
 
         // Start listening to bounds, Maximized and ActiveCursor changes
         _win.addPropChangeListener(pc -> handleSnapWindowFocusViewChange(), WindowView.FocusView_Prop);
-        _win.addPropChangeListener(pc -> snapWindowMaximizedChanged(), WindowView.Maximized_Prop);
-        _win.addPropChangeListener(pc -> snapWindowBoundsChanged(pc), View.X_Prop, View.Y_Prop,
+        _win.addPropChangeListener(pc -> handleSnapWindowMaximizedChange(), WindowView.Maximized_Prop);
+        _win.addPropChangeListener(pc -> handleSnapWindowBoundsChange(pc), View.X_Prop, View.Y_Prop,
                 View.Width_Prop, View.Height_Prop);
-        _win.addPropChangeListener(pc -> snapWindowActiveCursorChanged(), WindowView.ActiveCursor_Prop);
+        _win.addPropChangeListener(pc -> handleSnapWindowActiveCursorChange(), WindowView.ActiveCursor_Prop);
 
         // Get Doc and body elements
         _doc = HTMLDocument.current();
@@ -78,8 +82,39 @@ public class TVWindow {
 
         // Get RootView and TVRootView
         _rootView = _win.getRootView();
-        _rootViewNtv = new TVRootView();
-        _rootViewNtv.setView(_rootView);
+
+        // Create canvas and configure to totally fill window element (minus padding insets)
+        _canvas = (HTMLCanvasElement)HTMLDocument.current().createElement("canvas");
+        _canvas.getStyle().setProperty("width", "100%");
+        _canvas.getStyle().setProperty("height", "100%");
+        _canvas.getStyle().setProperty("box-sizing", "border-box");
+
+        // Add RootView listener to propagate size changes to canvas
+        _rootView.addPropChangeListener(pc -> handleRootViewSizeChange(), View.Width_Prop, View.Height_Prop);
+        handleRootViewSizeChange();
+
+        // Have to do this so TouchEvent.preventDefault doesn't complain and iOS doesn't scroll doc
+        _canvas.getStyle().setProperty("touch-action", "none");
+        _canvas.setAttribute("touch-action", "none");
+        _canvas.addEventListener("touchstart", e -> e.preventDefault());
+        _canvas.addEventListener("touchmove", e -> e.preventDefault());
+        _canvas.addEventListener("touchend", e -> e.preventDefault());
+        _canvas.addEventListener("wheel", e -> e.preventDefault());
+
+        // Create painer
+        _painter = new TVPainter(_canvas, PIXEL_SCALE);
+
+        // Register for drop events
+        EventListener<?> dragLsnr = e -> handleDragEvent((DragEvent)e);
+        _canvas.addEventListener("dragenter", dragLsnr);
+        _canvas.addEventListener("dragover", dragLsnr);
+        _canvas.addEventListener("dragexit", dragLsnr);
+        _canvas.addEventListener("drop", dragLsnr);
+        _canvas.setAttribute("draggable", "true");
+
+        // Register for drag start event
+        _canvas.addEventListener("dragstart", e -> handleDragGesture((DragEvent)e));
+        _canvas.addEventListener("dragend", e -> handleDragEnd((DragEvent)e));
 
         // Get RootView canvas and add to WinEmt
         HTMLCanvasElement canvas = getCanvas();
@@ -100,7 +135,7 @@ public class TVWindow {
     /**
      * Returns the canvas for the window.
      */
-    public HTMLCanvasElement getCanvas()  { return _rootViewNtv._canvas; }
+    public HTMLCanvasElement getCanvas()  { return _canvas; }
 
     /**
      * Returns the parent DOM element of this window (WinEmt).
@@ -208,11 +243,11 @@ public class TVWindow {
         if (par == _body) {
             if (_win.isMaximized())
                 _win.setBounds(TV.getViewportBounds());
-            snapWindowBoundsChanged(null);
+            handleSnapWindowBoundsChange(null);
         }
 
         // If window in DOM container element
-        else browserWindowSizeChanged();
+        else handleBrowserWindowSizeChange();
     }
 
     /**
@@ -243,7 +278,7 @@ public class TVWindow {
 
         // Start listening to browser window resizes
         if (_resizeLsnr == null)
-            _resizeLsnr = e -> TVEnv.runOnAppThread(() -> browserWindowSizeChanged());
+            _resizeLsnr = e -> TVEnv.runOnAppThread(this::handleBrowserWindowSizeChange);
         Window.current().addEventListener("resize", _resizeLsnr);
     }
 
@@ -256,7 +291,7 @@ public class TVWindow {
         showImpl();
 
         // Register listener to activate current thread on window not showing
-        _win.addPropChangeListener(_hideLsnr = pce -> snapWindowShowingChanged(), View.Showing_Prop);
+        _win.addPropChangeListener(_hideLsnr = pc -> handleSnapWindowShowingChange(), View.Showing_Prop);
 
         // Start new app thread, since this thread is now tied up until window closes
         TVEnv.get().startNewAppThread();
@@ -264,16 +299,6 @@ public class TVWindow {
         // Wait until window is hidden
         try { wait(); }
         catch(Exception e) { throw new RuntimeException(e); }
-    }
-
-    /**
-     * Called when window changes showing.
-     */
-    synchronized void snapWindowShowingChanged()
-    {
-        _win.removePropChangeListener(_hideLsnr);
-        _hideLsnr = null;
-        notify();
     }
 
     /**
@@ -297,7 +322,10 @@ public class TVWindow {
         _resizeLsnr = null;
 
         // Send WinClose event
-        sendWinEvent(ViewEvent.Type.WinClose);
+        if (_win.getEventAdapter().isEnabled(ViewEvent.Type.WinClose)) {
+            ViewEvent event = ViewEvent.createEvent(_win, null, ViewEvent.Type.WinClose, null);
+            _win.dispatchEventToWindow(event);
+        }
     }
 
     /**
@@ -309,9 +337,19 @@ public class TVWindow {
     }
 
     /**
+     * Called to register for repaint.
+     */
+    public void paintViews(Rect aRect)
+    {
+        _painter.setTransform(1,0,0,1,0,0); // I don't know why I need this!
+        ViewUpdater updater = _rootView.getUpdater();
+        updater.paintViews(_painter, aRect);
+    }
+
+    /**
      * Called when browser window resizes.
      */
-    void browserWindowSizeChanged()
+    private void handleBrowserWindowSizeChange()
     {
         // If Window is child of body, just return
         if (isChildOfBody()) {
@@ -333,6 +371,16 @@ public class TVWindow {
     }
 
     /**
+     * Called when window changes showing.
+     */
+    private synchronized void handleSnapWindowShowingChange()
+    {
+        _win.removePropChangeListener(_hideLsnr);
+        _hideLsnr = null;
+        notify();
+    }
+
+    /**
      * Notifies that focus changed.
      */
     private void handleSnapWindowFocusViewChange()
@@ -345,7 +393,7 @@ public class TVWindow {
     /**
      * Called when WindowView has bounds change to sync to WinEmt.
      */
-    void snapWindowBoundsChanged(PropChange aPC)
+    private void handleSnapWindowBoundsChange(PropChange propChange)
     {
         // If Window not child of body, just return (parent node changes go to win, not win to parent)
         if (!isChildOfBody()) return;
@@ -355,7 +403,7 @@ public class TVWindow {
         int y = (int) Math.round(_win.getY());
         int w = (int) Math.round(_win.getWidth());
         int h = (int) Math.round(_win.getHeight());
-        String propName = aPC != null ? aPC.getPropName() : null;
+        String propName = propChange != null ? propChange.getPropName() : null;
 
         // Handle changes
         if (propName == null || propName == View.X_Prop)
@@ -371,7 +419,7 @@ public class TVWindow {
     /**
      * Called when WindowView.Maximized is changed.
      */
-    void snapWindowMaximizedChanged()
+    private void handleSnapWindowMaximizedChange()
     {
         // Get canvas
         HTMLCanvasElement canvas = getCanvas();
@@ -412,7 +460,7 @@ public class TVWindow {
     /**
      * Sets the cursor.
      */
-    private void snapWindowActiveCursorChanged()
+    private void handleSnapWindowActiveCursorChange()
     {
         Cursor aCursor = _win.getActiveCursor();
         String cstr = "default";
@@ -434,13 +482,44 @@ public class TVWindow {
     }
 
     /**
-     * Sends the given event.
+     * Called when root view size changes.
      */
-    private void sendWinEvent(ViewEvent.Type aType)
+    private void handleRootViewSizeChange()
     {
-        if (!_win.getEventAdapter().isEnabled(aType)) return;
-        ViewEvent event = ViewEvent.createEvent(_win, null, aType, null);
-        _win.dispatchEventToWindow(event);
+        int rootW = (int) Math.ceil(_rootView.getWidth());
+        int rootH = (int) Math.ceil(_rootView.getHeight());
+        _canvas.setWidth(rootW * PIXEL_SCALE);
+        _canvas.setHeight(rootH * PIXEL_SCALE);
+    }
+
+    /**
+     * Called to handle a drag event.
+     * Not called on app thread, because drop data must be processed when event is issued.
+     * TVEnv.runOnAppThread(() -> handleDragEvent(anEvent));
+     */
+    private void handleDragEvent(DragEvent anEvent)
+    {
+        anEvent.preventDefault();
+        ViewEvent event = ViewEvent.createEvent(_rootView, anEvent, null, null);
+        _rootView.getWindow().dispatchEventToWindow(event);
+    }
+
+    /** Called to handle a drag event. */
+    private void handleDragGesture(DragEvent anEvent)
+    {
+        ViewEvent event = ViewEvent.createEvent(_rootView, anEvent, null, null);
+        _rootView.getWindow().dispatchEventToWindow(event);
+        if (!TVDragboard.isDragging) {
+            anEvent.preventDefault();
+            anEvent.stopPropagation();
+        }
+    }
+
+    /** Called to handle dragend event. */
+    private void handleDragEnd(DragEvent anEvent)
+    {
+        ViewEvent event = ViewEvent.createEvent(_rootView, anEvent, null, null);
+        _rootView.getWindow().dispatchEventToWindow(event);
     }
 
     /**

@@ -47,5 +47,5 @@ public class TVWindowHpr extends WindowView.WindowHpr {
     /**
      * Registers a view for repaint.
      */
-    public void requestPaint(Rect aRect)  { _winNtv._rootViewNtv.paintViews(aRect); }
+    public void requestPaint(Rect aRect)  { _winNtv.paintViews(aRect); }
 }
