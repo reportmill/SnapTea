@@ -1,11 +1,6 @@
 package snaptea;
-import org.teavm.jso.dom.html.HTMLBodyElement;
-import org.teavm.jso.dom.html.HTMLDocument;
 import snap.geom.Rect;
-import snap.view.TextArea;
-import snap.view.TextField;
-import snap.view.View;
-import snap.view.WindowView;
+import snap.view.*;
 
 /**
  * A WindowHpr to map WindowView to TVWindow.
@@ -17,9 +12,6 @@ public class TVWindowHpr extends WindowView.WindowHpr {
 
     // The snap TVWindow
     protected TVWindow  _winNtv;
-
-    // Whether content is editable
-    private boolean _contentEditable;
 
     /**
      * Creates the native.
@@ -35,15 +27,8 @@ public class TVWindowHpr extends WindowView.WindowHpr {
     public void setWindow(WindowView aWin)
     {
         _win = aWin;
-        _winNtv = new TVWindow();
-        _winNtv.setWindow(aWin);
-        aWin.addPropChangeListener(pc -> handleFocusViewDidChange(), WindowView.FocusView_Prop);
+        _winNtv = new TVWindow(aWin);
     }
-
-    /**
-     * Returns the native.
-     */
-    public TVWindow getNative()  { return _winNtv; }
 
     /**
      * Window method: initializes native window.
@@ -83,35 +68,5 @@ public class TVWindowHpr extends WindowView.WindowHpr {
     public void requestPaint(Rect aRect)
     {
         _winNtv._rootViewNtv.paintViews(aRect);
-    }
-
-    /**
-     * Notifies that focus changed.
-     */
-    private void handleFocusViewDidChange()
-    {
-        View focusView = _win.getFocusedView();
-        boolean isText = focusView instanceof TextArea || focusView instanceof TextField;
-        setContentEditable(isText);
-    }
-
-    /**
-     * Sets ContentEditable on canvas.
-     */
-    public void setContentEditable(boolean aValue)
-    {
-        // If already set, just return
-        if (aValue == _contentEditable) return;
-
-        // Set value
-        _contentEditable = aValue;
-
-        // Update Body.ContentEditable and TabIndex
-        HTMLDocument doc = HTMLDocument.current();
-        HTMLBodyElement body = doc.getBody();
-        TV.setContentEditable(body, aValue);
-
-        // Focus element
-        body.focus();
     }
 }

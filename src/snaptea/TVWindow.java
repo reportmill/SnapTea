@@ -38,10 +38,13 @@ public class TVWindow {
     protected PropChangeListener  _hideLsnr;
 
     // A listener for browser window resize
-    protected EventListener  _resizeLsnr = null;
+    protected EventListener<?> _resizeLsnr = null;
 
     // The body overflow value
     protected String  _bodyMargin = "undefined", _bodyOverflow;
+
+    // Whether content is editable
+    private boolean _contentEditable;
 
     // The last top window
     protected static int  _topWin;
@@ -50,14 +53,17 @@ public class TVWindow {
     public static int scale = TV.getDevicePixelRatio() == 2 ? 2 : 1;
 
     /**
-     * Sets the snap window.
+     * Constructor.
      */
-    public void setWindow(WindowView aWin)
+    public TVWindow(WindowView aWin)
     {
-        // Set window and start listening to bounds, Maximized and ActiveCursor changes
         _win = aWin;
+        ViewUtils.setNative(_win, this);
+
+        // Start listening to bounds, Maximized and ActiveCursor changes
+        _win.addPropChangeListener(pc -> handleSnapWindowFocusViewChange(), WindowView.FocusView_Prop);
         _win.addPropChangeListener(pc -> snapWindowMaximizedChanged(), WindowView.Maximized_Prop);
-        _win.addPropChangeListener(pce -> snapWindowBoundsChanged(pce), View.X_Prop, View.Y_Prop,
+        _win.addPropChangeListener(pc -> snapWindowBoundsChanged(pc), View.X_Prop, View.Y_Prop,
                 View.Width_Prop, View.Height_Prop);
         _win.addPropChangeListener(pc -> snapWindowActiveCursorChanged(), WindowView.ActiveCursor_Prop);
 
@@ -327,6 +333,16 @@ public class TVWindow {
     }
 
     /**
+     * Notifies that focus changed.
+     */
+    private void handleSnapWindowFocusViewChange()
+    {
+        View focusView = _win.getFocusedView();
+        boolean isText = focusView instanceof TextArea || focusView instanceof TextField;
+        setContentEditable(isText);
+    }
+
+    /**
      * Called when WindowView has bounds change to sync to WinEmt.
      */
     void snapWindowBoundsChanged(PropChange aPC)
@@ -425,5 +441,25 @@ public class TVWindow {
         if (!_win.getEventAdapter().isEnabled(aType)) return;
         ViewEvent event = ViewEvent.createEvent(_win, null, aType, null);
         _win.dispatchEventToWindow(event);
+    }
+
+    /**
+     * Sets ContentEditable on canvas.
+     */
+    private void setContentEditable(boolean aValue)
+    {
+        // If already set, just return
+        if (aValue == _contentEditable) return;
+
+        // Set value
+        _contentEditable = aValue;
+
+        // Update Body.ContentEditable and TabIndex
+        HTMLDocument doc = HTMLDocument.current();
+        HTMLBodyElement body = doc.getBody();
+        TV.setContentEditable(body, aValue);
+
+        // Focus element
+        body.focus();
     }
 }
