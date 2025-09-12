@@ -182,13 +182,6 @@ public class TVWindow {
                 _winEmt.getStyle().setProperty("background", null);
                 _winEmt.getStyle().setProperty("box-shadow", "1px 1px 8px grey");
             }
-
-            // If Window.Type not PLAIN, attach WindowBar
-            if (_win.getType() != WindowView.TYPE_PLAIN) {
-                WindowBar wbar = WindowBar.attachWindowBar(_rootView);
-                if (_win.isMaximized())
-                    wbar.setTitlebarHeight(18);
-            }
         }
 
         // If arbitrary element
