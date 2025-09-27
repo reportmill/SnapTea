@@ -47,14 +47,6 @@ public class TVEnv extends GFXEnv {
     }
 
     /**
-     * Returns the root URL classes in Snap Jar as string.
-     */
-    public String getClassRoot()
-    {
-        return TVViewEnv.getScriptRoot();
-    }
-
-    /**
      * Returns a list of all system fontnames (excludes any that don't start with capital A-Z).
      */
     public String[] getFontNames()  { return _fontNames; }
@@ -217,6 +209,12 @@ public class TVEnv extends GFXEnv {
     {
         TVEventThread.runOnAppThread(aRun);
     }
+
+    /**
+     * Returns new TVViewEnv.
+     */
+    @Override
+    protected snap.view.ViewEnv createViewEnv()  { return new TVViewEnv(); }
 
     /**
      * Returns a shared instance.
