@@ -63,9 +63,9 @@ public class TV {
         // Update window location
         int top = 0, left = 0;
         HTMLDocument doc = HTMLDocument.current();
-        for (HTMLElement emt = anEmt; emt != doc; emt = (HTMLElement) emt.getParentNode()) {
-            top += TV.getOffsetTop(emt);
-            left += TV.getOffsetLeft(emt);
+        for (Node emt = anEmt; emt != doc; emt = emt.getParentNode()) {
+            top += TV.getOffsetTop((HTMLElement) emt);
+            left += TV.getOffsetLeft((HTMLElement) emt);
         }
         return new Point(left, top);
     }
