@@ -3,7 +3,7 @@ import java.util.*;
 import org.teavm.jso.ajax.XMLHttpRequest;
 import org.teavm.jso.browser.Window;
 import org.teavm.jso.dom.html.HTMLDocument;
-import org.teavm.jso.dom.html.HTMLSourceElement;
+import org.teavm.jso.dom.html.HTMLScriptElement;
 import org.teavm.jso.dom.xml.Element;
 import org.teavm.jso.dom.xml.NodeList;
 import snap.geom.Rect;
@@ -132,9 +132,9 @@ public class TVViewEnv extends ViewEnv {
         List<String> urls = new ArrayList<>();
 
         for (int i = 0; i < scripts.getLength(); i++ ) {
-            HTMLSourceElement script = (HTMLSourceElement) scripts.get(i);
+            HTMLScriptElement script = (HTMLScriptElement) scripts.get(i);
             String urlAll = script.getSrc();
-            if (urlAll == null || urlAll.length() == 0)
+            if (urlAll == null || urlAll.isEmpty())
                 continue;
             int ind = urlAll.lastIndexOf('/'); if (ind < 0) continue;
             String url = urlAll.substring(0, ind); if (url.length() < 10) continue;
@@ -157,7 +157,7 @@ public class TVViewEnv extends ViewEnv {
         // Iterate over script roots
         String[] roots = getScriptRoots();
         for (String root : roots) { String url = root + "/index.txt";
-            XMLHttpRequest req = XMLHttpRequest.create();
+            XMLHttpRequest req = new XMLHttpRequest();
             req.open("GET", url, false);
             req.send();
             if (req.getStatus() == 200)
