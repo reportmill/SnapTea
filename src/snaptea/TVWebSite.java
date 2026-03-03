@@ -1,7 +1,10 @@
 package snaptea;
 import java.net.URL;
 import java.util.*;
+import org.teavm.jso.JSObject;
 import org.teavm.jso.ajax.XMLHttpRequest;
+import org.teavm.jso.typedarrays.ArrayBuffer;
+import org.teavm.jso.typedarrays.Int8Array;
 import snap.util.ArrayUtils;
 import snap.web.*;
 
@@ -65,7 +68,7 @@ public class TVWebSite extends WebSite {
     {
         // Handle plain file contents
         if (!aReq.isFileDir()) {
-            byte[] bytes = getFileBytesForGet(aReq, aResp);
+            byte[] bytes = getFileBytesForGet(aReq);
             aResp.setBytes(bytes);
             aResp.setCode(WebResponse.OK);
         }
@@ -111,9 +114,9 @@ public class TVWebSite extends WebSite {
     }
 
     /**
-     * Returns bytes for Get call and given request/response.
+     * Returns bytes for Get call and given request.
      */
-    private byte[] getFileBytesForGet(WebRequest aReq, WebResponse aResp)
+    private byte[] getFileBytesForGet(WebRequest aReq)
     {
         WebURL url = aReq.getURL();
         URL javaUrl = getJavaUrlForUrl(url);
@@ -129,7 +132,7 @@ public class TVWebSite extends WebSite {
         WebURL url = aReq.getURL();
         String urls = url.getString(); //if(urls.startsWith("http://localhost")) urls = url.getPath().substring(1);
 
-        XMLHttpRequest req = XMLHttpRequest.create();
+        XMLHttpRequest req = new XMLHttpRequest();
         req.open("POST", urls, false);
 
         String str = new String(aReq.getSendBytes());
@@ -151,7 +154,7 @@ public class TVWebSite extends WebSite {
 
         // Get index.txt file
         String urls = ROOT_URL + "/index.txt";
-        XMLHttpRequest req = XMLHttpRequest.create();
+        XMLHttpRequest req = new XMLHttpRequest();
         req.open("GET", urls, false);
         req.send();
 
@@ -257,17 +260,46 @@ public class TVWebSite extends WebSite {
      */
     private static byte[] getBytesForJavaUrl(java.net.URL aURL)
     {
-        // Get connection, stream, stream bytes, then close stream and return bytes
-        try {
-            java.net.URLConnection conn = aURL.openConnection();
-            try (java.io.InputStream inputStream = conn.getInputStream()) {
-                return inputStream.readAllBytes();
+        // Configure async URL get request
+        String urlStr = aURL.toExternalForm().replace("!", "");
+        XMLHttpRequest req = new XMLHttpRequest();
+        req.open("GET", urlStr, true);
+        req.setResponseType("arraybuffer");
+
+        // Register to wake thread when done
+        req.onComplete(() -> {
+            synchronized (GetUrlLock) {
+                GetUrlLock.notifyAll();
             }
+        });
+        req.send();
+
+        // Wait for request to complete
+        synchronized (GetUrlLock) {
+            try { GetUrlLock.wait(); }
+            catch (InterruptedException e) { throw new RuntimeException(e); }
         }
 
-        // Rethrow exceptions
-        catch (Exception e) { throw new RuntimeException(e); }
+        // Return bytes
+        JSObject response = req.getResponse();
+        return new Int8Array((ArrayBuffer) response).toJavaArray();
     }
+
+    // Get URL Lock
+    private static final Object GetUrlLock = new Object();
+
+    /**
+     * Returns bytes for url.
+     */
+//    private static byte[] getBytesForJavaUrl2(java.net.URL aURL)
+//    {
+//        try {
+//            java.net.URLConnection conn = aURL.openConnection();
+//            try (java.io.InputStream inputStream = conn.getInputStream()) {
+//                return inputStream.readAllBytes(); }
+//        }
+//        catch (Exception e) { throw new RuntimeException(e); }
+//    }
 
     /**
      * Returns a shared instance.
