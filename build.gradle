@@ -19,27 +19,19 @@ repositories {
     mavenCentral()
 }
 
-// TeaVM version
-project.ext.teavmVersion = "0.7.0-dev-1209"
-//project.ext.teavmVersion = "0.8.0-dev-2"
-
 dependencies {
 
     // SnapKit (assumed to be peer module)
     implementation project(':SnapKit')
 
-    // TeaVM (might also want 'teavm-devserver', 'jso', 'jso-apis', 'classlib')
-    //implementation group: 'org.teavm', name: 'teavm-cli', version: "$teavmVersion"
-    //implementation files('/Users/Temp/teavm/tools/cli/build/libs/cli-0.8.0-SNAPSHOT-all.jar')
-    //implementation group: 'org.teavm', name: 'teavm-classlib', version: "$teavmVersion"
-    //implementation group: 'org.teavm', name: 'teavm-jso-apis', version: "$teavmVersion"
+    // TeaVM
     implementation teavm.libs.jsoApis
 }
 
 publishing {
     publications {
         maven(MavenPublication) {
-            from(components.java)
+            from components.java
         }
     }
 }
