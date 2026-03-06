@@ -9,7 +9,7 @@ import snap.view.*;
 /**
  * A simple test view that animates a bunch of silly drawing and has a Start button, time slider and time label.
  */
-public class BusyBox extends ViewOwner {
+public class BusyBox extends ViewController {
 
     // Border
     public static final Border VIEW_BORDER = Border.createLineBorder(Color.WHITE, 5);
