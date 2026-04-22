@@ -126,8 +126,6 @@ public class TVWindow {
      */
     public void initWindow()
     {
-        if (_rootView.getFill() == null)
-            _rootView.setFill(ViewUtils.getBackFill());
         if (_rootView.getBorder() == null)
             _rootView.setBorder(Color.GRAY, 1);
     }

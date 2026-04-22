@@ -35,7 +35,6 @@ public class BusyBox extends ViewController {
         vbox.setAlign(Pos.CENTER);
         vbox.setPadding(20, 20, 40, 20);
         vbox.setPrefWidth(550);
-        vbox.setFill(ViewUtils.getBackFill());
         vbox.setSpacing(30);
         vbox.setName("VBox");
         List<String> items = new ArrayList<>();
