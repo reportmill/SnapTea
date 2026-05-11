@@ -103,7 +103,7 @@ public class TVEnv extends GFXEnv {
     public Image getImageForSizeAndDpiScale(double aWidth, double aHeight, boolean hasAlpha, double dpiScale)
     {
         if (dpiScale <= 0)
-            dpiScale = getScreenScale();
+            dpiScale = getScreenDpiScale();
         return new TVImage(aWidth, aHeight, hasAlpha, dpiScale);
     }
 
@@ -134,7 +134,7 @@ public class TVEnv extends GFXEnv {
     /**
      * Returns the screen scale. Usually 1, but could be 2 for HiDPI/Retina displays.
      */
-    public double getScreenScale()  { return TV.getDevicePixelRatio(); }
+    public double getScreenDpiScale()  { return TV.getDevicePixelRatio(); }
 
     /**
      * Tries to open the given file name with the platform reader.
