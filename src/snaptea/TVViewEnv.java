@@ -100,7 +100,7 @@ public class TVViewEnv extends ViewEnv {
      * Creates an event for a UI view.
      */
     @Override
-    public ViewEvent createEvent(View aView, Object anEvent, ViewEvent.Type aType, String aName)
+    public ViewEvent createEvent(View aView, Object anEvent, EventType aType, String aName)
     {
         // Create, configure event
         ViewEvent event = new TVEvent();

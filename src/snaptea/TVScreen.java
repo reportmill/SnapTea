@@ -449,7 +449,7 @@ public class TVScreen {
     /**
      * Creates an Event.
      */
-    ViewEvent createEvent(WindowView aWin, Object anEvent, ViewEvent.Type aType, String aName)
+    ViewEvent createEvent(WindowView aWin, Object anEvent, EventType aType, String aName)
     {
         View rootView = aWin.getRootView();
         ViewEvent event = ViewEvent.createEvent(rootView, anEvent, aType, aName);
