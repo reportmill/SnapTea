@@ -29,11 +29,12 @@ public class TVClipboard extends Clipboard {
     /**
      * Returns the clipboard content.
      */
-    protected boolean hasDataImpl(String aMimeType)
+    @Override
+    public boolean hasDataForMimeType(String aMimeType)
     {
         // If no DataTransfer, just return normal version
         if (_dataTrans == null)
-            return super.hasDataImpl(aMimeType);
+            return super.hasDataForMimeType(aMimeType);
 
         // Handle FILE_LIST: Return true if at least one file
         if (aMimeType == FILE_LIST)
@@ -46,11 +47,12 @@ public class TVClipboard extends Clipboard {
     /**
      * Returns the clipboard content.
      */
-    protected ClipboardData getDataImpl(String aMimeType)
+    @Override
+    public ClipboardData getDataForMimeType(String aMimeType)
     {
         // If no DataTransfer, just return normal version
         if (_dataTrans == null)
-            return super.getDataImpl(aMimeType);
+            return super.getDataForMimeType(aMimeType);
 
         // Handle Files
         if (aMimeType == FILE_LIST) {
@@ -68,21 +70,21 @@ public class TVClipboard extends Clipboard {
             }
 
             // Return ClipboardData for files array
-            return new ClipboardData(aMimeType, cfiles);
+            return new ClipboardData(cfiles, aMimeType);
         }
 
         // Handle anything else (String data)
         Object data = _dataTrans.getData(aMimeType);
-        return new ClipboardData(aMimeType, data);
+        return new ClipboardData(data, aMimeType);
     }
 
     /**
      * Adds clipboard content.
      */
-    protected void addDataImpl(String aMimeType, ClipboardData aData)
+    protected void addDataForMimeTypeImpl(ClipboardData aData, String aMimeType)
     {
         // Do normal implementation to populate ClipboardDatas map
-        super.addDataImpl(aMimeType, aData);
+        super.addDataForMimeTypeImpl(aData, aMimeType);
 
         // Handle DragDrop case
         if (_dataTrans != null) {
@@ -177,7 +179,7 @@ public class TVClipboard extends Clipboard {
         else {
 
             // Get type and bytes
-            String type = aData.getMIMEType();
+            String type = aData.getMimeType();
             byte[] bytes = aData.getBytes();
 
             // If valid, just wrap in JSClipboardItem
@@ -207,7 +209,7 @@ public class TVClipboard extends Clipboard {
      * Override to clear DataTrans.
      */
     @Override
-    public void clearData()
+    protected void clearData()
     {
         super.clearData();
         _dataTrans = null;

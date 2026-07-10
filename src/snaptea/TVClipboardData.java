@@ -11,7 +11,7 @@ class TVClipboardData extends ClipboardData {
      */
     public TVClipboardData(File aFile)
     {
-        super(aFile.getType(), null);
+        super(null, aFile.getType());
         setName(aFile.getName());
         setLoaded(false);
         FileReader fr = new FileReader();
