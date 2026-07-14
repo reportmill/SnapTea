@@ -88,7 +88,7 @@ public class TVEvent extends ViewEvent {
         if (keyCode == 13)
             keyCode = KeyCode.ENTER;
         if (keyCode == 91)
-            keyCode = KeyCode.COMMAND;
+            keyCode = KeyCode.META;
 
         // Return
         return keyCode;
@@ -179,26 +179,6 @@ public class TVEvent extends ViewEvent {
         TouchEvent touchEvent = getTouchEvent();
         if (touchEvent != null)
             return touchEvent.getMetaKey();
-
-        return false;
-    }
-
-    /**
-     * Returns whether shortcut key is pressed.
-     */
-    public boolean isShortcutDown()
-    {
-        KeyboardEvent keyEvent = getKeyEvent();
-        if (keyEvent != null)
-            return keyEvent.isMetaKey();
-
-        MouseEvent mouseEvent = getMouseEvent();
-        if (mouseEvent != null)
-            return isMetaDown() || isControlDown();
-
-        TouchEvent touchEvent = getTouchEvent();
-        if (touchEvent != null)
-            return isMetaDown() || isControlDown();
 
         return false;
     }
